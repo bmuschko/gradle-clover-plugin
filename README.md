@@ -41,7 +41,8 @@ The Clover plugin defines the following tasks:
 
 * `instrSrcDir`: The directory that is used to write the instrumented source files to (defaults to `file("$buildDir/instrSrc")`).
 * `classesBackupDir`: The temporary backup directory for classes (defaults to `file("${sourceSets.main.classesDir}-bak")`).
-* `licenseFile`: The [Clover license file](http://confluence.atlassian.com/display/CLOVER/How+to+configure+your+clover.license) to be used (defaults to `file('clover.license')`).
+* `licenseFile`: The [Clover license file](http://confluence.atlassian.com/display/CLOVER/How+to+configure+your+clover.license)
+to be used (defaults to `file('clover.license')`).
 
 Within `clover` you can define which report types should be generated in a closure named `report`:
 
