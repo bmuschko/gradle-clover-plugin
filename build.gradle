@@ -1,7 +1,21 @@
 apply plugin: 'groovy'
 apply plugin: 'idea'
+apply plugin: 'clover'
 
 version = '0.1'
+
+buildscript {
+    repositories {
+        add(new org.apache.ivy.plugins.resolver.URLResolver()) {
+            name = 'GitHub'
+            addArtifactPattern 'http://cloud.github.com/downloads/[organisation]/[module]/[module]-[revision].[ext]'
+        }
+    }
+
+    dependencies {
+        classpath 'bmuschko:gradle-clover-plugin:0.1'
+    }
+}
 
 repositories {
     mavenCentral()
@@ -10,6 +24,7 @@ repositories {
 dependencies {
     groovy localGroovy()
     compile gradleApi()
+    testRuntime 'com.cenqua.clover:clover:3.1.0'
 }
 
 jar {
@@ -35,5 +50,11 @@ ideaProject {
         // Set Gradle home
         def gradleSettings = node.appendNode('component', [name: 'GradleSettings'])
         gradleSettings.appendNode('option', [name: 'SDK_HOME', value: gradle.gradleHomeDir])
+    }
+}
+
+clover {
+    report {
+        html = true
     }
 }
