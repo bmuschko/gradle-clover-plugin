@@ -46,37 +46,39 @@ class InstrumentCodeAction implements Action<Task> {
     }
 
     void instrumentCode() {
-        LOGGER.info 'Starting to instrument code using Clover.'
+        if(getClassesDir().exists()) {
+            LOGGER.info 'Starting to instrument code using Clover.'
 
-        def ant = new AntBuilder()
-        ant.taskdef(resource: 'cloverlib.xml', classpath: getClasspath().asPath)
-        ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
-        ant."clover-clean"()
+            def ant = new AntBuilder()
+            ant.taskdef(resource: 'cloverlib.xml', classpath: getClasspath().asPath)
+            ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
+            ant."clover-clean"()
 
-        // Instrument the source
-        getInstrSrcDir().mkdirs()
+            // Instrument the source
+            getInstrSrcDir().mkdirs()
 
-        getSrcDirs().each {
-            if(it.exists()) {
-                ant."clover-instr"(srcdir: it.canonicalPath, destdir: getInstrSrcDir().canonicalPath)
+            getSrcDirs().each {
+                if(it.exists()) {
+                    ant."clover-instr"(srcdir: it.canonicalPath, destdir: getInstrSrcDir().canonicalPath)
+                }
             }
+
+            // Move original classes
+            ant.move(file: getClassesDir().canonicalPath, tofile: getClassesBackupDir().canonicalPath)
+
+            // Compile instrumented classes
+            getClassesDir().mkdirs()
+
+            ant.javac(srcdir: getInstrSrcDir().canonicalPath, destdir: getClassesDir().canonicalPath,
+                      source: getSourceCompatibility(), target: getTargetCompatibility(), includeAntRuntime: false,
+                      classpath: getClasspath().asPath)
+
+            // Copy resources
+            ant.copy(todir: getClassesDir().canonicalPath) {
+                fileset(dir: getClassesBackupDir().canonicalPath, excludes: '**/*.class')
+            }
+
+            LOGGER.info 'Finished instrumenting code using Clover.'
         }
-
-        // Move original classes
-        ant.move(file: getClassesDir().canonicalPath, tofile: getClassesBackupDir().canonicalPath)
-
-        // Compile instrumented classes
-        getClassesDir().mkdirs()
-
-        ant.javac(srcdir: getInstrSrcDir().canonicalPath, destdir: getClassesDir().canonicalPath,
-                  source: getSourceCompatibility(), target: getTargetCompatibility(), includeAntRuntime: false,
-                  classpath: getClasspath().asPath)
-
-        // Copy resources
-        ant.copy(todir: getClassesDir().canonicalPath) {
-            fileset(dir: getClassesBackupDir().canonicalPath, excludes: '**/*.class')
-        }
-
-        LOGGER.info 'Finished instrumenting code using Clover.'
     }
 }

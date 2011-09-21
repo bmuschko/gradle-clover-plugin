@@ -18,6 +18,7 @@ package org.gradle.api.plugins.clover
 import java.lang.reflect.Constructor
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.internal.AsmBackedClassGenerator
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.testing.Test
@@ -28,7 +29,7 @@ import org.gradle.api.tasks.testing.Test
  * @author Benjamin Muschko
  */
 class CloverPlugin implements Plugin<Project> {
-    static final String CLOVER_CONFIGURATION_NAME = 'clover'
+    static final String GENERATE_REPORT_TASK_NAME = 'cloverGenerateReport'
 
     @Override
     void apply(Project project) {
@@ -37,8 +38,8 @@ class CloverPlugin implements Plugin<Project> {
         CloverPluginConvention cloverPluginConvention = new CloverPluginConvention()
         project.convention.plugins.clover = cloverPluginConvention
 
-        configureTestTask(project, cloverPluginConvention)
         configureGenerateCoverageReportTask(project, cloverPluginConvention)
+        configureTestTask(project, cloverPluginConvention)
     }
 
     private void configureTestTask(Project project, CloverPluginConvention cloverPluginConvention) {
@@ -72,17 +73,14 @@ class CloverPlugin implements Plugin<Project> {
             project.targetCompatibility.toString()
         }
 
-        project.gradle.taskGraph.whenReady {
-            project.tasks.withType(Test).each { Test test ->
-                /*
-                test.doFirst {
-                    println "-->> doFirst"
-                    if(project.hasProperty('withClover') && project.sourceSets.main.classesDir.exists()) {
-                        println "-->> doFirst2"
-                        instrument
-                    }
-                }*/
-                test.doFirst instrument
+        project.gradle.taskGraph.whenReady { TaskExecutionGraph graph ->
+            def generateReportTask = project.tasks.getByName(GENERATE_REPORT_TASK_NAME)
+
+            // Only invoke instrumentation when Clover report generation task is run
+            if(graph.hasTask(generateReportTask)) {
+                project.tasks.withType(Test).each { Test test ->
+                    test.doFirst instrument
+                }
             }
         }
     }
@@ -100,7 +98,7 @@ class CloverPlugin implements Plugin<Project> {
             generateCoverageReportTask.conventionMapping.map('pdf') { cloverPluginConvention.report.pdf }
         }
 
-        GenerateCoverageReportTask generateCoverageReportTask = project.tasks.add('cloverGenerateReport', GenerateCoverageReportTask)
+        GenerateCoverageReportTask generateCoverageReportTask = project.tasks.add(GENERATE_REPORT_TASK_NAME, GenerateCoverageReportTask)
         generateCoverageReportTask.description = 'Generates Clover code coverage report.'
         generateCoverageReportTask.group = 'report'
     }
