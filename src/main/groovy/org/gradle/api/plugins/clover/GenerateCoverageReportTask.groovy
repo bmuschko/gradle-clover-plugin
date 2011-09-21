@@ -17,12 +17,9 @@ package org.gradle.api.plugins.clover
 
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.ConventionTask
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.TaskAction
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.gradle.api.tasks.*
 
 /**
  * Task for generating Clover code coverage report.
@@ -32,7 +29,7 @@ import org.slf4j.LoggerFactory
 class GenerateCoverageReportTask extends ConventionTask {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateCoverageReportTask)
     @InputDirectory File classesDir
-    @InputDirectory File classesBackupDir
+    @InputDirectory @Optional File classesBackupDir
     @OutputDirectory File reportsDir
     FileCollection classpath
     @InputFile File licenseFile
