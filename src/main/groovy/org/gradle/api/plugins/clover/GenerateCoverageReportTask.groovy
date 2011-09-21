@@ -29,7 +29,7 @@ import org.gradle.api.tasks.*
 class GenerateCoverageReportTask extends ConventionTask {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateCoverageReportTask)
     @InputDirectory File classesDir
-    @InputDirectory @Optional File classesBackupDir
+    File classesBackupDir
     @OutputDirectory File reportsDir
     FileCollection classpath
     @InputFile File licenseFile
