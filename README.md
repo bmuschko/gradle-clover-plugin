@@ -43,6 +43,8 @@ The Clover plugin defines the following tasks:
 * `classesBackupDir`: The temporary backup directory for classes (defaults to `file("${sourceSets.main.classesDir}-bak")`).
 * `licenseFile`: The [Clover license file](http://confluence.atlassian.com/display/CLOVER/How+to+configure+your+clover.license)
 to be used (defaults to `file('clover.license')`).
+* `targetPercentage`: The required target percentage total coverage e.g. "10%". The build fails if that goals is not met.
+If not specified no target percentage will be checked.
 
 Within `clover` you can define which report types should be generated in a closure named `report`:
 
@@ -58,6 +60,7 @@ The Clover plugin defines the following convention properties in the `clover` cl
         instrSrcDir = file("$buildDir/instrumentationSrc")
         classesBackupDir = file("${sourceSets.main.classesDir}-backup")
         licenseFile = file('clover-license.txt')
+        targetPercentage = '85%'
 
         report {
             html = true

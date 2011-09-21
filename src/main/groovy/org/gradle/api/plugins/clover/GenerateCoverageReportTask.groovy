@@ -39,6 +39,7 @@ class GenerateCoverageReportTask extends ConventionTask {
     Boolean xml
     Boolean html
     Boolean pdf
+    String targetPercentage
 
     @TaskAction
     void start() {
@@ -63,6 +64,10 @@ class GenerateCoverageReportTask extends ConventionTask {
 
             if(getPdf()) {
                 ant."clover-pdf-report"(outfile: "${getReportsDir()}/clover/clover.pdf")
+            }
+
+            if(getTargetPercentage()) {
+                ant."clover-check"(target: getTargetPercentage(), haltOnFailure: true)
             }
 
             LOGGER.info 'Finished generating Clover code coverage report.'

@@ -93,6 +93,7 @@ class CloverPlugin implements Plugin<Project> {
             generateCoverageReportTask.conventionMapping.map('reportsDir') { project.reportsDir }
             generateCoverageReportTask.conventionMapping.map('classpath') { project.configurations.testRuntime.asFileTree }
             generateCoverageReportTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
+            generateCoverageReportTask.conventionMapping.map('targetPercentage') { cloverPluginConvention.targetPercentage }
             generateCoverageReportTask.conventionMapping.map('xml') { cloverPluginConvention.report.xml }
             generateCoverageReportTask.conventionMapping.map('html') { cloverPluginConvention.report.html }
             generateCoverageReportTask.conventionMapping.map('pdf') { cloverPluginConvention.report.pdf }

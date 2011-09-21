@@ -24,6 +24,7 @@ class CloverPluginConvention {
     File instrSrcDir
     File classesBackupDir
     File licenseFile
+    String targetPercentage
     CloverReportConvention report = new CloverReportConvention()
 
     def clover(Closure closure) {
