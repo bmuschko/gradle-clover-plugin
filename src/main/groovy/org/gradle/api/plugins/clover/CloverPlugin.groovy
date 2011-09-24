@@ -110,6 +110,7 @@ class CloverPlugin implements Plugin<Project> {
             generateCoverageReportTask.conventionMapping.map('json') { cloverPluginConvention.report.json }
             generateCoverageReportTask.conventionMapping.map('html') { cloverPluginConvention.report.html }
             generateCoverageReportTask.conventionMapping.map('pdf') { cloverPluginConvention.report.pdf }
+            generateCoverageReportTask.conventionMapping.map('projectName') { project.name }
         }
 
         GenerateCoverageReportTask generateCoverageReportTask = project.tasks.add(GENERATE_REPORT_TASK_NAME, GenerateCoverageReportTask)

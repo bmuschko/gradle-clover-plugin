@@ -40,6 +40,7 @@ class GenerateCoverageReportTask extends ConventionTask {
     Boolean json
     Boolean html
     Boolean pdf
+    String projectName
     String targetPercentage
 
     @TaskAction
@@ -56,28 +57,24 @@ class GenerateCoverageReportTask extends ConventionTask {
 
             if(getXml()) {
                 ant."clover-report" {
-                    current(outfile: "$cloverReportDir/clover.xml")
+                    current(outfile: "$cloverReportDir/clover.xml", title: getProjectName())
                 }
             }
 
             if(getJson()) {
                 ant."clover-report" {
-                    current(outfile: "$cloverReportDir/json") {
+                    current(outfile: "$cloverReportDir/json", title: getProjectName()) {
                         format(type: 'json')
                     }
                 }
             }
 
             if(getHtml()) {
-                ant."clover-html-report"(outdir: "$cloverReportDir/html")
+                ant."clover-html-report"(outdir: "$cloverReportDir/html", title: getProjectName())
             }
 
             if(getPdf()) {
-                ant."clover-pdf-report"(outfile: "$cloverReportDir/clover.pdf")
-            }
-
-            if(getTargetPercentage()) {
-                ant."clover-check"(target: getTargetPercentage(), haltOnFailure: true)
+                ant."clover-pdf-report"(outfile: "$cloverReportDir/clover.pdf", title: getProjectName())
             }
 
             LOGGER.info 'Finished generating Clover code coverage report.'
