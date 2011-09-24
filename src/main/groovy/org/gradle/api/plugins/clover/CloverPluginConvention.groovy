@@ -27,9 +27,32 @@ class CloverPluginConvention {
     List<String> includes
     List<String> excludes
     CloverReportConvention report = new CloverReportConvention()
+    CloverContextsConvention contexts = new CloverContextsConvention()
 
     def clover(Closure closure) {
         closure.delegate = this
+        closure()
+    }
+
+    def contexts(Closure closure) {
+        closure.resolveStrategy = Closure.DELEGATE_FIRST
+        closure.delegate = contexts
+        closure()
+    }
+
+    def statement(Closure closure) {
+        closure.resolveStrategy = Closure.DELEGATE_FIRST
+        CloverContextConvention statementContext = new CloverContextConvention()
+        closure.delegate = statementContext
+        contexts.statements << statementContext
+        closure()
+    }
+
+    def method(Closure closure) {
+        closure.resolveStrategy = Closure.DELEGATE_FIRST
+        CloverContextConvention methodContext = new CloverContextConvention()
+        closure.delegate = methodContext
+        contexts.methods << methodContext
         closure()
     }
 

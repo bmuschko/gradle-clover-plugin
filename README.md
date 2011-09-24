@@ -48,6 +48,15 @@ to `'**/*.java'` and `'**/*.groovy'` for Groovy projects).
 * `targetPercentage`: The required target percentage total coverage e.g. "10%". The build fails if that goals is not met.
 If not specified no target percentage will be checked.
 
+Within `clover` you can define [coverage contexts](http://confluence.atlassian.com/display/CLOVER/Using+Coverage+Contexts)
+in a closure named `contexts`. There are two types of coverage contexts: statement contexts and method contexts. You can
+define as many contexts as you want. Each of the context type closure define the following attributes:
+
+* `name`: A unique name that identifies the context. If you want to apply the context to your report you got to use this
+name as part of report `filter` attribute.
+* `regexp`: The specified structure or pattern that matches a context as part of the instrumented source code. Make sure
+that you correctly escape special characters.
+
 Within `clover` you can define which report types should be generated in a closure named `report`:
 
 * `xml`: Generates XML report (defaults to `true`).
@@ -68,9 +77,21 @@ The Clover plugin defines the following convention properties in the `clover` cl
         excludes = ['**/SynchronizedMultiValueMap.java']
         targetPercentage = '85%'
 
+        contexts {
+            statement {
+                name = 'log'
+                regexp = '^.*LOG\\..*'
+            }
+
+            method {
+                name = 'main'
+                regexp = 'public static void main\\(String args\\[\\]\\).*'
+            }
+        }
+
         report {
             html = true
             pdf = true
-            filter = 'if,else'
+            filter = 'log,if,else'
         }
     }

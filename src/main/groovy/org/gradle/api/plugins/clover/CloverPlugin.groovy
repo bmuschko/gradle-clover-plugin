@@ -84,6 +84,12 @@ class CloverPlugin implements Plugin<Project> {
         instrument.conventionMapping.map('excludes') {
             cloverPluginConvention.excludes
         }
+        instrument.conventionMapping.map('statementContexts') {
+            cloverPluginConvention.contexts.statements
+        }
+        instrument.conventionMapping.map('methodContexts') {
+            cloverPluginConvention.contexts.methods
+        }
 
         project.gradle.taskGraph.whenReady { TaskExecutionGraph graph ->
             def generateReportTask = project.tasks.getByName(GENERATE_REPORT_TASK_NAME)

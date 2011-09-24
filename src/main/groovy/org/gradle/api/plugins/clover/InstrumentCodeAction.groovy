@@ -41,6 +41,8 @@ class InstrumentCodeAction implements Action<Task> {
     String targetCompatibility
     List<String> includes
     List<String> excludes
+    def statementContexts
+    def methodContexts
 
     @Override
     void execute(Task task) {
@@ -67,6 +69,15 @@ class InstrumentCodeAction implements Action<Task> {
                             ant.exclude(name: exclude)
                         }
                     }
+                }
+
+                // Apply statement and method coverage contexts
+                getStatementContexts().each {
+                    ant.statementContext(name: it.name, regexp: it.regexp)
+                }
+
+                getMethodContexts().each {
+                    ant.methodContext(name: it.name, regexp: it.regexp)
                 }
             }
 
