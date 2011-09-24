@@ -90,12 +90,21 @@ class InstrumentCodeAction implements Action<Task> {
             if(getCompileGroovy()) {
                 ant.taskdef(name: 'groovyc', classname: 'org.codehaus.groovy.ant.Groovyc', classpath: getClasspath().asPath)
 
-                ant.groovyc(destdir: getClassesDir().canonicalPath, classpath: getClasspath().asPath) {
-                    compileJava(ant)
+                ant.groovyc(destdir: getClassesDir().canonicalPath, includeAntRuntime: false, classpath: getClasspath().asPath) {
+                    getSrcDirs().each { srcDir ->
+                        src(path: srcDir)
+                    }
+
+                    ant.javac(source: getSourceCompatibility(), target: getTargetCompatibility())
                 }
             }
             else {
-                compileJava(ant)
+                ant.javac(destdir: getClassesDir().canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
+                          includeAntRuntime: false, classpath: getClasspath().asPath) {
+                    getSrcDirs().each { srcDir ->
+                        src(path: srcDir)
+                    }
+                }
             }
 
             // Copy resources
