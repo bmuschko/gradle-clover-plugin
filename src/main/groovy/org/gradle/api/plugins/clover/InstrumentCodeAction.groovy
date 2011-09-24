@@ -31,14 +31,16 @@ import org.slf4j.LoggerFactory
  */
 class InstrumentCodeAction implements Action<Task> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InstrumentCodeAction)
+    Boolean compileGroovy
     FileCollection classpath
-    @OutputDirectory File instrSrcDir
     @OutputDirectory File classesBackupDir
     @InputFile File licenseFile
     @InputDirectory File classesDir
     Set<File> srcDirs
     String sourceCompatibility
     String targetCompatibility
+    List<String> includes
+    List<String> excludes
 
     @Override
     void execute(Task task) {
@@ -54,12 +56,17 @@ class InstrumentCodeAction implements Action<Task> {
             ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
             ant."clover-clean"()
 
-            // Instrument the source
-            getInstrSrcDir().mkdirs()
+            ant.'clover-setup'() {
+                getSrcDirs().each { srcDir ->
+                    ant.fileset(dir: srcDir) {
+                        getIncludes().each { include ->
+                            ant.include(name: include)
+                        }
 
-            getSrcDirs().each {
-                if(it.exists()) {
-                    ant."clover-instr"(srcdir: it.canonicalPath, destdir: getInstrSrcDir().canonicalPath)
+                        getExcludes().each { exclude ->
+                            ant.exclude(name: exclude)
+                        }
+                    }
                 }
             }
 
@@ -69,9 +76,14 @@ class InstrumentCodeAction implements Action<Task> {
             // Compile instrumented classes
             getClassesDir().mkdirs()
 
-            ant.javac(srcdir: getInstrSrcDir().canonicalPath, destdir: getClassesDir().canonicalPath,
-                      source: getSourceCompatibility(), target: getTargetCompatibility(), includeAntRuntime: false,
-                      classpath: getClasspath().asPath)
+            if(getCompileGroovy()) {
+                ant.groovyc(destdir: getClassesDir().canonicalPath, classpath: getClasspath().asPath) {
+                    compileJava(ant)
+                }
+            }
+            else {
+                compileJava(ant)
+            }
 
             // Copy resources
             ant.copy(todir: getClassesDir().canonicalPath) {
@@ -79,6 +91,18 @@ class InstrumentCodeAction implements Action<Task> {
             }
 
             LOGGER.info 'Finished instrumenting code using Clover.'
+        }
+    }
+
+    /**
+     * Compiles Java sources.
+     */
+    private void compileJava(AntBuilder ant) {
+        ant.javac(destdir: getClassesDir().canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
+                  includeAntRuntime: false, classpath: getClasspath().asPath) {
+            getSrcDirs().each { srcDir ->
+                src(path: srcDir)
+            }
         }
     }
 }

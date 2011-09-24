@@ -21,10 +21,11 @@ package org.gradle.api.plugins.clover
  * @author Benjamin Muschko
  */
 class CloverPluginConvention {
-    File instrSrcDir
     File classesBackupDir
     File licenseFile
     String targetPercentage
+    List<String> includes
+    List<String> excludes
     CloverReportConvention report = new CloverReportConvention()
 
     def clover(Closure closure) {

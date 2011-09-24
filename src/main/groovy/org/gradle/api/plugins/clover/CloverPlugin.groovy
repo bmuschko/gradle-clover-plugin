@@ -20,8 +20,11 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.internal.AsmBackedClassGenerator
+import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.testing.Test
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * <p>A {@link org.gradle.api.Plugin} that provides a task for creating a code coverage report using Clover.</p>
@@ -29,7 +32,10 @@ import org.gradle.api.tasks.testing.Test
  * @author Benjamin Muschko
  */
 class CloverPlugin implements Plugin<Project> {
+    private static final Logger log = LoggerFactory.getLogger(CloverPlugin)
     static final String GENERATE_REPORT_TASK_NAME = 'cloverGenerateReport'
+    static final String JAVA_INCLUDES = '**/*.java'
+    static final String GROOVY_INCLUDES = '**/*.groovy'
 
     @Override
     void apply(Project project) {
@@ -48,11 +54,11 @@ class CloverPlugin implements Plugin<Project> {
         Constructor<InstrumentCodeAction> constructor = instrumentClass.getConstructor()
 
         InstrumentCodeAction instrument = constructor.newInstance()
+        instrument.conventionMapping.map('compileGroovy') {
+            hasGroovyPlugin(project)
+        }
         instrument.conventionMapping.map('classpath') {
             project.configurations.testRuntime.asFileTree
-        }
-        instrument.conventionMapping.map('instrSrcDir') {
-            getInstrumentationSourceDirectory(project, cloverPluginConvention)
         }
         instrument.conventionMapping.map('classesBackupDir') {
             getClassesBackupDirectory(project, cloverPluginConvention)
@@ -64,13 +70,19 @@ class CloverPlugin implements Plugin<Project> {
             project.sourceSets.main.classesDir
         }
         instrument.conventionMapping.map('srcDirs') {
-            project.sourceSets.main.java.srcDirs
+            getSourceDirectories(project)
         }
         instrument.conventionMapping.map('sourceCompatibility') {
-            project.sourceCompatibility.toString()
+            project.sourceCompatibility?.toString()
         }
         instrument.conventionMapping.map('targetCompatibility') {
-            project.targetCompatibility.toString()
+            project.targetCompatibility?.toString()
+        }
+        instrument.conventionMapping.map('includes') {
+            getIncludes(project, cloverPluginConvention)
+        }
+        instrument.conventionMapping.map('excludes') {
+            cloverPluginConvention.excludes
         }
 
         project.gradle.taskGraph.whenReady { TaskExecutionGraph graph ->
@@ -95,6 +107,7 @@ class CloverPlugin implements Plugin<Project> {
             generateCoverageReportTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('targetPercentage') { cloverPluginConvention.targetPercentage }
             generateCoverageReportTask.conventionMapping.map('xml') { cloverPluginConvention.report.xml }
+            generateCoverageReportTask.conventionMapping.map('json') { cloverPluginConvention.report.json }
             generateCoverageReportTask.conventionMapping.map('html') { cloverPluginConvention.report.html }
             generateCoverageReportTask.conventionMapping.map('pdf') { cloverPluginConvention.report.pdf }
         }
@@ -104,15 +117,73 @@ class CloverPlugin implements Plugin<Project> {
         generateCoverageReportTask.group = 'report'
     }
 
-    private File getInstrumentationSourceDirectory(Project project, CloverPluginConvention cloverPluginConvention) {
-        cloverPluginConvention.instrSrcDir ?: new File(project.buildDir, 'instrSrc')
-    }
-
     private File getClassesBackupDirectory(Project project, CloverPluginConvention cloverPluginConvention) {
         cloverPluginConvention.classesBackupDir ?: new File("${project.sourceSets.main.classesDir}-bak")
     }
 
     private File getLicenseFile(Project project, CloverPluginConvention cloverPluginConvention) {
         cloverPluginConvention.licenseFile ?: new File(project.rootDir, 'clover.license')
+    }
+
+    /**
+     * Gets source directories. If the Groovy plugin was applied we only its source directories in addition to the
+     * Java plugin source directories. We only add directories that actually exist.
+     *
+     * @param project Project
+     * @return Source directories
+     */
+    private Set<File> getSourceDirectories(Project project) {
+        def srcDirs = [] as Set<File>
+
+        if(hasGroovyPlugin(project)) {
+            addExistingSourceDirectories(srcDirs, project.sourceSets.main.java.srcDirs)
+            addExistingSourceDirectories(srcDirs, project.sourceSets.main.groovy.srcDirs)
+        }
+        else {
+            addExistingSourceDirectories(srcDirs, project.sourceSets.main.java.srcDirs)
+        }
+
+        srcDirs
+    }
+
+    /**
+     * Adds source directories to target Set only if they actually exist.
+     *
+     * @param target Target
+     * @param source Source
+     */
+    private void addExistingSourceDirectories(Set<File> target, Set<File> source) {
+        source.each {
+            if(it.exists()) {
+                target << it
+            }
+            else {
+                log.warn "The specified source directory '$it.canonicalPath' does not exist. It won't be included in Clover instrumentation."
+            }
+        }
+    }
+
+    /**
+     * Gets includes for compilation. Uses includes if set as convention property. Otherwise, use default includes. The
+     * default includes are determined by the fact if Groovy plugin was applied to project or not.
+     *
+     * @param project Project
+     * @param cloverPluginConvention Clover plugin convention
+     * @return Includes
+     */
+    private List getIncludes(Project project, CloverPluginConvention cloverPluginConvention) {
+        if(cloverPluginConvention.includes) {
+            return cloverPluginConvention.includes
+        }
+
+        if(hasGroovyPlugin(project)) {
+            return [JAVA_INCLUDES, GROOVY_INCLUDES]
+        }
+
+        [JAVA_INCLUDES]
+    }
+
+    private boolean hasGroovyPlugin(Project project) {
+        project.plugins.hasPlugin(GroovyPlugin)
     }
 }

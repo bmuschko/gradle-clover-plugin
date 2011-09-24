@@ -17,9 +17,12 @@ package org.gradle.api.plugins.clover
 
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.ConventionTask
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.gradle.api.tasks.*
 
 /**
  * Task for generating Clover code coverage report.
@@ -34,6 +37,7 @@ class GenerateCoverageReportTask extends ConventionTask {
     FileCollection classpath
     @InputFile File licenseFile
     Boolean xml
+    Boolean json
     Boolean html
     Boolean pdf
     String targetPercentage
@@ -52,6 +56,14 @@ class GenerateCoverageReportTask extends ConventionTask {
             if(getXml()) {
                 ant."clover-report" {
                     current(outfile: "${getReportsDir()}/clover/clover.xml")
+                }
+            }
+
+            if(getJson()) {
+                ant."clover-report" {
+                    current(outfile: "${getReportsDir()}/clover/json") {
+                        format(type: 'json')
+                    }
                 }
             }
 

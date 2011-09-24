@@ -22,6 +22,7 @@ package org.gradle.api.plugins.clover
  */
 class CloverReportConvention {
     Boolean xml = true
+    Boolean json = false
     Boolean html = false
     Boolean pdf = false
 }
