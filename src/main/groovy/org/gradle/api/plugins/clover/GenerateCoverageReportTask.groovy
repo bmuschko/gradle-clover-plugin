@@ -52,27 +52,28 @@ class GenerateCoverageReportTask extends ConventionTask {
             ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
             ant.delete(file: getClassesDir().canonicalPath)
             ant.move(file: getClassesBackupDir().canonicalPath, tofile: getClassesDir().canonicalPath)
+            String cloverReportDir = "${getReportsDir()}/clover"
 
             if(getXml()) {
                 ant."clover-report" {
-                    current(outfile: "${getReportsDir()}/clover/clover.xml")
+                    current(outfile: "$cloverReportDir/clover.xml")
                 }
             }
 
             if(getJson()) {
                 ant."clover-report" {
-                    current(outfile: "${getReportsDir()}/clover/json") {
+                    current(outfile: "$cloverReportDir/json") {
                         format(type: 'json')
                     }
                 }
             }
 
             if(getHtml()) {
-                ant."clover-html-report"(outdir: "${getReportsDir()}/clover/html")
+                ant."clover-html-report"(outdir: "$cloverReportDir/html")
             }
 
             if(getPdf()) {
-                ant."clover-pdf-report"(outfile: "${getReportsDir()}/clover/clover.pdf")
+                ant."clover-pdf-report"(outfile: "$cloverReportDir/clover.pdf")
             }
 
             if(getTargetPercentage()) {
