@@ -115,16 +115,4 @@ class InstrumentCodeAction implements Action<Task> {
             LOGGER.info 'Finished instrumenting code using Clover.'
         }
     }
-
-    /**
-     * Compiles Java sources.
-     */
-    private void compileJava(AntBuilder ant) {
-        ant.javac(destdir: getClassesDir().canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
-                  includeAntRuntime: false, classpath: getClasspath().asPath) {
-            getSrcDirs().each { srcDir ->
-                src(path: srcDir)
-            }
-        }
-    }
 }
