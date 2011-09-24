@@ -54,6 +54,9 @@ Within `clover` you can define which report types should be generated in a closu
 * `json`: Generates JSON report (defaults to `false`).
 * `html`: Generates HTML report (defaults to `false`).
 * `pdf`: Generates PDF report (defaults to `false`).
+* `filter`: A comma or space separated list of contexts to exclude when generating coverage reports.
+See [Using Coverage Contexts](http://confluence.atlassian.com/display/CLOVER/Using+Coverage+Contexts). By default no filter
+is applied.
 
 The Clover plugin defines the following convention properties in the `clover` closure:
 
@@ -68,5 +71,6 @@ The Clover plugin defines the following convention properties in the `clover` cl
         report {
             html = true
             pdf = true
+            filter = 'if,else'
         }
     }

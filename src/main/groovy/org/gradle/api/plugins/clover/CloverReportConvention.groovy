@@ -25,4 +25,5 @@ class CloverReportConvention {
     Boolean json = false
     Boolean html = false
     Boolean pdf = false
+    String filter
 }
