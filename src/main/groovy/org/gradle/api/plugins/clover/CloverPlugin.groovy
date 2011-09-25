@@ -20,6 +20,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.internal.AsmBackedClassGenerator
+import org.gradle.api.internal.ConventionTask
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.testing.Test
@@ -92,16 +93,11 @@ class CloverPlugin implements Plugin<Project> {
             generateCoverageReportTask.conventionMapping.map('buildDir') { project.buildDir }
             generateCoverageReportTask.conventionMapping.map('classesDir') { project.sourceSets.main.classesDir }
             generateCoverageReportTask.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
-            generateCoverageReportTask.conventionMapping.map('reportsDir') { project.reportsDir }
             generateCoverageReportTask.conventionMapping.map('testRuntimeClasspath') { project.configurations.testRuntime.asFileTree }
             generateCoverageReportTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('targetPercentage') { cloverPluginConvention.targetPercentage }
-            generateCoverageReportTask.conventionMapping.map('xml') { cloverPluginConvention.report.xml }
-            generateCoverageReportTask.conventionMapping.map('json') { cloverPluginConvention.report.json }
-            generateCoverageReportTask.conventionMapping.map('html') { cloverPluginConvention.report.html }
-            generateCoverageReportTask.conventionMapping.map('pdf') { cloverPluginConvention.report.pdf }
             generateCoverageReportTask.conventionMapping.map('filter') { cloverPluginConvention.report.filter }
-            generateCoverageReportTask.conventionMapping.map('projectName') { project.name }
+            setCloverReportConventionMappings(project, cloverPluginConvention, generateCoverageReportTask)
         }
 
         GenerateCoverageReportTask generateCoverageReportTask = project.tasks.add(GENERATE_REPORT_TASK_NAME, GenerateCoverageReportTask)
@@ -117,14 +113,9 @@ class CloverPlugin implements Plugin<Project> {
                 project.subprojects.first().configurations.testRuntime.asFileTree
             }
             aggregateReportsTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
-            aggregateReportsTask.conventionMapping.map('rootDir') { project.rootProject.buildDir }
+            aggregateReportsTask.conventionMapping.map('buildDir') { project.buildDir }
             aggregateReportsTask.conventionMapping.map('subprojectBuildDirs') { project.subprojects.collect { it.buildDir } }
-            aggregateReportsTask.conventionMapping.map('reportsDir') { project.rootProject.reportsDir }
-            aggregateReportsTask.conventionMapping.map('xml') { cloverPluginConvention.report.xml }
-            aggregateReportsTask.conventionMapping.map('json') { cloverPluginConvention.report.json }
-            aggregateReportsTask.conventionMapping.map('html') { cloverPluginConvention.report.html }
-            aggregateReportsTask.conventionMapping.map('pdf') { cloverPluginConvention.report.pdf }
-            aggregateReportsTask.conventionMapping.map('projectName') { project.name }
+            setCloverReportConventionMappings(project, cloverPluginConvention, aggregateReportsTask)
         }
 
         project.afterEvaluate {
@@ -135,6 +126,22 @@ class CloverPlugin implements Plugin<Project> {
                 aggregateReportsTask.group = REPORT_GROUP
             }
         }
+    }
+
+    /**
+     * Sets Clover report convention mappings.
+     *
+     * @param project Project
+     * @param cloverPluginConvention Clover plugin convention
+     * @param task Task
+     */
+    private void setCloverReportConventionMappings(Project project, CloverPluginConvention cloverPluginConvention, ConventionTask task) {
+        task.conventionMapping.map('reportsDir') { project.reportsDir }
+        task.conventionMapping.map('xml') { cloverPluginConvention.report.xml }
+        task.conventionMapping.map('json') { cloverPluginConvention.report.json }
+        task.conventionMapping.map('html') { cloverPluginConvention.report.html }
+        task.conventionMapping.map('pdf') { cloverPluginConvention.report.pdf }
+        task.conventionMapping.map('projectName') { project.name }
     }
 
     /**

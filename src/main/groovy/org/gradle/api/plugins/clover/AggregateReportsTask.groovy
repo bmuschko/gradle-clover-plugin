@@ -32,7 +32,7 @@ class AggregateReportsTask extends CloverReportTask {
     String initString
     FileCollection testRuntimeClasspath
     @InputFile File licenseFile
-    @InputDirectory File rootDir
+    @InputDirectory File buildDir
     List<File> subprojectBuildDirs
 
     @TaskAction
@@ -47,7 +47,7 @@ class AggregateReportsTask extends CloverReportTask {
         ant.taskdef(resource: 'cloverlib.xml', classpath: getTestRuntimeClasspath().asPath)
         ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
 
-        ant.'clover-merge'(initString: "${getRootDir().canonicalPath}/${getInitString()}") {
+        ant.'clover-merge'(initString: "${getBuildDir().canonicalPath}/${getInitString()}") {
             getSubprojectBuildDirs().each { subprojectBuildDir ->
                 File cloverDb = new File("$subprojectBuildDir.canonicalPath/${getInitString()}")
 
@@ -73,7 +73,7 @@ class AggregateReportsTask extends CloverReportTask {
         }
 
         if(getPdf()) {
-            ant."clover-pdf-report"(initString: "${getRootDir().canonicalPath}/${getInitString()}",
+            ant."clover-pdf-report"(initString: "${getBuildDir().canonicalPath}/${getInitString()}",
                                     outfile: "$cloverReportDir/clover.pdf", title: getProjectName())
         }
 
@@ -81,7 +81,7 @@ class AggregateReportsTask extends CloverReportTask {
     }
 
     private void writeReport(String outfile, String type) {
-        ant."clover-report"(initString: "${getRootDir().canonicalPath}/${getInitString()}") {
+        ant."clover-report"(initString: "${getBuildDir().canonicalPath}/${getInitString()}") {
             current(outfile: outfile, title: getProjectName()) {
                 format(type: type)
             }
