@@ -2,7 +2,7 @@ apply plugin: 'groovy'
 apply plugin: 'idea'
 apply plugin: 'clover'
 
-version = '0.1'
+version = '0.2'
 
 buildscript {
     repositories {
@@ -13,7 +13,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'bmuschko:gradle-clover-plugin:0.1'
+        classpath 'bmuschko:gradle-clover-plugin:0.2'
     }
 }
 
