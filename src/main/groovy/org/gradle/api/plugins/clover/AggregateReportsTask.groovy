@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
  *
  * @author Benjamin Muschko
  */
-class AggregateReportsTask extends ReportTask {
+class AggregateReportsTask extends CloverReportTask {
     private static final Logger LOGGER = LoggerFactory.getLogger(AggregateReportsTask)
     String initString
     FileCollection classpath
@@ -37,43 +37,46 @@ class AggregateReportsTask extends ReportTask {
 
     @TaskAction
     void start() {
-        if(isAtLeastOneReportTypeSelected()) {
-            LOGGER.info 'Starting to aggregate Clover code coverage reports.'
+        validateConfiguration()
+        aggregateReports()
+    }
 
-            ant.taskdef(resource: 'cloverlib.xml', classpath: getClasspath().asPath)
-            ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
+    private void aggregateReports() {
+        LOGGER.info 'Starting to aggregate Clover code coverage reports.'
 
-            ant.'clover-merge'(initString: "${getRootDir().canonicalPath}/${getInitString()}") {
-                getSubprojectBuildDirs().each { subprojectBuildDir ->
-                    File cloverDb = new File("$subprojectBuildDir.canonicalPath/${getInitString()}")
+        ant.taskdef(resource: 'cloverlib.xml', classpath: getClasspath().asPath)
+        ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
 
-                    if(cloverDb.exists()) {
-                        ant.cloverDb(initString: cloverDb.canonicalPath)
-                    }
+        ant.'clover-merge'(initString: "${getRootDir().canonicalPath}/${getInitString()}") {
+            getSubprojectBuildDirs().each { subprojectBuildDir ->
+                File cloverDb = new File("$subprojectBuildDir.canonicalPath/${getInitString()}")
+
+                if(cloverDb.exists()) {
+                    ant.cloverDb(initString: cloverDb.canonicalPath)
                 }
             }
-
-            String cloverReportDir = "${getReportsDir()}/clover"
-
-            if(getXml()) {
-                writeReport("$cloverReportDir/clover.xml", 'xml')
-            }
-
-            if(getJson()) {
-                writeReport("$cloverReportDir/json", 'json')
-            }
-
-            if(getHtml()) {
-                writeReport("$cloverReportDir/html", 'html')
-            }
-
-            if(getPdf()) {
-                ant."clover-pdf-report"(initString: "${getRootDir().canonicalPath}/${getInitString()}",
-                                        outfile: "$cloverReportDir/clover.pdf", title: getProjectName())
-            }
-
-            LOGGER.info 'Finished aggregating Clover code coverage reports.'
         }
+
+        String cloverReportDir = "${getReportsDir()}/clover"
+
+        if(getXml()) {
+            writeReport("$cloverReportDir/clover.xml", ReportType.XML.format)
+        }
+
+        if(getJson()) {
+            writeReport("$cloverReportDir/json", ReportType.JSON.format)
+        }
+
+        if(getHtml()) {
+            writeReport("$cloverReportDir/html", ReportType.HTML.format)
+        }
+
+        if(getPdf()) {
+            ant."clover-pdf-report"(initString: "${getRootDir().canonicalPath}/${getInitString()}",
+                                    outfile: "$cloverReportDir/clover.pdf", title: getProjectName())
+        }
+
+        LOGGER.info 'Finished aggregating Clover code coverage reports.'
     }
 
     private void writeReport(String outfile, String type) {

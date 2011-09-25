@@ -89,27 +89,7 @@ class InstrumentCodeAction implements Action<Task> {
 
             // Compile instrumented classes
             getClassesDir().mkdirs()
-
-            if(getCompileGroovy()) {
-                def groovycClasspath = getGroovyClasspath().asPath + System.getProperty('path.separator') + getClasspath().asPath
-                ant.taskdef(name: 'groovyc', classname: 'org.codehaus.groovy.ant.Groovyc', classpath: getGroovyClasspath().asPath)
-
-                ant.groovyc(destdir: getClassesDir().canonicalPath, includeAntRuntime: false, fork: true, classpath: groovycClasspath) {
-                    getSrcDirs().each { srcDir ->
-                        src(path: srcDir)
-                    }
-
-                    ant.javac(source: getSourceCompatibility(), target: getTargetCompatibility())
-                }
-            }
-            else {
-                ant.javac(destdir: getClassesDir().canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
-                          includeAntRuntime: false, classpath: getClasspath().asPath) {
-                    getSrcDirs().each { srcDir ->
-                        src(path: srcDir)
-                    }
-                }
-            }
+            compileClasses(ant)
 
             // Copy resources
             ant.copy(todir: getClassesDir().canonicalPath) {
@@ -117,6 +97,35 @@ class InstrumentCodeAction implements Action<Task> {
             }
 
             LOGGER.info 'Finished instrumenting code using Clover.'
+        }
+    }
+
+    /**
+     * Compiles Java and Groovy classes.
+     *
+     * @param ant Ant Builder
+     */
+    private void compileClasses(AntBuilder ant) {
+        if(getCompileGroovy()) {
+            // Make sure the Groovy version define in project is used on classpath to avoid using the default Gradle version
+            def groovycClasspath = getGroovyClasspath().asPath + System.getProperty('path.separator') + getClasspath().asPath
+            ant.taskdef(name: 'groovyc', classname: 'org.codehaus.groovy.ant.Groovyc', classpath: getGroovyClasspath().asPath)
+
+            ant.groovyc(destdir: getClassesDir().canonicalPath, includeAntRuntime: false, fork: true, classpath: groovycClasspath) {
+                getSrcDirs().each { srcDir ->
+                    src(path: srcDir)
+                }
+
+                ant.javac(source: getSourceCompatibility(), target: getTargetCompatibility())
+            }
+        }
+        else {
+            ant.javac(destdir: getClassesDir().canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
+                      includeAntRuntime: false, classpath: getClasspath().asPath) {
+                getSrcDirs().each { srcDir ->
+                    src(path: srcDir)
+                }
+            }
         }
     }
 }
