@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory
 class AggregateReportsTask extends CloverReportTask {
     private static final Logger LOGGER = LoggerFactory.getLogger(AggregateReportsTask)
     String initString
-    FileCollection classpath
+    FileCollection testRuntimeClasspath
     @InputFile File licenseFile
     @InputDirectory File rootDir
     List<File> subprojectBuildDirs
@@ -44,13 +44,14 @@ class AggregateReportsTask extends CloverReportTask {
     private void aggregateReports() {
         LOGGER.info 'Starting to aggregate Clover code coverage reports.'
 
-        ant.taskdef(resource: 'cloverlib.xml', classpath: getClasspath().asPath)
+        ant.taskdef(resource: 'cloverlib.xml', classpath: getTestRuntimeClasspath().asPath)
         ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
 
         ant.'clover-merge'(initString: "${getRootDir().canonicalPath}/${getInitString()}") {
             getSubprojectBuildDirs().each { subprojectBuildDir ->
                 File cloverDb = new File("$subprojectBuildDir.canonicalPath/${getInitString()}")
 
+                // Some subproject might not have any tests
                 if(cloverDb.exists()) {
                     ant.cloverDb(initString: cloverDb.canonicalPath)
                 }

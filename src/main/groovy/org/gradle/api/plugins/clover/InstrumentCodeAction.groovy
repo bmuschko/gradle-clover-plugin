@@ -33,7 +33,7 @@ class InstrumentCodeAction implements Action<Task> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InstrumentCodeAction)
     String initString
     Boolean compileGroovy
-    FileCollection classpath
+    FileCollection testRuntimeClasspath
     FileCollection groovyClasspath
     @OutputDirectory File classesBackupDir
     @InputFile File licenseFile
@@ -57,7 +57,7 @@ class InstrumentCodeAction implements Action<Task> {
             LOGGER.info 'Starting to instrument code using Clover.'
 
             def ant = new AntBuilder()
-            ant.taskdef(resource: 'cloverlib.xml', classpath: getClasspath().asPath)
+            ant.taskdef(resource: 'cloverlib.xml', classpath: getTestRuntimeClasspath().asPath)
             ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
             ant."clover-clean"()
 
@@ -108,7 +108,7 @@ class InstrumentCodeAction implements Action<Task> {
     private void compileClasses(AntBuilder ant) {
         if(getCompileGroovy()) {
             // Make sure the Groovy version define in project is used on classpath to avoid using the default Gradle version
-            def groovycClasspath = getGroovyClasspath().asPath + System.getProperty('path.separator') + getClasspath().asPath
+            def groovycClasspath = getGroovyClasspath().asPath + System.getProperty('path.separator') + getTestRuntimeClasspath().asPath
             ant.taskdef(name: 'groovyc', classname: 'org.codehaus.groovy.ant.Groovyc', classpath: getGroovyClasspath().asPath)
 
             ant.groovyc(destdir: getClassesDir().canonicalPath, includeAntRuntime: false, fork: true, classpath: groovycClasspath) {
@@ -121,7 +121,7 @@ class InstrumentCodeAction implements Action<Task> {
         }
         else {
             ant.javac(destdir: getClassesDir().canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
-                      includeAntRuntime: false, classpath: getClasspath().asPath) {
+                      includeAntRuntime: false, classpath: getTestRuntimeClasspath().asPath) {
                 getSrcDirs().each { srcDir ->
                     src(path: srcDir)
                 }

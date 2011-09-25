@@ -56,22 +56,22 @@ class CloverPlugin implements Plugin<Project> {
         Class<? extends InstrumentCodeAction> instrumentClass = generator.generate(InstrumentCodeAction)
         Constructor<InstrumentCodeAction> constructor = instrumentClass.getConstructor()
 
-        InstrumentCodeAction instrument = constructor.newInstance()
-        instrument.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
-        instrument.conventionMapping.map('compileGroovy') { hasGroovyPlugin(project) }
-        instrument.conventionMapping.map('classpath') { project.configurations.testRuntime.asFileTree }
-        instrument.conventionMapping.map('groovyClasspath') { project.configurations.groovy.asFileTree }
-        instrument.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
-        instrument.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
-        instrument.conventionMapping.map('buildDir') { project.buildDir }
-        instrument.conventionMapping.map('classesDir') { project.sourceSets.main.classesDir }
-        instrument.conventionMapping.map('srcDirs') { getSourceDirectories(project) }
-        instrument.conventionMapping.map('sourceCompatibility') { project.sourceCompatibility?.toString() }
-        instrument.conventionMapping.map('targetCompatibility') { project.targetCompatibility?.toString() }
-        instrument.conventionMapping.map('includes') { getIncludes(project, cloverPluginConvention) }
-        instrument.conventionMapping.map('excludes') { cloverPluginConvention.excludes }
-        instrument.conventionMapping.map('statementContexts') { cloverPluginConvention.contexts.statements }
-        instrument.conventionMapping.map('methodContexts') { cloverPluginConvention.contexts.methods }
+        InstrumentCodeAction instrumentCodeAction = constructor.newInstance()
+        instrumentCodeAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
+        instrumentCodeAction.conventionMapping.map('compileGroovy') { hasGroovyPlugin(project) }
+        instrumentCodeAction.conventionMapping.map('testRuntimeClasspath') { project.configurations.testRuntime.asFileTree }
+        instrumentCodeAction.conventionMapping.map('groovyClasspath') { project.configurations.groovy.asFileTree }
+        instrumentCodeAction.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
+        instrumentCodeAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
+        instrumentCodeAction.conventionMapping.map('buildDir') { project.buildDir }
+        instrumentCodeAction.conventionMapping.map('classesDir') { project.sourceSets.main.classesDir }
+        instrumentCodeAction.conventionMapping.map('srcDirs') { getSourceDirectories(project) }
+        instrumentCodeAction.conventionMapping.map('sourceCompatibility') { project.sourceCompatibility?.toString() }
+        instrumentCodeAction.conventionMapping.map('targetCompatibility') { project.targetCompatibility?.toString() }
+        instrumentCodeAction.conventionMapping.map('includes') { getIncludes(project, cloverPluginConvention) }
+        instrumentCodeAction.conventionMapping.map('excludes') { cloverPluginConvention.excludes }
+        instrumentCodeAction.conventionMapping.map('statementContexts') { cloverPluginConvention.contexts.statements }
+        instrumentCodeAction.conventionMapping.map('methodContexts') { cloverPluginConvention.contexts.methods }
 
         project.gradle.taskGraph.whenReady { TaskExecutionGraph graph ->
             def generateReportTask = project.tasks.getByName(GENERATE_REPORT_TASK_NAME)
@@ -79,7 +79,7 @@ class CloverPlugin implements Plugin<Project> {
             // Only invoke instrumentation when Clover report generation task is run
             if(graph.hasTask(generateReportTask)) {
                 project.tasks.withType(Test).each { Test test ->
-                    test.doFirst instrument
+                    test.doFirst instrumentCodeAction
                 }
             }
         }
@@ -93,7 +93,7 @@ class CloverPlugin implements Plugin<Project> {
             generateCoverageReportTask.conventionMapping.map('classesDir') { project.sourceSets.main.classesDir }
             generateCoverageReportTask.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('reportsDir') { project.reportsDir }
-            generateCoverageReportTask.conventionMapping.map('classpath') { project.configurations.testRuntime.asFileTree }
+            generateCoverageReportTask.conventionMapping.map('testRuntimeClasspath') { project.configurations.testRuntime.asFileTree }
             generateCoverageReportTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('targetPercentage') { cloverPluginConvention.targetPercentage }
             generateCoverageReportTask.conventionMapping.map('xml') { cloverPluginConvention.report.xml }
@@ -112,7 +112,7 @@ class CloverPlugin implements Plugin<Project> {
     private void configureAggregateReportsTask(Project project, CloverPluginConvention cloverPluginConvention) {
         project.tasks.withType(AggregateReportsTask).whenTaskAdded { AggregateReportsTask aggregateReportsTask ->
             aggregateReportsTask.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
-            aggregateReportsTask.conventionMapping.map('classpath') {
+            aggregateReportsTask.conventionMapping.map('testRuntimeClasspath') {
                 // @todo: Not cool. Needs Clover configuration.
                 project.subprojects.first().configurations.testRuntime.asFileTree
             }
