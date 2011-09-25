@@ -23,30 +23,36 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
- * Task for generating Clover code coverage report.
+ * Task for aggregrating Clover code coverage reports.
  *
  * @author Benjamin Muschko
  */
-class GenerateCoverageReportTask extends ReportTask {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GenerateCoverageReportTask)
-    @InputDirectory File buildDir
-    File classesDir
-    File classesBackupDir
+class AggregateReportsTask extends ReportTask {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AggregateReportsTask)
     FileCollection classpath
     @InputFile File licenseFile
-    String filter
-    String targetPercentage
+    @InputDirectory File rootDir
+    List<File> subprojectBuildDirs
 
     @TaskAction
     void start() {
-        if(isCloverDatabaseExistant() && getClassesDir().exists() && getClassesBackupDir().exists() && isAtLeastOneReportTypeSelected()) {
-            LOGGER.info 'Starting to generate Clover code coverage report.'
+        if(isAtLeastOneReportTypeSelected()) {
+            LOGGER.info 'Starting to aggregate Clover code coverage reports.'
 
-            // Restore original classes
             ant.taskdef(resource: 'cloverlib.xml', classpath: getClasspath().asPath)
             ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
-            ant.delete(file: getClassesDir().canonicalPath)
-            ant.move(file: getClassesBackupDir().canonicalPath, tofile: getClassesDir().canonicalPath)
+
+            ant.'clover-merge'(initString: "${getRootDir().canonicalPath}/.clover/clover.db") {
+                getSubprojectBuildDirs().each { subprojectBuildDir ->
+                    File cloverDb = new File("$subprojectBuildDir.canonicalPath/.clover/clover.db")
+                    println "cloverDb: $cloverDb.canonicalPath"
+
+                    if(cloverDb.exists()) {
+                        ant.cloverDb(initString: cloverDb.canonicalPath)
+                    }
+                }
+            }
+
             String cloverReportDir = "${getReportsDir()}/clover"
 
             if(getXml()) {
@@ -62,27 +68,18 @@ class GenerateCoverageReportTask extends ReportTask {
             }
 
             if(getPdf()) {
-                ant."clover-pdf-report"(initString: "${getBuildDir()}/.clover/clover.db", outfile: "$cloverReportDir/clover.pdf",
-                                        title: getProjectName())
+                ant."clover-pdf-report"(initString: "${getRootDir().canonicalPath}/.clover/clover.db",
+                                        outfile: "$cloverReportDir/clover.pdf", title: getProjectName())
             }
 
-            LOGGER.info 'Finished generating Clover code coverage report.'
+            LOGGER.info 'Finished aggregating Clover code coverage reports.'
         }
     }
 
-    private boolean isCloverDatabaseExistant() {
-        new File("${getBuildDir()}/.clover/clover.db").exists()
-    }
-
     private void writeReport(String outfile, String type) {
-        ant."clover-report"(initString: "${getBuildDir()}/.clover/clover.db") {
+        ant."clover-report"(initString: "${getRootDir().canonicalPath}/.clover/clover.db") {
             current(outfile: outfile, title: getProjectName()) {
-                if(getFilter()) {
-                    format(type: type, filter: getFilter())
-                }
-                else {
-                    format(type: type)
-                }
+                format(type: type)
             }
         }
     }

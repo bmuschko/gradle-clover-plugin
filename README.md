@@ -36,6 +36,8 @@ configuration name in your `dependencies` closure.
 The Clover plugin defines the following tasks:
 
 * `cloverGenerateReport`: Generates Clover code coverage report.
+* `cloverAggregateReports`: Aggregate Clover code coverage reports in a multi-module project setup. This task can only be
+run from the root directory of your project and requires at least one submodule.
 
 ## Convention properties
 

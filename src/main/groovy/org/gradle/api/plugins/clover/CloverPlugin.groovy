@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory
 class CloverPlugin implements Plugin<Project> {
     private static final Logger log = LoggerFactory.getLogger(CloverPlugin)
     static final String GENERATE_REPORT_TASK_NAME = 'cloverGenerateReport'
+    static final String AGGREGATE_REPORTS_TASK_NAME = 'cloverAggregateReports'
     static final String JAVA_INCLUDES = '**/*.java'
     static final String GROOVY_INCLUDES = '**/*.groovy'
 
@@ -44,11 +45,12 @@ class CloverPlugin implements Plugin<Project> {
         CloverPluginConvention cloverPluginConvention = new CloverPluginConvention()
         project.convention.plugins.clover = cloverPluginConvention
 
+        configureInstrumentationAction(project, cloverPluginConvention)
         configureGenerateCoverageReportTask(project, cloverPluginConvention)
-        configureTestTask(project, cloverPluginConvention)
+        configureAggregateReportsTask(project, cloverPluginConvention)
     }
 
-    private void configureTestTask(Project project, CloverPluginConvention cloverPluginConvention) {
+    private void configureInstrumentationAction(Project project, CloverPluginConvention cloverPluginConvention) {
         AsmBackedClassGenerator generator = new AsmBackedClassGenerator()
         Class<? extends InstrumentCodeAction> instrumentClass = generator.generate(InstrumentCodeAction)
         Constructor<InstrumentCodeAction> constructor = instrumentClass.getConstructor()
@@ -60,11 +62,17 @@ class CloverPlugin implements Plugin<Project> {
         instrument.conventionMapping.map('classpath') {
             project.configurations.testRuntime.asFileTree
         }
+        instrument.conventionMapping.map('groovyClasspath') {
+            project.configurations.groovy.asFileTree
+        }
         instrument.conventionMapping.map('classesBackupDir') {
             getClassesBackupDirectory(project, cloverPluginConvention)
         }
         instrument.conventionMapping.map('licenseFile') {
             getLicenseFile(project, cloverPluginConvention)
+        }
+        instrument.conventionMapping.map('buildDir') {
+            project.buildDir
         }
         instrument.conventionMapping.map('classesDir') {
             project.sourceSets.main.classesDir
@@ -106,6 +114,7 @@ class CloverPlugin implements Plugin<Project> {
     private void configureGenerateCoverageReportTask(Project project, CloverPluginConvention cloverPluginConvention) {
         project.tasks.withType(GenerateCoverageReportTask).whenTaskAdded { GenerateCoverageReportTask generateCoverageReportTask ->
             generateCoverageReportTask.dependsOn project.tasks.withType(Test)
+            generateCoverageReportTask.conventionMapping.map('buildDir') { project.buildDir }
             generateCoverageReportTask.conventionMapping.map('classesDir') { project.sourceSets.main.classesDir }
             generateCoverageReportTask.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('reportsDir') { project.reportsDir }
@@ -123,6 +132,32 @@ class CloverPlugin implements Plugin<Project> {
         GenerateCoverageReportTask generateCoverageReportTask = project.tasks.add(GENERATE_REPORT_TASK_NAME, GenerateCoverageReportTask)
         generateCoverageReportTask.description = 'Generates Clover code coverage report.'
         generateCoverageReportTask.group = 'report'
+    }
+
+    private void configureAggregateReportsTask(Project project, CloverPluginConvention cloverPluginConvention) {
+        project.tasks.withType(AggregateReportsTask).whenTaskAdded { AggregateReportsTask aggregateReportsTask ->
+            aggregateReportsTask.conventionMapping.map('classpath') {
+                // @todo: Not cool. Needs Clover configuration.
+                project.subprojects.first().configurations.testRuntime.asFileTree
+            }
+            aggregateReportsTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
+            aggregateReportsTask.conventionMapping.map('rootDir') { project.rootProject.reportsDir }
+            aggregateReportsTask.conventionMapping.map('subprojectBuildDirs') { project.subprojects.collect { it.buildDir } }
+            aggregateReportsTask.conventionMapping.map('reportsDir') { project.rootProject.reportsDir }
+            aggregateReportsTask.conventionMapping.map('xml') { cloverPluginConvention.report.xml }
+            aggregateReportsTask.conventionMapping.map('json') { cloverPluginConvention.report.json }
+            aggregateReportsTask.conventionMapping.map('html') { cloverPluginConvention.report.html }
+            aggregateReportsTask.conventionMapping.map('pdf') { cloverPluginConvention.report.pdf }
+            aggregateReportsTask.conventionMapping.map('projectName') { project.name }
+        }
+
+        project.afterEvaluate {
+            if(project == project.rootProject && project.subprojects.size() > 0) {
+                AggregateReportsTask aggregateReportsTask = project.rootProject.tasks.add(AGGREGATE_REPORTS_TASK_NAME, AggregateReportsTask)
+                aggregateReportsTask.description = 'Aggregates Clover code coverage reports.'
+                aggregateReportsTask.group = 'report'
+            }
+        }
     }
 
     private File getClassesBackupDirectory(Project project, CloverPluginConvention cloverPluginConvention) {

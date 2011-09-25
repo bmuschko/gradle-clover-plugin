@@ -33,8 +33,10 @@ class InstrumentCodeAction implements Action<Task> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InstrumentCodeAction)
     Boolean compileGroovy
     FileCollection classpath
+    FileCollection groovyClasspath
     @OutputDirectory File classesBackupDir
     @InputFile File licenseFile
+    @InputDirectory File buildDir
     @InputDirectory File classesDir
     Set<File> srcDirs
     String sourceCompatibility
@@ -58,7 +60,7 @@ class InstrumentCodeAction implements Action<Task> {
             ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
             ant."clover-clean"()
 
-            ant.'clover-setup'() {
+            ant.'clover-setup'(initString: "${getBuildDir()}/.clover/clover.db") {
                 getSrcDirs().each { srcDir ->
                     ant.fileset(dir: srcDir) {
                         getIncludes().each { include ->
@@ -88,9 +90,10 @@ class InstrumentCodeAction implements Action<Task> {
             getClassesDir().mkdirs()
 
             if(getCompileGroovy()) {
-                ant.taskdef(name: 'groovyc', classname: 'org.codehaus.groovy.ant.Groovyc', classpath: getClasspath().asPath)
+                def groovycClasspath = getGroovyClasspath().asPath + System.getProperty('path.separator') + getClasspath().asPath
+                ant.taskdef(name: 'groovyc', classname: 'org.codehaus.groovy.ant.Groovyc', classpath: getGroovyClasspath().asPath)
 
-                ant.groovyc(destdir: getClassesDir().canonicalPath, includeAntRuntime: false, classpath: getClasspath().asPath) {
+                ant.groovyc(destdir: getClassesDir().canonicalPath, includeAntRuntime: false, fork: true, classpath: groovycClasspath) {
                     getSrcDirs().each { srcDir ->
                         src(path: srcDir)
                     }
