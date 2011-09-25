@@ -117,7 +117,7 @@ class CloverPlugin implements Plugin<Project> {
                 project.subprojects.first().configurations.testRuntime.asFileTree
             }
             aggregateReportsTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
-            aggregateReportsTask.conventionMapping.map('rootDir') { project.rootProject.reportsDir }
+            aggregateReportsTask.conventionMapping.map('rootDir') { project.rootProject.buildDir }
             aggregateReportsTask.conventionMapping.map('subprojectBuildDirs') { project.subprojects.collect { it.buildDir } }
             aggregateReportsTask.conventionMapping.map('reportsDir') { project.rootProject.reportsDir }
             aggregateReportsTask.conventionMapping.map('xml') { cloverPluginConvention.report.xml }
