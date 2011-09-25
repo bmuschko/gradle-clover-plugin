@@ -35,6 +35,7 @@ class CloverPlugin implements Plugin<Project> {
     private static final Logger log = LoggerFactory.getLogger(CloverPlugin)
     static final String GENERATE_REPORT_TASK_NAME = 'cloverGenerateReport'
     static final String AGGREGATE_REPORTS_TASK_NAME = 'cloverAggregateReports'
+    static final String REPORT_GROUP = 'report'
     static final String JAVA_INCLUDES = '**/*.java'
     static final String GROOVY_INCLUDES = '**/*.groovy'
 
@@ -56,48 +57,21 @@ class CloverPlugin implements Plugin<Project> {
         Constructor<InstrumentCodeAction> constructor = instrumentClass.getConstructor()
 
         InstrumentCodeAction instrument = constructor.newInstance()
-        instrument.conventionMapping.map('compileGroovy') {
-            hasGroovyPlugin(project)
-        }
-        instrument.conventionMapping.map('classpath') {
-            project.configurations.testRuntime.asFileTree
-        }
-        instrument.conventionMapping.map('groovyClasspath') {
-            project.configurations.groovy.asFileTree
-        }
-        instrument.conventionMapping.map('classesBackupDir') {
-            getClassesBackupDirectory(project, cloverPluginConvention)
-        }
-        instrument.conventionMapping.map('licenseFile') {
-            getLicenseFile(project, cloverPluginConvention)
-        }
-        instrument.conventionMapping.map('buildDir') {
-            project.buildDir
-        }
-        instrument.conventionMapping.map('classesDir') {
-            project.sourceSets.main.classesDir
-        }
-        instrument.conventionMapping.map('srcDirs') {
-            getSourceDirectories(project)
-        }
-        instrument.conventionMapping.map('sourceCompatibility') {
-            project.sourceCompatibility?.toString()
-        }
-        instrument.conventionMapping.map('targetCompatibility') {
-            project.targetCompatibility?.toString()
-        }
-        instrument.conventionMapping.map('includes') {
-            getIncludes(project, cloverPluginConvention)
-        }
-        instrument.conventionMapping.map('excludes') {
-            cloverPluginConvention.excludes
-        }
-        instrument.conventionMapping.map('statementContexts') {
-            cloverPluginConvention.contexts.statements
-        }
-        instrument.conventionMapping.map('methodContexts') {
-            cloverPluginConvention.contexts.methods
-        }
+        instrument.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
+        instrument.conventionMapping.map('compileGroovy') { hasGroovyPlugin(project) }
+        instrument.conventionMapping.map('classpath') { project.configurations.testRuntime.asFileTree }
+        instrument.conventionMapping.map('groovyClasspath') { project.configurations.groovy.asFileTree }
+        instrument.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
+        instrument.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
+        instrument.conventionMapping.map('buildDir') { project.buildDir }
+        instrument.conventionMapping.map('classesDir') { project.sourceSets.main.classesDir }
+        instrument.conventionMapping.map('srcDirs') { getSourceDirectories(project) }
+        instrument.conventionMapping.map('sourceCompatibility') { project.sourceCompatibility?.toString() }
+        instrument.conventionMapping.map('targetCompatibility') { project.targetCompatibility?.toString() }
+        instrument.conventionMapping.map('includes') { getIncludes(project, cloverPluginConvention) }
+        instrument.conventionMapping.map('excludes') { cloverPluginConvention.excludes }
+        instrument.conventionMapping.map('statementContexts') { cloverPluginConvention.contexts.statements }
+        instrument.conventionMapping.map('methodContexts') { cloverPluginConvention.contexts.methods }
 
         project.gradle.taskGraph.whenReady { TaskExecutionGraph graph ->
             def generateReportTask = project.tasks.getByName(GENERATE_REPORT_TASK_NAME)
@@ -114,6 +88,7 @@ class CloverPlugin implements Plugin<Project> {
     private void configureGenerateCoverageReportTask(Project project, CloverPluginConvention cloverPluginConvention) {
         project.tasks.withType(GenerateCoverageReportTask).whenTaskAdded { GenerateCoverageReportTask generateCoverageReportTask ->
             generateCoverageReportTask.dependsOn project.tasks.withType(Test)
+            generateCoverageReportTask.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('buildDir') { project.buildDir }
             generateCoverageReportTask.conventionMapping.map('classesDir') { project.sourceSets.main.classesDir }
             generateCoverageReportTask.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
@@ -131,11 +106,12 @@ class CloverPlugin implements Plugin<Project> {
 
         GenerateCoverageReportTask generateCoverageReportTask = project.tasks.add(GENERATE_REPORT_TASK_NAME, GenerateCoverageReportTask)
         generateCoverageReportTask.description = 'Generates Clover code coverage report.'
-        generateCoverageReportTask.group = 'report'
+        generateCoverageReportTask.group = REPORT_GROUP
     }
 
     private void configureAggregateReportsTask(Project project, CloverPluginConvention cloverPluginConvention) {
         project.tasks.withType(AggregateReportsTask).whenTaskAdded { AggregateReportsTask aggregateReportsTask ->
+            aggregateReportsTask.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
             aggregateReportsTask.conventionMapping.map('classpath') {
                 // @todo: Not cool. Needs Clover configuration.
                 project.subprojects.first().configurations.testRuntime.asFileTree
@@ -152,18 +128,43 @@ class CloverPlugin implements Plugin<Project> {
         }
 
         project.afterEvaluate {
+            // Only add task to root project
             if(project == project.rootProject && project.subprojects.size() > 0) {
                 AggregateReportsTask aggregateReportsTask = project.rootProject.tasks.add(AGGREGATE_REPORTS_TASK_NAME, AggregateReportsTask)
                 aggregateReportsTask.description = 'Aggregates Clover code coverage reports.'
-                aggregateReportsTask.group = 'report'
+                aggregateReportsTask.group = REPORT_GROUP
             }
         }
     }
 
+    /**
+     * Gets init String that determines location of Clover database.
+     *
+     * @param cloverPluginConvention Clover plugin convention
+     * @return Init String
+     */
+    private String getInitString(CloverPluginConvention cloverPluginConvention) {
+        cloverPluginConvention.initString ?: '.clover/clover.db'
+    }
+
+    /**
+     * Gets classes backup directory.
+     *
+     * @param project Project
+     * @param cloverPluginConvention Clover plugin convention
+     * @return Classes backup directory
+     */
     private File getClassesBackupDirectory(Project project, CloverPluginConvention cloverPluginConvention) {
         cloverPluginConvention.classesBackupDir ?: new File("${project.sourceSets.main.classesDir}-bak")
     }
 
+    /**
+     * Gets Clover license file.
+     *
+     * @param project Project
+     * @param cloverPluginConvention Clover plugin convention
+     * @return License file
+     */
     private File getLicenseFile(Project project, CloverPluginConvention cloverPluginConvention) {
         cloverPluginConvention.licenseFile ?: new File(project.rootDir, 'clover.license')
     }
@@ -226,6 +227,12 @@ class CloverPlugin implements Plugin<Project> {
         [JAVA_INCLUDES]
     }
 
+    /**
+     * Checks to see if Groovy plugin got applied to project.
+     *
+     * @param project Project
+     * @return Flag
+     */
     private boolean hasGroovyPlugin(Project project) {
         project.plugins.hasPlugin(GroovyPlugin)
     }

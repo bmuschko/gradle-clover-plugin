@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory
  */
 class AggregateReportsTask extends ReportTask {
     private static final Logger LOGGER = LoggerFactory.getLogger(AggregateReportsTask)
+    String initString
     FileCollection classpath
     @InputFile File licenseFile
     @InputDirectory File rootDir
@@ -42,10 +43,9 @@ class AggregateReportsTask extends ReportTask {
             ant.taskdef(resource: 'cloverlib.xml', classpath: getClasspath().asPath)
             ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
 
-            ant.'clover-merge'(initString: "${getRootDir().canonicalPath}/.clover/clover.db") {
+            ant.'clover-merge'(initString: "${getRootDir().canonicalPath}/${getInitString()}") {
                 getSubprojectBuildDirs().each { subprojectBuildDir ->
-                    File cloverDb = new File("$subprojectBuildDir.canonicalPath/.clover/clover.db")
-                    println "cloverDb: $cloverDb.canonicalPath"
+                    File cloverDb = new File("$subprojectBuildDir.canonicalPath/${getInitString()}")
 
                     if(cloverDb.exists()) {
                         ant.cloverDb(initString: cloverDb.canonicalPath)
@@ -68,7 +68,7 @@ class AggregateReportsTask extends ReportTask {
             }
 
             if(getPdf()) {
-                ant."clover-pdf-report"(initString: "${getRootDir().canonicalPath}/.clover/clover.db",
+                ant."clover-pdf-report"(initString: "${getRootDir().canonicalPath}/${getInitString()}",
                                         outfile: "$cloverReportDir/clover.pdf", title: getProjectName())
             }
 
@@ -77,7 +77,7 @@ class AggregateReportsTask extends ReportTask {
     }
 
     private void writeReport(String outfile, String type) {
-        ant."clover-report"(initString: "${getRootDir().canonicalPath}/.clover/clover.db") {
+        ant."clover-report"(initString: "${getRootDir().canonicalPath}/${getInitString()}") {
             current(outfile: outfile, title: getProjectName()) {
                 format(type: type)
             }

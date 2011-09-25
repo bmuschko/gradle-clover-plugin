@@ -41,6 +41,8 @@ run from the root directory of your project and requires at least one submodule.
 
 ## Convention properties
 
+* `initString`: The location to write the Clover coverage database (defaults to `.clover/clover.db`). The location you
+define will always be relative to the project's build directory.
 * `classesBackupDir`: The temporary backup directory for classes (defaults to `file("${sourceSets.main.classesDir}-bak")`).
 * `licenseFile`: The [Clover license file](http://confluence.atlassian.com/display/CLOVER/How+to+configure+your+clover.license)
 to be used (defaults to `file('clover.license')`).

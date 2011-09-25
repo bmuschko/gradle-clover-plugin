@@ -23,6 +23,7 @@ package org.gradle.api.plugins.clover
 class CloverPluginConvention {
     File classesBackupDir
     File licenseFile
+    String initString
     String targetPercentage
     List<String> includes
     List<String> excludes

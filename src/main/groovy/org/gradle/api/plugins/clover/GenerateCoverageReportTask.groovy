@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory
  */
 class GenerateCoverageReportTask extends ReportTask {
     private static final Logger LOGGER = LoggerFactory.getLogger(GenerateCoverageReportTask)
+    String initString
     @InputDirectory File buildDir
     File classesDir
     File classesBackupDir
@@ -39,7 +40,7 @@ class GenerateCoverageReportTask extends ReportTask {
 
     @TaskAction
     void start() {
-        if(isCloverDatabaseExistant() && getClassesDir().exists() && getClassesBackupDir().exists() && isAtLeastOneReportTypeSelected()) {
+        if(allowReportGeneration()) {
             LOGGER.info 'Starting to generate Clover code coverage report.'
 
             // Restore original classes
@@ -62,7 +63,7 @@ class GenerateCoverageReportTask extends ReportTask {
             }
 
             if(getPdf()) {
-                ant."clover-pdf-report"(initString: "${getBuildDir()}/.clover/clover.db", outfile: "$cloverReportDir/clover.pdf",
+                ant."clover-pdf-report"(initString: "${getBuildDir()}/${getInitString()}", outfile: "$cloverReportDir/clover.pdf",
                                         title: getProjectName())
             }
 
@@ -70,12 +71,16 @@ class GenerateCoverageReportTask extends ReportTask {
         }
     }
 
-    private boolean isCloverDatabaseExistant() {
-        new File("${getBuildDir()}/.clover/clover.db").exists()
+    private boolean allowReportGeneration() {
+        isCloverDatabaseExistent() && getClassesDir().exists() && getClassesBackupDir().exists() && isAtLeastOneReportTypeSelected()
+    }
+
+    private boolean isCloverDatabaseExistent() {
+        new File("${getBuildDir()}/${getInitString()}").exists()
     }
 
     private void writeReport(String outfile, String type) {
-        ant."clover-report"(initString: "${getBuildDir()}/.clover/clover.db") {
+        ant."clover-report"(initString: "${getBuildDir()}/${getInitString()}") {
             current(outfile: outfile, title: getProjectName()) {
                 if(getFilter()) {
                     format(type: type, filter: getFilter())

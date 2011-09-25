@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory
  */
 class InstrumentCodeAction implements Action<Task> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InstrumentCodeAction)
+    String initString
     Boolean compileGroovy
     FileCollection classpath
     FileCollection groovyClasspath
@@ -60,7 +61,7 @@ class InstrumentCodeAction implements Action<Task> {
             ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
             ant."clover-clean"()
 
-            ant.'clover-setup'(initString: "${getBuildDir()}/.clover/clover.db") {
+            ant.'clover-setup'(initString: "${getBuildDir()}/${getInitString()}") {
                 getSrcDirs().each { srcDir ->
                     ant.fileset(dir: srcDir) {
                         getIncludes().each { include ->
