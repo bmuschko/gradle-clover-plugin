@@ -111,7 +111,7 @@ class InstrumentCodeAction implements Action<Task> {
             def groovycClasspath = getGroovyClasspath().asPath + System.getProperty('path.separator') + getTestRuntimeClasspath().asPath
             ant.taskdef(name: 'groovyc', classname: 'org.codehaus.groovy.ant.Groovyc', classpath: getGroovyClasspath().asPath)
 
-            ant.groovyc(destdir: getClassesDir().canonicalPath, includeAntRuntime: false, fork: true, classpath: groovycClasspath) {
+            ant.groovyc(destdir: getClassesDir().canonicalPath, classpath: groovycClasspath) {
                 getSrcDirs().each { srcDir ->
                     src(path: srcDir)
                 }
@@ -121,7 +121,7 @@ class InstrumentCodeAction implements Action<Task> {
         }
         else {
             ant.javac(destdir: getClassesDir().canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
-                      includeAntRuntime: false, classpath: getTestRuntimeClasspath().asPath) {
+                      classpath: getTestRuntimeClasspath().asPath) {
                 getSrcDirs().each { srcDir ->
                     src(path: srcDir)
                 }
