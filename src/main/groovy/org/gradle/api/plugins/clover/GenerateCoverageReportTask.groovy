@@ -32,9 +32,13 @@ class GenerateCoverageReportTask extends CloverReportTask {
     String initString
     @InputDirectory File buildDir
     File classesDir
+    File testClassesDir
     File classesBackupDir
+    File testClassesBackupDir
+    Set<File> testSrcDirs
     FileCollection testRuntimeClasspath
     @InputFile File licenseFile
+    List<String> testIncludes
     String filter
     String targetPercentage
 
@@ -62,7 +66,9 @@ class GenerateCoverageReportTask extends CloverReportTask {
         ant.taskdef(resource: 'cloverlib.xml', classpath: getTestRuntimeClasspath().asPath)
         ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
         ant.delete(file: getClassesDir().canonicalPath)
+        ant.delete(file: getTestClassesDir().canonicalPath)
         ant.move(file: getClassesBackupDir().canonicalPath, tofile: getClassesDir().canonicalPath)
+        ant.move(file: getTestClassesBackupDir().canonicalPath, tofile: getTestClassesDir().canonicalPath, failonerror: false)
         String cloverReportDir = "${getReportsDir()}/clover"
 
         if(getXml()) {
@@ -88,6 +94,13 @@ class GenerateCoverageReportTask extends CloverReportTask {
     private void writeReport(String outfile, String type) {
         ant."clover-report"(initString: "${getBuildDir()}/${getInitString()}") {
             current(outfile: outfile, title: getProjectName()) {
+                getTestSrcDirs().each { testSrcDir ->
+                    ant.testsources(dir: testSrcDir) {
+                        getTestIncludes().each { include ->
+                            ant.include(name: include)
+                        }
+                    }
+                }
                 if(getFilter()) {
                     format(type: type, filter: getFilter())
                 }

@@ -36,14 +36,18 @@ class InstrumentCodeAction implements Action<Task> {
     FileCollection testRuntimeClasspath
     FileCollection groovyClasspath
     @OutputDirectory File classesBackupDir
+    @OutputDirectory File testClassesBackupDir
     @InputFile File licenseFile
     @InputDirectory File buildDir
     @InputDirectory File classesDir
+    @InputDirectory File testClassesDir
     Set<File> srcDirs
+    Set<File> testSrcDirs
     String sourceCompatibility
     String targetCompatibility
     List<String> includes
     List<String> excludes
+    List<String> testIncludes
     def statementContexts
     def methodContexts
 
@@ -59,7 +63,7 @@ class InstrumentCodeAction implements Action<Task> {
             def ant = new AntBuilder()
             ant.taskdef(resource: 'cloverlib.xml', classpath: getTestRuntimeClasspath().asPath)
             ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
-            ant."clover-clean"()
+            ant."clover-clean"(initString: "${getBuildDir()}/${getInitString()}")
 
             ant.'clover-setup'(initString: "${getBuildDir()}/${getInitString()}") {
                 getSrcDirs().each { srcDir ->
@@ -70,6 +74,14 @@ class InstrumentCodeAction implements Action<Task> {
 
                         getExcludes().each { exclude ->
                             ant.exclude(name: exclude)
+                        }
+                    }
+                }
+
+                getTestSrcDirs().each { testSrcDir ->
+                    ant.testsources(dir: testSrcDir) {
+                        getTestIncludes().each { include ->
+                            ant.include(name: include)
                         }
                     }
                 }
@@ -86,14 +98,23 @@ class InstrumentCodeAction implements Action<Task> {
 
             // Move original classes
             ant.move(file: getClassesDir().canonicalPath, tofile: getClassesBackupDir().canonicalPath)
+            ant.move(file: getTestClassesDir().canonicalPath, tofile: getTestClassesBackupDir().canonicalPath, failonerror: false)
 
             // Compile instrumented classes
             getClassesDir().mkdirs()
-            compileClasses(ant)
+            getTestClassesDir().mkdirs()
+            compileClasses(ant, getSrcDirs(), getClassesDir())
+
+            if(getTestSrcDirs().size() > 0) {
+                compileClasses(ant, getTestSrcDirs(), getTestClassesDir(), getClassesDir().canonicalPath)
+            }
 
             // Copy resources
             ant.copy(todir: getClassesDir().canonicalPath) {
                 fileset(dir: getClassesBackupDir().canonicalPath, excludes: '**/*.class')
+            }
+            ant.copy(todir: getTestClassesDir().canonicalPath, failonerror: false) {
+                fileset(dir: getTestClassesBackupDir().canonicalPath, excludes: '**/*.class')
             }
 
             LOGGER.info 'Finished instrumenting code using Clover.'
@@ -105,14 +126,19 @@ class InstrumentCodeAction implements Action<Task> {
      *
      * @param ant Ant Builder
      */
-    private void compileClasses(AntBuilder ant) {
+    private void compileClasses(AntBuilder ant, Set<File> srcDirs, File destDir, String additionalClasspath = null) {
         if(getCompileGroovy()) {
             // Make sure the Groovy version define in project is used on classpath to avoid using the default Gradle version
             def groovycClasspath = getGroovyClasspath().asPath + System.getProperty('path.separator') + getTestRuntimeClasspath().asPath
+
+            if(additionalClasspath) {
+                groovycClasspath += System.getProperty('path.separator') + additionalClasspath
+            }
+
             ant.taskdef(name: 'groovyc', classname: 'org.codehaus.groovy.ant.Groovyc', classpath: getGroovyClasspath().asPath)
 
-            ant.groovyc(destdir: getClassesDir().canonicalPath, classpath: groovycClasspath) {
-                getSrcDirs().each { srcDir ->
+            ant.groovyc(destdir: destDir.canonicalPath, classpath: groovycClasspath) {
+                srcDirs.each { srcDir ->
                     src(path: srcDir)
                 }
 
@@ -120,9 +146,15 @@ class InstrumentCodeAction implements Action<Task> {
             }
         }
         else {
-            ant.javac(destdir: getClassesDir().canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
-                      classpath: getTestRuntimeClasspath().asPath) {
-                getSrcDirs().each { srcDir ->
+            def classpath = getTestRuntimeClasspath().asPath
+
+            if(additionalClasspath) {
+                classpath += System.getProperty('path.separator') + additionalClasspath
+            }
+
+            ant.javac(destdir: destDir.canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
+                      classpath: classpath) {
+                srcDirs.each { srcDir ->
                     src(path: srcDir)
                 }
             }

@@ -39,6 +39,8 @@ class CloverPlugin implements Plugin<Project> {
     static final String REPORT_GROUP = 'report'
     static final String JAVA_INCLUDES = '**/*.java'
     static final String GROOVY_INCLUDES = '**/*.groovy'
+    static final String JAVA_TEST_INCLUDES = '**/*Test.java'
+    static final String GROOVY_TEST_INCLUDES = '**/*Test.groovy'
 
     @Override
     void apply(Project project) {
@@ -63,14 +65,18 @@ class CloverPlugin implements Plugin<Project> {
         instrumentCodeAction.conventionMapping.map('testRuntimeClasspath') { project.configurations.testRuntime.asFileTree }
         instrumentCodeAction.conventionMapping.map('groovyClasspath') { project.configurations.groovy.asFileTree }
         instrumentCodeAction.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
+        instrumentCodeAction.conventionMapping.map('testClassesBackupDir') { getTestClassesBackupDirectory(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('buildDir') { project.buildDir }
         instrumentCodeAction.conventionMapping.map('classesDir') { project.sourceSets.main.classesDir }
+        instrumentCodeAction.conventionMapping.map('testClassesDir') { project.sourceSets.test.classesDir }
         instrumentCodeAction.conventionMapping.map('srcDirs') { getSourceDirectories(project) }
+        instrumentCodeAction.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project) }
         instrumentCodeAction.conventionMapping.map('sourceCompatibility') { project.sourceCompatibility?.toString() }
         instrumentCodeAction.conventionMapping.map('targetCompatibility') { project.targetCompatibility?.toString() }
         instrumentCodeAction.conventionMapping.map('includes') { getIncludes(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('excludes') { cloverPluginConvention.excludes }
+        instrumentCodeAction.conventionMapping.map('testIncludes') { getTestIncludes(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('statementContexts') { cloverPluginConvention.contexts.statements }
         instrumentCodeAction.conventionMapping.map('methodContexts') { cloverPluginConvention.contexts.methods }
 
@@ -92,11 +98,15 @@ class CloverPlugin implements Plugin<Project> {
             generateCoverageReportTask.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('buildDir') { project.buildDir }
             generateCoverageReportTask.conventionMapping.map('classesDir') { project.sourceSets.main.classesDir }
+            generateCoverageReportTask.conventionMapping.map('testClassesDir') { project.sourceSets.test.classesDir }
             generateCoverageReportTask.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
+            generateCoverageReportTask.conventionMapping.map('testClassesBackupDir') { getTestClassesBackupDirectory(project, cloverPluginConvention) }
+            generateCoverageReportTask.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project) }
             generateCoverageReportTask.conventionMapping.map('testRuntimeClasspath') { project.configurations.testRuntime.asFileTree }
             generateCoverageReportTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('targetPercentage') { cloverPluginConvention.targetPercentage }
             generateCoverageReportTask.conventionMapping.map('filter') { cloverPluginConvention.report.filter }
+            generateCoverageReportTask.conventionMapping.map('testIncludes') { getTestIncludes(project, cloverPluginConvention) }
             setCloverReportConventionMappings(project, cloverPluginConvention, generateCoverageReportTask)
         }
 
@@ -166,6 +176,17 @@ class CloverPlugin implements Plugin<Project> {
     }
 
     /**
+     * Gets test classes backup directory.
+     *
+     * @param project Project
+     * @param cloverPluginConvention Clover plugin convention
+     * @return Classes backup directory
+     */
+    private File getTestClassesBackupDirectory(Project project, CloverPluginConvention cloverPluginConvention) {
+        cloverPluginConvention.testClassesBackupDir ?: new File("${project.sourceSets.test.classesDir}-bak")
+    }
+
+    /**
      * Gets Clover license file.
      *
      * @param project Project
@@ -195,6 +216,27 @@ class CloverPlugin implements Plugin<Project> {
         }
 
         srcDirs
+    }
+
+    /**
+     * Gets test source directories. If the Groovy plugin was applied we only its test source directories in addition to the
+     * Java plugin source directories. We only add directories that actually exist.
+     *
+     * @param project Project
+     * @return Test source directories
+     */
+    private Set<File> getTestSourceDirectories(Project project) {
+        def testSrcDirs = [] as Set<File>
+
+        if(hasGroovyPlugin(project)) {
+            addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.java.srcDirs)
+            addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.groovy.srcDirs)
+        }
+        else {
+            addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.java.srcDirs)
+        }
+
+        testSrcDirs
     }
 
     /**
@@ -232,6 +274,26 @@ class CloverPlugin implements Plugin<Project> {
         }
 
         [JAVA_INCLUDES]
+    }
+
+    /**
+     * Gets test includes for compilation. Uses includes if set as convention property. Otherwise, use default includes. The
+     * default includes are determined by the fact if Groovy plugin was applied to project or not.
+     *
+     * @param project Project
+     * @param cloverPluginConvention Clover plugin convention
+     * @return Test includes
+     */
+    private List getTestIncludes(Project project, CloverPluginConvention cloverPluginConvention) {
+        if(cloverPluginConvention.includes) {
+            return cloverPluginConvention.includes
+        }
+
+        if(hasGroovyPlugin(project)) {
+            return [JAVA_TEST_INCLUDES, GROOVY_TEST_INCLUDES]
+        }
+
+        [JAVA_TEST_INCLUDES]
     }
 
     /**
