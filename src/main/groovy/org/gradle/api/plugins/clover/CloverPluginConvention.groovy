@@ -28,6 +28,7 @@ class CloverPluginConvention {
     String targetPercentage
     List<String> includes
     List<String> excludes
+    List<String> testIncludes
     CloverReportConvention report = new CloverReportConvention()
     CloverContextsConvention contexts = new CloverContextsConvention()
 

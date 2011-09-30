@@ -37,10 +37,12 @@ class CloverPlugin implements Plugin<Project> {
     static final String GENERATE_REPORT_TASK_NAME = 'cloverGenerateReport'
     static final String AGGREGATE_REPORTS_TASK_NAME = 'cloverAggregateReports'
     static final String REPORT_GROUP = 'report'
-    static final String JAVA_INCLUDES = '**/*.java'
-    static final String GROOVY_INCLUDES = '**/*.groovy'
-    static final String JAVA_TEST_INCLUDES = '**/*Test.java'
-    static final String GROOVY_TEST_INCLUDES = '**/*Test.groovy'
+    static final String DEFAULT_JAVA_INCLUDES = '**/*.java'
+    static final String DEFAULT_GROOVY_INCLUDES = '**/*.groovy'
+    static final String DEFAULT_JAVA_TEST_INCLUDES = '**/*Test.java'
+    static final String DEFAULT_GROOVY_TEST_INCLUDES = '**/*Test.groovy'
+    static final String DEFAULT_CLOVER_DATABASE = '.clover/clover.db'
+    static final String DEFAULT_CLOVER_LICENSE = 'clover.license'
 
     @Override
     void apply(Project project) {
@@ -161,7 +163,7 @@ class CloverPlugin implements Plugin<Project> {
      * @return Init String
      */
     private String getInitString(CloverPluginConvention cloverPluginConvention) {
-        cloverPluginConvention.initString ?: '.clover/clover.db'
+        cloverPluginConvention.initString ?: DEFAULT_CLOVER_DATABASE
     }
 
     /**
@@ -194,7 +196,7 @@ class CloverPlugin implements Plugin<Project> {
      * @return License file
      */
     private File getLicenseFile(Project project, CloverPluginConvention cloverPluginConvention) {
-        cloverPluginConvention.licenseFile ?: new File(project.rootDir, 'clover.license')
+        cloverPluginConvention.licenseFile ?: new File(project.rootDir, DEFAULT_CLOVER_LICENSE)
     }
 
     /**
@@ -270,10 +272,10 @@ class CloverPlugin implements Plugin<Project> {
         }
 
         if(hasGroovyPlugin(project)) {
-            return [JAVA_INCLUDES, GROOVY_INCLUDES]
+            return [DEFAULT_JAVA_INCLUDES, DEFAULT_GROOVY_INCLUDES]
         }
 
-        [JAVA_INCLUDES]
+        [DEFAULT_JAVA_INCLUDES]
     }
 
     /**
@@ -285,15 +287,15 @@ class CloverPlugin implements Plugin<Project> {
      * @return Test includes
      */
     private List getTestIncludes(Project project, CloverPluginConvention cloverPluginConvention) {
-        if(cloverPluginConvention.includes) {
-            return cloverPluginConvention.includes
+        if(cloverPluginConvention.testIncludes) {
+            return cloverPluginConvention.testIncludes
         }
 
         if(hasGroovyPlugin(project)) {
-            return [JAVA_TEST_INCLUDES, GROOVY_TEST_INCLUDES]
+            return [DEFAULT_JAVA_TEST_INCLUDES, DEFAULT_GROOVY_TEST_INCLUDES]
         }
 
-        [JAVA_TEST_INCLUDES]
+        [DEFAULT_JAVA_TEST_INCLUDES]
     }
 
     /**

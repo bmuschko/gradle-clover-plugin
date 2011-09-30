@@ -49,6 +49,9 @@ to be used (defaults to `file('clover.license')`).
 * `includes`: A list of String Ant Glob Patterns to include for instrumentation (defaults to `'**/*.java'` for Java projects, defaults
 to `'**/*.java'` and `'**/*.groovy'` for Groovy projects).
 * `excludes`: A list of String Ant Glob Patterns to exclude for instrumentation. By default no files are excluded.
+* `testIncludes`: A list of String Ant Glob Patterns to include for instrumentation for
+[per-test coverge](http://confluence.atlassian.com/display/CLOVER/Unit+Test+Results+and+Per-Test+Coverage) (defaults to
+`'**/*Test.java'` for Java projects, defaults to `'**/*Test.java'` and `'**/*Test.groovy'` for Groovy projects).
 * `targetPercentage`: The required target percentage total coverage e.g. "10%". The build fails if that goals is not met.
 If not specified no target percentage will be checked.
 
