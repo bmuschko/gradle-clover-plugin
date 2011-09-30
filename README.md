@@ -23,7 +23,7 @@ configuration name in your `dependencies` closure.
         }
 
         dependencies {
-            classpath 'bmuschko:gradle-clover-plugin:0.2'
+            classpath 'bmuschko:gradle-clover-plugin:0.3'
         }
     }
 
