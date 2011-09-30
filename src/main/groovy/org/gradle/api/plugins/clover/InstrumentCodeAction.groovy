@@ -103,11 +103,7 @@ class InstrumentCodeAction implements Action<Task> {
             // Compile instrumented classes
             getClassesDir().mkdirs()
             getTestClassesDir().mkdirs()
-            compileClasses(ant, getSrcDirs(), getClassesDir())
-
-            if(getTestSrcDirs().size() > 0) {
-                compileClasses(ant, getTestSrcDirs(), getTestClassesDir(), getClassesDir().canonicalPath)
-            }
+            compileClasses(ant)
 
             // Copy resources
             ant.copy(todir: getClassesDir().canonicalPath) {
@@ -122,41 +118,126 @@ class InstrumentCodeAction implements Action<Task> {
     }
 
     /**
-     * Compiles Java and Groovy classes.
+     * Compiles Java classes. If project has Groovy plugin applied run the joint compiler.
      *
-     * @param ant Ant Builder
+     * @param ant Ant builder
      */
-    private void compileClasses(AntBuilder ant, Set<File> srcDirs, File destDir, String additionalClasspath = null) {
+    private void compileClasses(AntBuilder ant) {
         if(getCompileGroovy()) {
-            // Make sure the Groovy version define in project is used on classpath to avoid using the default Gradle version
-            def groovycClasspath = getGroovyClasspath().asPath + System.getProperty('path.separator') + getTestRuntimeClasspath().asPath
-
-            if(additionalClasspath) {
-                groovycClasspath += System.getProperty('path.separator') + additionalClasspath
-            }
-
             ant.taskdef(name: 'groovyc', classname: 'org.codehaus.groovy.ant.Groovyc', classpath: getGroovyClasspath().asPath)
+            compileGroovyAndJavaSrcFiles(ant)
 
-            ant.groovyc(destdir: destDir.canonicalPath, classpath: groovycClasspath) {
-                srcDirs.each { srcDir ->
-                    src(path: srcDir)
-                }
-
-                ant.javac(source: getSourceCompatibility(), target: getTargetCompatibility())
+            if(getTestSrcDirs().size() > 0) {
+                compileGroovyAndJavaTestSrcFiles(ant)
             }
         }
         else {
-            def classpath = getTestRuntimeClasspath().asPath
+            compileJavaSrcFiles(ant)
 
-            if(additionalClasspath) {
-                classpath += System.getProperty('path.separator') + additionalClasspath
+            if(getTestSrcDirs().size() > 0) {
+                compileJavaTestSrcFiles(ant)
+            }
+        }
+    }
+
+    /**
+     * Gets Groovyc classpath. Make sure the Groovy version defined in project is used on classpath first to avoid using the
+     * default version bundled with Gradle.
+     *
+     * @return Classpath
+     */
+    private String getGroovycClasspath() {
+        getGroovyClasspath().asPath + System.getProperty('path.separator') + getTestRuntimeClasspath().asPath
+    }
+
+    /**
+     * Gets Javac classpath.
+     *
+     * @return Classpath
+     */
+    private String getJavacClasspath() {
+        getTestRuntimeClasspath().asPath
+    }
+
+    /**
+     * Compiles Groovy and Java source files.
+     *
+     * @param ant Ant builder
+     */
+    private void compileGroovyAndJavaSrcFiles(AntBuilder ant) {
+        compileGroovyAndJava(ant, getSrcDirs(), getClassesDir(), getGroovycClasspath())
+    }
+
+    /**
+     * Compiles Java source files.
+     *
+     * @param ant Ant builder
+     */
+    private void compileJavaSrcFiles(AntBuilder ant) {
+        compileJava(ant, getSrcDirs(), getClassesDir(), getJavacClasspath())
+    }
+
+    /**
+     * Compiles Groovy and Java test source files.
+     *
+     * @param ant Ant builder
+     */
+    private void compileGroovyAndJavaTestSrcFiles(AntBuilder ant) {
+        String classpath = addClassesDirToClasspath(getGroovycClasspath())
+        compileGroovyAndJava(ant, getTestSrcDirs(), getTestClassesDir(), classpath)
+    }
+
+    /**
+     * Compiles Java test source files.
+     *
+     * @param ant Ant builder
+     */
+    private void compileJavaTestSrcFiles(AntBuilder ant) {
+        String classpath = addClassesDirToClasspath(getJavacClasspath())
+        compileJava(ant, getTestSrcDirs(), getTestClassesDir(), classpath)
+    }
+
+    /**
+     * Adds classes directory to classpath.
+     *
+     * @param classpath Classpath
+     * @return Classpath
+     */
+    private String addClassesDirToClasspath(String classpath) {
+        classpath + System.getProperty('path.separator') + getClassesDir().canonicalPath
+    }
+
+    /**
+     * Compiles given Groovy and Java source files to destination directory.
+     *
+     * @param ant Ant builder
+     * @param srcDirs Source directories
+     * @param destDir Destination directory
+     * @param classpath Classpath
+     */
+    private void compileGroovyAndJava(AntBuilder ant, Set<File> srcDirs, File destDir, String classpath) {
+        ant.groovyc(destdir: destDir.canonicalPath, classpath: classpath) {
+            srcDirs.each { srcDir ->
+                src(path: srcDir)
             }
 
-            ant.javac(destdir: destDir.canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
-                      classpath: classpath) {
-                srcDirs.each { srcDir ->
-                    src(path: srcDir)
-                }
+            ant.javac(source: getSourceCompatibility(), target: getTargetCompatibility())
+        }
+    }
+
+    /**
+     * Compiles given Java source files to destination directory.
+     *
+     * @param ant Ant builder
+     * @param srcDirs Source directories
+     * @param destDir Destination directory
+     * @param classpath Classpath
+     */
+    private void compileJava(AntBuilder ant, Set<File> srcDirs, File destDir, String classpath) {
+        ant.javac(destdir: destDir.canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
+                  classpath: classpath) {
+            srcDirs.each { srcDir ->
+                src(path: srcDir)
             }
         }
     }
