@@ -15,6 +15,8 @@
  */
 package org.gradle.api.plugins.clover
 
+import org.gradle.util.ConfigureUtil
+
 /**
  * Defines Clover plugin convention.
  *
@@ -33,14 +35,11 @@ class CloverPluginConvention {
     CloverContextsConvention contexts = new CloverContextsConvention()
 
     def clover(Closure closure) {
-        closure.delegate = this
-        closure()
+        ConfigureUtil.configure(closure, this)
     }
 
     def contexts(Closure closure) {
-        closure.resolveStrategy = Closure.DELEGATE_FIRST
-        closure.delegate = contexts
-        closure()
+        ConfigureUtil.configure(closure, contexts)
     }
 
     def statement(Closure closure) {
@@ -60,8 +59,6 @@ class CloverPluginConvention {
     }
 
     def report(Closure closure) {
-        closure.resolveStrategy = Closure.DELEGATE_FIRST
-        closure.delegate = report
-        closure()
+        ConfigureUtil.configure(closure, report)
     }
 }
