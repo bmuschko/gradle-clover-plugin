@@ -1,7 +1,7 @@
 package org.gradle.api.plugins.clover
 
+import org.gradle.api.DefaultTask
 import org.gradle.api.InvalidUserDataException
-import org.gradle.api.internal.ConventionTask
 import org.gradle.api.tasks.OutputDirectory
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory
  * Time: 7:30 PM
  * To change this template use File | Settings | File Templates.
  */
-class CloverReportTask extends ConventionTask {
+class CloverReportTask extends DefaultTask {
     private static final Logger LOGGER = LoggerFactory.getLogger(CloverReportTask)
     @OutputDirectory File reportsDir
     Boolean xml

@@ -18,9 +18,9 @@ package org.gradle.api.plugins.clover
 import java.lang.reflect.Constructor
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.internal.AsmBackedClassGenerator
-import org.gradle.api.internal.ConventionTask
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.testing.Test
@@ -147,7 +147,7 @@ class CloverPlugin implements Plugin<Project> {
      * @param cloverPluginConvention Clover plugin convention
      * @param task Task
      */
-    private void setCloverReportConventionMappings(Project project, CloverPluginConvention cloverPluginConvention, ConventionTask task) {
+    private void setCloverReportConventionMappings(Project project, CloverPluginConvention cloverPluginConvention, Task task) {
         task.conventionMapping.map('reportsDir') { project.reportsDir }
         task.conventionMapping.map('xml') { cloverPluginConvention.report.xml }
         task.conventionMapping.map('json') { cloverPluginConvention.report.json }
