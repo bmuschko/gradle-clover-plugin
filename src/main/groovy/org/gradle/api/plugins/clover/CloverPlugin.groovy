@@ -70,8 +70,8 @@ class CloverPlugin implements Plugin<Project> {
         instrumentCodeAction.conventionMapping.map('testClassesBackupDir') { getTestClassesBackupDirectory(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('buildDir') { project.buildDir }
-        instrumentCodeAction.conventionMapping.map('classesDir') { project.sourceSets.main.classesDir }
-        instrumentCodeAction.conventionMapping.map('testClassesDir') { project.sourceSets.test.classesDir }
+        instrumentCodeAction.conventionMapping.map('classesDir') { project.sourceSets.main.output.classesDir }
+        instrumentCodeAction.conventionMapping.map('testClassesDir') { project.sourceSets.test.output.classesDir }
         instrumentCodeAction.conventionMapping.map('srcDirs') { getSourceDirectories(project) }
         instrumentCodeAction.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project) }
         instrumentCodeAction.conventionMapping.map('sourceCompatibility') { project.sourceCompatibility?.toString() }
@@ -99,8 +99,8 @@ class CloverPlugin implements Plugin<Project> {
             generateCoverageReportTask.dependsOn project.tasks.withType(Test)
             generateCoverageReportTask.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('buildDir') { project.buildDir }
-            generateCoverageReportTask.conventionMapping.map('classesDir') { project.sourceSets.main.classesDir }
-            generateCoverageReportTask.conventionMapping.map('testClassesDir') { project.sourceSets.test.classesDir }
+            generateCoverageReportTask.conventionMapping.map('classesDir') { project.sourceSets.main.output.classesDir }
+            generateCoverageReportTask.conventionMapping.map('testClassesDir') { project.sourceSets.test.output.classesDir }
             generateCoverageReportTask.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('testClassesBackupDir') { getTestClassesBackupDirectory(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project) }
@@ -174,7 +174,7 @@ class CloverPlugin implements Plugin<Project> {
      * @return Classes backup directory
      */
     private File getClassesBackupDirectory(Project project, CloverPluginConvention cloverPluginConvention) {
-        cloverPluginConvention.classesBackupDir ?: new File("${project.sourceSets.main.classesDir}-bak")
+        cloverPluginConvention.classesBackupDir ?: new File("${project.sourceSets.main.output.classesDir}-bak")
     }
 
     /**
@@ -185,7 +185,7 @@ class CloverPlugin implements Plugin<Project> {
      * @return Classes backup directory
      */
     private File getTestClassesBackupDirectory(Project project, CloverPluginConvention cloverPluginConvention) {
-        cloverPluginConvention.testClassesBackupDir ?: new File("${project.sourceSets.test.classesDir}-bak")
+        cloverPluginConvention.testClassesBackupDir ?: new File("${project.sourceSets.test.output.classesDir}-bak")
     }
 
     /**
