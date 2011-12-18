@@ -25,7 +25,7 @@ import org.gradle.util.ConfigureUtil
 class CloverPluginConvention {
     File classesBackupDir
     File testClassesBackupDir
-    File licenseFile
+    String licenseLocation
     String initString
     String targetPercentage
     List<String> includes

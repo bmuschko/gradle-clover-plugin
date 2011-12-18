@@ -23,6 +23,7 @@ import org.gradle.api.execution.TaskExecutionGraph
 import org.gradle.api.internal.AsmBackedClassGenerator
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.plugins.clover.internal.LicenseResolverFactory
 import org.gradle.api.tasks.testing.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -42,7 +43,6 @@ class CloverPlugin implements Plugin<Project> {
     static final String DEFAULT_JAVA_TEST_INCLUDES = '**/*Test.java'
     static final String DEFAULT_GROOVY_TEST_INCLUDES = '**/*Test.groovy'
     static final String DEFAULT_CLOVER_DATABASE = '.clover/clover.db'
-    static final String DEFAULT_CLOVER_LICENSE = 'clover.license'
 
     @Override
     void apply(Project project) {
@@ -196,7 +196,7 @@ class CloverPlugin implements Plugin<Project> {
      * @return License file
      */
     private File getLicenseFile(Project project, CloverPluginConvention cloverPluginConvention) {
-        cloverPluginConvention.licenseFile ?: new File(project.rootDir, DEFAULT_CLOVER_LICENSE)
+        LicenseResolverFactory.instance.getResolver(cloverPluginConvention.licenseLocation).resolve(project.rootDir, cloverPluginConvention.licenseLocation)
     }
 
     /**
