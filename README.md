@@ -23,12 +23,12 @@ configuration name in your `dependencies` closure.
         }
 
         dependencies {
-            classpath 'bmuschko:gradle-clover-plugin:0.3'
+            classpath 'bmuschko:gradle-clover-plugin:0.4'
         }
     }
 
     dependencies {
-        testRuntime 'com.cenqua.clover:clover:3.1.0'
+        testRuntime 'com.cenqua.clover:clover:3.1.2'
     }
 
 ## Tasks
@@ -44,13 +44,13 @@ run from the root directory of your project and requires at least one submodule.
 * `initString`: The location to write the Clover coverage database (defaults to `.clover/clover.db`). The location you
 define will always be relative to the project's build directory.
 * `classesBackupDir`: The temporary backup directory for classes (defaults to `file("${sourceSets.main.classesDir}-bak")`).
-* `licenseFile`: The [Clover license file](http://confluence.atlassian.com/display/CLOVER/How+to+configure+your+clover.license)
-to be used (defaults to `file('clover.license')`).
+* `licenseLocation`: The [Clover license](http://confluence.atlassian.com/display/CLOVER/How+to+configure+your+clover.license)
+to be used (defaults to `'clover.license'`). The location can either be a file or URL defined as String.
 * `includes`: A list of String Ant Glob Patterns to include for instrumentation (defaults to `'**/*.java'` for Java projects, defaults
 to `'**/*.java'` and `'**/*.groovy'` for Groovy projects).
 * `excludes`: A list of String Ant Glob Patterns to exclude for instrumentation. By default no files are excluded.
 * `testIncludes`: A list of String Ant Glob Patterns to include for instrumentation for
-[per-test coverge](http://confluence.atlassian.com/display/CLOVER/Unit+Test+Results+and+Per-Test+Coverage) (defaults to
+[per-test coverage](http://confluence.atlassian.com/display/CLOVER/Unit+Test+Results+and+Per-Test+Coverage) (defaults to
 `'**/*Test.java'` for Java projects, defaults to `'**/*Test.java'` and `'**/*Test.groovy'` for Groovy projects).
 * `targetPercentage`: The required target percentage total coverage e.g. "10%". The build fails if that goals is not met.
 If not specified no target percentage will be checked.
@@ -80,7 +80,7 @@ The Clover plugin defines the following convention properties in the `clover` cl
 
     clover {
         classesBackupDir = file("${sourceSets.main.classesDir}-backup")
-        licenseFile = file('clover-license.txt')
+        licenseLocation = 'clover-license.txt'
         excludes = ['**/SynchronizedMultiValueMap.java']
         targetPercentage = '85%'
 
