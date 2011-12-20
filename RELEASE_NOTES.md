@@ -1,3 +1,8 @@
+### Version 0.4 (December 20, 2011)
+
+* Upgrade to Gradle Wrapper 1.0-m6 - [Issue 2](https://github.com/bmuschko/gradle-clover-plugin/issues/2).
+* Provide license file as file or URL - [Issue 3](https://github.com/bmuschko/gradle-clover-plugin/issues/3).
+
 ### Version 0.3 (September 29, 2011)
 
 * Allowing HTML to report on per-test coverage.
