@@ -21,7 +21,7 @@ package org.gradle.api.plugins.clover.internal
  * @author Benjamin Muschko
  */
 interface LicenseResolver {
-    static final String DEFAULT_CLOVER_LICENSE = 'clover.license'
+    static final String DEFAULT_CLOVER_LICENSE_FILE_NAME = 'clover.license'
 
     File resolve(File projectRootDir, String location)
 }

@@ -15,22 +15,23 @@
  */
 package org.gradle.api.plugins.clover.internal
 
+import spock.lang.Specification
+
 /**
- * License URL resolver.
+ * License file resolver tests.
  *
  * @author Benjamin Muschko
  */
-class LicenseUrlResolver implements LicenseResolver {
-    @Override
-    File resolve(File projectRootDir, String location) {
-        File file = new File(projectRootDir, DEFAULT_CLOVER_LICENSE_FILE_NAME)
+class LicenceFileResolverTest extends Specification {
+    def "Resolve fully qualified file path"() {
+        given: "the location"
+            def projectRootDir = new File('/home/ben/myproject')
+            def location = '/home/ben/clover.license'
 
-        if(!file.exists()) {
-            BufferedOutputStream stream = file.newOutputStream()
-            stream << new URL(location).openStream()
-            stream.close()
-        }
+        when: "getting the license file"
+            File file = new LicenceFileResolver().resolve(projectRootDir, location)
 
-        file
+        then: "the file matches the expected path"
+            file.absolutePath == '/home/ben/clover.license'
     }
 }

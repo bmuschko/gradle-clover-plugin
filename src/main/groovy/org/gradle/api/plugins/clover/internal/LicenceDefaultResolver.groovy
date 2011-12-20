@@ -23,6 +23,6 @@ package org.gradle.api.plugins.clover.internal
 class LicenceDefaultResolver implements LicenseResolver {
     @Override
     File resolve(File projectRootDir, String location) {
-        new File(projectRootDir, DEFAULT_CLOVER_LICENSE)
+        new File(projectRootDir, DEFAULT_CLOVER_LICENSE_FILE_NAME)
     }
 }
