@@ -24,7 +24,9 @@ repositories {
 dependencies {
     groovy localGroovy()
     compile gradleApi()
-    testCompile 'org.spockframework:spock-core:0.5-groovy-1.8'
+    testCompile('org.spockframework:spock-core:0.5-groovy-1.8') {
+        exclude group: 'org.codehaus.groovy', module: 'groovy-all'
+    }
     testRuntime 'com.cenqua.clover:clover:3.1.2'
 }
 
