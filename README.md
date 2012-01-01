@@ -1,6 +1,6 @@
 # Gradle Clover plugin
 
-![Clover Logo](http://www.atlassian.com/software/clover/images/badges/v2/code_coverage_md.png)
+![Clover Logo](https://www.appfusions.com/download/attachments/131128/LOGO_Clover_dark.png?version=1&modificationDate=1274072503636)
 
 The plugin provides generation of code coverage reports using [Clover](http://www.atlassian.com/software/clover/).
 
