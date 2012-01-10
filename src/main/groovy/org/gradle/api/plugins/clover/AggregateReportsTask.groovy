@@ -15,20 +15,19 @@
  */
 package org.gradle.api.plugins.clover
 
+import groovy.util.logging.Slf4j
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.TaskAction
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * Task for aggregrating Clover code coverage reports.
  *
  * @author Benjamin Muschko
  */
+@Slf4j
 class AggregateReportsTask extends CloverReportTask {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AggregateReportsTask)
     String initString
     FileCollection testRuntimeClasspath
     @InputFile File licenseFile
@@ -42,7 +41,7 @@ class AggregateReportsTask extends CloverReportTask {
     }
 
     private void aggregateReports() {
-        LOGGER.info 'Starting to aggregate Clover code coverage reports.'
+        log.info 'Starting to aggregate Clover code coverage reports.'
 
         ant.taskdef(resource: 'cloverlib.xml', classpath: getTestRuntimeClasspath().asPath)
         ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
@@ -77,7 +76,7 @@ class AggregateReportsTask extends CloverReportTask {
                                     outfile: "$cloverReportDir/clover.pdf", title: getProjectName())
         }
 
-        LOGGER.info 'Finished aggregating Clover code coverage reports.'
+        log.info 'Finished aggregating Clover code coverage reports.'
     }
 
     private void writeReport(String outfile, String type) {

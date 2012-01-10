@@ -15,6 +15,7 @@
  */
 package org.gradle.api.plugins.clover
 
+import groovy.util.logging.Slf4j
 import java.lang.reflect.Constructor
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -25,16 +26,14 @@ import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.clover.internal.LicenseResolverFactory
 import org.gradle.api.tasks.testing.Test
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * <p>A {@link org.gradle.api.Plugin} that provides a task for creating a code coverage report using Clover.</p>
  *
  * @author Benjamin Muschko
  */
+@Slf4j
 class CloverPlugin implements Plugin<Project> {
-    private static final Logger log = LoggerFactory.getLogger(CloverPlugin)
     static final String GENERATE_REPORT_TASK_NAME = 'cloverGenerateReport'
     static final String AGGREGATE_REPORTS_TASK_NAME = 'cloverAggregateReports'
     static final String REPORT_GROUP = 'report'
@@ -72,8 +71,8 @@ class CloverPlugin implements Plugin<Project> {
         instrumentCodeAction.conventionMapping.map('buildDir') { project.buildDir }
         instrumentCodeAction.conventionMapping.map('classesDir') { project.sourceSets.main.output.classesDir }
         instrumentCodeAction.conventionMapping.map('testClassesDir') { project.sourceSets.test.output.classesDir }
-        instrumentCodeAction.conventionMapping.map('srcDirs') { getSourceDirectories(project) }
-        instrumentCodeAction.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project) }
+        instrumentCodeAction.conventionMapping.map('srcDirs') { getSourceDirectories(project, cloverPluginConvention) }
+        instrumentCodeAction.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('sourceCompatibility') { project.sourceCompatibility?.toString() }
         instrumentCodeAction.conventionMapping.map('targetCompatibility') { project.targetCompatibility?.toString() }
         instrumentCodeAction.conventionMapping.map('includes') { getIncludes(project, cloverPluginConvention) }
@@ -103,7 +102,7 @@ class CloverPlugin implements Plugin<Project> {
             generateCoverageReportTask.conventionMapping.map('testClassesDir') { project.sourceSets.test.output.classesDir }
             generateCoverageReportTask.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('testClassesBackupDir') { getTestClassesBackupDirectory(project, cloverPluginConvention) }
-            generateCoverageReportTask.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project) }
+            generateCoverageReportTask.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('testRuntimeClasspath') { project.configurations.testRuntime.asFileTree }
             generateCoverageReportTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('targetPercentage') { cloverPluginConvention.targetPercentage }
@@ -204,9 +203,10 @@ class CloverPlugin implements Plugin<Project> {
      * Java plugin source directories. We only add directories that actually exist.
      *
      * @param project Project
+     * @param cloverPluginConvention Clover plugin convention
      * @return Source directories
      */
-    private Set<File> getSourceDirectories(Project project) {
+    private Set<File> getSourceDirectories(Project project, CloverPluginConvention cloverPluginConvention) {
         def srcDirs = [] as Set<File>
 
         if(hasGroovyPlugin(project)) {
@@ -217,6 +217,10 @@ class CloverPlugin implements Plugin<Project> {
             addExistingSourceDirectories(srcDirs, project.sourceSets.main.java.srcDirs)
         }
 
+        if(cloverPluginConvention.additionalSourceDirs) {
+            addExistingSourceDirectories(srcDirs, cloverPluginConvention.additionalSourceDirs)
+        }
+
         srcDirs
     }
 
@@ -225,9 +229,10 @@ class CloverPlugin implements Plugin<Project> {
      * Java plugin source directories. We only add directories that actually exist.
      *
      * @param project Project
+     * @param cloverPluginConvention Clover plugin convention
      * @return Test source directories
      */
-    private Set<File> getTestSourceDirectories(Project project) {
+    private Set<File> getTestSourceDirectories(Project project, CloverPluginConvention cloverPluginConvention) {
         def testSrcDirs = [] as Set<File>
 
         if(hasGroovyPlugin(project)) {
@@ -236,6 +241,10 @@ class CloverPlugin implements Plugin<Project> {
         }
         else {
             addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.java.srcDirs)
+        }
+
+        if(cloverPluginConvention.additionalTestDirs) {
+            addExistingSourceDirectories(testSrcDirs, cloverPluginConvention.additionalTestDirs)
         }
 
         testSrcDirs

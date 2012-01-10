@@ -15,19 +15,18 @@
  */
 package org.gradle.api.plugins.clover
 
+import groovy.util.logging.Slf4j
 import org.gradle.api.DefaultTask
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.tasks.OutputDirectory
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * Base class for Clover report tasks.
  *
  * @author Benjamin Muschko
  */
+@Slf4j
 class CloverReportTask extends DefaultTask {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CloverReportTask)
     @OutputDirectory File reportsDir
     Boolean xml
     Boolean json
@@ -76,7 +75,7 @@ class CloverReportTask extends DefaultTask {
             throw new InvalidUserDataException("No report type selected. Please pick at least one: ${ReportType.getAllFormats()}.")
         }
         else {
-            LOGGER.info "Selected report types = ${getSelectedReportTypes()}"
+            log.info "Selected report types = ${getSelectedReportTypes()}"
         }
     }
 }

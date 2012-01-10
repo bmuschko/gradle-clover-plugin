@@ -15,20 +15,19 @@
  */
 package org.gradle.api.plugins.clover
 
+import groovy.util.logging.Slf4j
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.TaskAction
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * Task for generating Clover code coverage report.
  *
  * @author Benjamin Muschko
  */
+@Slf4j
 class GenerateCoverageReportTask extends CloverReportTask {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GenerateCoverageReportTask)
     String initString
     @InputDirectory File buildDir
     File classesDir
@@ -60,7 +59,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
     }
 
     private void generateReport() {
-        LOGGER.info 'Starting to generate Clover code coverage report.'
+        log.info 'Starting to generate Clover code coverage report.'
 
         // Restore original classes
         ant.taskdef(resource: 'cloverlib.xml', classpath: getTestRuntimeClasspath().asPath)
@@ -88,7 +87,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
                                     title: getProjectName())
         }
 
-        LOGGER.info 'Finished generating Clover code coverage report.'
+        log.info 'Finished generating Clover code coverage report.'
     }
 
     private void writeReport(String outfile, String type) {

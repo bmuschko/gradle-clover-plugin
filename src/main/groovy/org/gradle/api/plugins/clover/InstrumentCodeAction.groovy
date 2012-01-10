@@ -15,22 +15,21 @@
  */
 package org.gradle.api.plugins.clover
 
+import groovy.util.logging.Slf4j
 import org.gradle.api.Action
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 /**
  * Clover code instrumentation action.
  *
  * @author Benjamin Muschko
  */
+@Slf4j
 class InstrumentCodeAction implements Action<Task> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(InstrumentCodeAction)
     String initString
     Boolean compileGroovy
     FileCollection testRuntimeClasspath
@@ -58,7 +57,7 @@ class InstrumentCodeAction implements Action<Task> {
 
     void instrumentCode() {
         if(getClassesDir().exists()) {
-            LOGGER.info 'Starting to instrument code using Clover.'
+            log.info 'Starting to instrument code using Clover.'
 
             def ant = new AntBuilder()
             ant.taskdef(resource: 'cloverlib.xml', classpath: getTestRuntimeClasspath().asPath)
@@ -113,7 +112,7 @@ class InstrumentCodeAction implements Action<Task> {
                 fileset(dir: getTestClassesBackupDir().canonicalPath, excludes: '**/*.class')
             }
 
-            LOGGER.info 'Finished instrumenting code using Clover.'
+            log.info 'Finished instrumenting code using Clover.'
         }
     }
 
