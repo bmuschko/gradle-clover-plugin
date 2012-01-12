@@ -21,6 +21,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.execution.TaskExecutionGraph
+import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.AsmBackedClassGenerator
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaPlugin
@@ -34,6 +35,7 @@ import org.gradle.api.tasks.testing.Test
  */
 @Slf4j
 class CloverPlugin implements Plugin<Project> {
+    static final String CONFIGURATION_NAME = 'clover'
     static final String GENERATE_REPORT_TASK_NAME = 'cloverGenerateReport'
     static final String AGGREGATE_REPORTS_TASK_NAME = 'cloverAggregateReports'
     static final String REPORT_GROUP = 'report'
@@ -45,7 +47,8 @@ class CloverPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        project.plugins.apply(JavaPlugin)
+        project.configurations.add(CONFIGURATION_NAME).setVisible(false).setTransitive(true)
+                .setDescription('The Clover library to be used for this project.')
 
         CloverPluginConvention cloverPluginConvention = new CloverPluginConvention()
         project.convention.plugins.clover = cloverPluginConvention
@@ -63,7 +66,7 @@ class CloverPlugin implements Plugin<Project> {
         InstrumentCodeAction instrumentCodeAction = constructor.newInstance()
         instrumentCodeAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('compileGroovy') { hasGroovyPlugin(project) }
-        instrumentCodeAction.conventionMapping.map('testRuntimeClasspath') { project.configurations.testRuntime.asFileTree }
+        instrumentCodeAction.conventionMapping.map('testRuntimeClasspath') { getTestRuntimeClasspath(project).asFileTree }
         instrumentCodeAction.conventionMapping.map('groovyClasspath') { project.configurations.groovy.asFileTree }
         instrumentCodeAction.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('testClassesBackupDir') { getTestClassesBackupDirectory(project, cloverPluginConvention) }
@@ -87,6 +90,7 @@ class CloverPlugin implements Plugin<Project> {
             // Only invoke instrumentation when Clover report generation task is run
             if(graph.hasTask(generateReportTask)) {
                 project.tasks.withType(Test).each { Test test ->
+                    test.classpath += project.configurations.getByName(CONFIGURATION_NAME).asFileTree
                     test.doFirst instrumentCodeAction
                 }
             }
@@ -98,12 +102,12 @@ class CloverPlugin implements Plugin<Project> {
             generateCoverageReportTask.dependsOn project.tasks.withType(Test)
             generateCoverageReportTask.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('buildDir') { project.buildDir }
-            generateCoverageReportTask.conventionMapping.map('classesDir') { project.sourceSets.main.output.classesDir }
-            generateCoverageReportTask.conventionMapping.map('testClassesDir') { project.sourceSets.test.output.classesDir }
+            generateCoverageReportTask.conventionMapping.map('classesDir') { hasJavaPlugin(project) ? project.sourceSets.main.output.classesDir : null }
+            generateCoverageReportTask.conventionMapping.map('testClassesDir') { hasJavaPlugin(project) ? project.sourceSets.test.output.classesDir : null }
             generateCoverageReportTask.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('testClassesBackupDir') { getTestClassesBackupDirectory(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project, cloverPluginConvention) }
-            generateCoverageReportTask.conventionMapping.map('testRuntimeClasspath') { project.configurations.testRuntime.asFileTree }
+            generateCoverageReportTask.conventionMapping.map('testRuntimeClasspath') { getTestRuntimeClasspath(project).asFileTree }
             generateCoverageReportTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('targetPercentage') { cloverPluginConvention.targetPercentage }
             generateCoverageReportTask.conventionMapping.map('filter') { cloverPluginConvention.report.filter }
@@ -119,10 +123,7 @@ class CloverPlugin implements Plugin<Project> {
     private void configureAggregateReportsTask(Project project, CloverPluginConvention cloverPluginConvention) {
         project.tasks.withType(AggregateReportsTask).whenTaskAdded { AggregateReportsTask aggregateReportsTask ->
             aggregateReportsTask.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
-            aggregateReportsTask.conventionMapping.map('testRuntimeClasspath') {
-                // @todo: Not cool. Needs Clover configuration.
-                project.subprojects.first().configurations.testRuntime.asFileTree
-            }
+            aggregateReportsTask.conventionMapping.map('testRuntimeClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
             aggregateReportsTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             aggregateReportsTask.conventionMapping.map('buildDir') { project.buildDir }
             aggregateReportsTask.conventionMapping.map('subprojectBuildDirs') { project.subprojects.collect { it.buildDir } }
@@ -147,7 +148,7 @@ class CloverPlugin implements Plugin<Project> {
      * @param task Task
      */
     private void setCloverReportConventionMappings(Project project, CloverPluginConvention cloverPluginConvention, Task task) {
-        task.conventionMapping.map('reportsDir') { project.reportsDir }
+        task.conventionMapping.map('reportsDir') { new File(project.buildDir, 'reports') }
         task.conventionMapping.map('xml') { cloverPluginConvention.report.xml }
         task.conventionMapping.map('json') { cloverPluginConvention.report.json }
         task.conventionMapping.map('html') { cloverPluginConvention.report.html }
@@ -308,6 +309,16 @@ class CloverPlugin implements Plugin<Project> {
     }
 
     /**
+     * Checks to see if Java plugin got applied to project.
+     *
+     * @param project Project
+     * @return Flag
+     */
+    private boolean hasJavaPlugin(Project project) {
+        project.plugins.hasPlugin(JavaPlugin)
+    }
+
+    /**
      * Checks to see if Groovy plugin got applied to project.
      *
      * @param project Project
@@ -315,5 +326,16 @@ class CloverPlugin implements Plugin<Project> {
      */
     private boolean hasGroovyPlugin(Project project) {
         project.plugins.hasPlugin(GroovyPlugin)
+    }
+
+    /**
+     * Gets testRuntime classpath which consists of the existing testRuntime configuration FileTree and the Clover
+     * configuration FileTree.
+     *
+     * @param project Project
+     * @return File collection
+     */
+    private FileCollection getTestRuntimeClasspath(Project project) {
+        project.configurations.testRuntime.asFileTree + project.configurations.getByName(CONFIGURATION_NAME).asFileTree
     }
 }

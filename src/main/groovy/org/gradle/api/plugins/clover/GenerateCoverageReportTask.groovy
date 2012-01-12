@@ -29,7 +29,7 @@ import org.gradle.api.tasks.TaskAction
 @Slf4j
 class GenerateCoverageReportTask extends CloverReportTask {
     String initString
-    @InputDirectory File buildDir
+    File buildDir
     File classesDir
     File testClassesDir
     File classesBackupDir
@@ -51,7 +51,15 @@ class GenerateCoverageReportTask extends CloverReportTask {
     }
 
     private boolean allowReportGeneration() {
-        isCloverDatabaseExistent() && getClassesDir().exists() && getClassesBackupDir().exists()
+        isCloverDatabaseExistent() && existsClassesDir() && existsClassesBackupDir()
+    }
+
+    private boolean existsClassesDir() {
+        getClassesDir() && getClassesDir().exists()
+    }
+
+    private boolean existsClassesBackupDir() {
+        getClassesBackupDir() && getClassesBackupDir().exists()
     }
 
     private boolean isCloverDatabaseExistent() {
