@@ -1,6 +1,6 @@
 # Gradle Clover plugin
 
-![Clover Logo](http://www.atlassian.com/software/clover/images/badges/v2/code_coverage_md.png)
+![Clover Logo](https://www.appfusions.com/download/attachments/131128/LOGO_Clover_dark.png?version=1&modificationDate=1274072503636)
 
 The plugin provides generation of code coverage reports using [Clover](http://www.atlassian.com/software/clover/).
 
@@ -102,3 +102,25 @@ The Clover plugin defines the following convention properties in the `clover` cl
             filter = 'log,if,else'
         }
     }
+
+## FAQ
+
+**How do I use the code coverage results produced by this plugin with the Gradle Sonar plugin?**
+
+You will have to configure the [Gradle Sonar plugin](http://www.gradle.org/docs/current/userguide/sonar_plugin.html) 
+to parse the Clover coverage result file. The convention property [cloverReportPath](http://gradle.org/docs/current/groovydoc/org/gradle/api/plugins/sonar/model/SonarProject.html#cloverReportPath) 
+defines the path to the code coverage XML file. This path is only used if the property [dynamicAnalysis](http://gradle.org/docs/current/groovydoc/org/gradle/api/plugins/sonar/model/SonarProject.html#dynamicAnalysis) 
+has the value of `reuseReports`. The following code snippet shows an example.
+
+    sonar {
+        project {
+            cloverReportPath = file("$reportsDir/clover/clover.xml")
+        }
+    }
+
+In Sonar you will need to install the [Clover plugin](http://docs.codehaus.org/display/SONAR/Clover+Plugin). In order to
+make Sonar use the Clover code coverage engine, the property `sonar.core.codeCoveragePlugin` must be set to `clover` under 
+Configuration | General Settings | Code Coverage. If you run `gradle sonarAnalyze -i` you will see that the Gradle Sonar plugin parses your file. 
+It should look something like this:
+
+    Parsing /Users/ben/dev/projects/testproject/build/reports/clover/clover.xml
