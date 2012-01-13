@@ -1,3 +1,8 @@
+### Version 0.5 (January 12, 2012)
+
+* Make root project not automatically apply Java plugin - [Issue 4](https://github.com/bmuschko/gradle-clover-plugin/issues/4).
+* Support for custom source sets - [Issue 8](https://github.com/bmuschko/gradle-clover-plugin/issues/8).
+
 ### Version 0.4 (December 20, 2011)
 
 * Upgrade to Gradle Wrapper 1.0-m6 - [Issue 2](https://github.com/bmuschko/gradle-clover-plugin/issues/2).
