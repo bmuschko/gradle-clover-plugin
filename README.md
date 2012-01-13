@@ -11,7 +11,7 @@ To use the Clover plugin, include in your build script:
     apply plugin: 'clover'
 
 The plugin JAR needs to be defined in the classpath of your build script. You can either get the plugin from the GitHub download
-section or upload it to your local repository. To define the Clover dependency please use the `testRuntime`
+section or upload it to your local repository. To define the Clover dependency please use the `clover`
 configuration name in your `dependencies` closure.
 
     buildscript {
@@ -23,12 +23,12 @@ configuration name in your `dependencies` closure.
         }
 
         dependencies {
-            classpath 'bmuschko:gradle-clover-plugin:0.4'
+            classpath 'bmuschko:gradle-clover-plugin:0.5'
         }
     }
 
     dependencies {
-        testRuntime 'com.cenqua.clover:clover:3.1.2'
+        clover 'com.cenqua.clover:clover:3.1.2'
     }
 
 ## Tasks
@@ -52,6 +52,8 @@ to `'**/*.java'` and `'**/*.groovy'` for Groovy projects).
 * `testIncludes`: A list of String Ant Glob Patterns to include for instrumentation for
 [per-test coverage](http://confluence.atlassian.com/display/CLOVER/Unit+Test+Results+and+Per-Test+Coverage) (defaults to
 `'**/*Test.java'` for Java projects, defaults to `'**/*Test.java'` and `'**/*Test.groovy'` for Groovy projects).
+* `additionalSourceDirs`: Defines custom source sets to be added for instrumentation e.g. `sourceSets.custom.allSource.srcDirs`.
+* `additionalTestDirs`: Defines custom test source sets to be added for instrumentation e.g. `sourceSets.integTest.allSource.srcDirs`.
 * `targetPercentage`: The required target percentage total coverage e.g. "10%". The build fails if that goals is not met.
 If not specified no target percentage will be checked.
 
