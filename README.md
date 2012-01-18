@@ -12,7 +12,8 @@ To use the Clover plugin, include in your build script:
 
 The plugin JAR needs to be defined in the classpath of your build script. You can either get the plugin from the GitHub download
 section or upload it to your local repository. To define the Clover dependency please use the `clover`
-configuration name in your `dependencies` closure.
+configuration name in your `dependencies` closure. If you are working with a multi-module project make sure you apply the
+plugin and declare the `clover` dependency within the `allprojects` closure.
 
     buildscript {
         repositories {
