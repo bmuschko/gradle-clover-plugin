@@ -136,6 +136,7 @@ class CloverPlugin implements Plugin<Project> {
                 AggregateReportsTask aggregateReportsTask = project.rootProject.tasks.add(AGGREGATE_REPORTS_TASK_NAME, AggregateReportsTask)
                 aggregateReportsTask.description = 'Aggregates Clover code coverage reports.'
                 aggregateReportsTask.group = REPORT_GROUP
+                aggregateReportsTask.dependsOn project.tasks.getByName(GENERATE_REPORT_TASK_NAME)
             }
         }
     }
