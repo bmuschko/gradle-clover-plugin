@@ -2,7 +2,8 @@ apply plugin: 'groovy'
 apply plugin: 'idea'
 apply plugin: 'clover'
 
-version = '0.5'
+version = '0.5.1'
+defaultTasks 'clean', 'build'
 
 buildscript {
     repositories {
@@ -63,5 +64,5 @@ clover {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.0-milestone-6'
+    gradleVersion = '1.0-milestone-9'
 }
