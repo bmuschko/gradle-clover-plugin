@@ -17,8 +17,8 @@ package org.gradle.api.plugins.clover
 
 import groovy.util.logging.Slf4j
 import org.gradle.api.file.FileCollection
-import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.TaskAction
 
 /**
@@ -34,7 +34,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
     File testClassesDir
     File classesBackupDir
     File testClassesBackupDir
-    Set<File> testSrcDirs
+    @InputFiles Set<File> testSrcDirs
     FileCollection testRuntimeClasspath
     @InputFile File licenseFile
     List<String> testIncludes
@@ -69,13 +69,10 @@ class GenerateCoverageReportTask extends CloverReportTask {
     private void generateReport() {
         log.info 'Starting to generate Clover code coverage report.'
 
-        // Restore original classes
         ant.taskdef(resource: 'cloverlib.xml', classpath: getTestRuntimeClasspath().asPath)
         ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
-        ant.delete(file: getClassesDir().canonicalPath)
-        ant.delete(file: getTestClassesDir().canonicalPath)
-        ant.move(file: getClassesBackupDir().canonicalPath, tofile: getClassesDir().canonicalPath)
-        ant.move(file: getTestClassesBackupDir().canonicalPath, tofile: getTestClassesDir().canonicalPath, failonerror: false)
+
+        restoreOriginalClasses()
         String cloverReportDir = "${getReportsDir()}/clover"
 
         if(getXml()) {
@@ -96,6 +93,17 @@ class GenerateCoverageReportTask extends CloverReportTask {
         }
 
         log.info 'Finished generating Clover code coverage report.'
+    }
+
+    private void restoreOriginalClasses() {
+        ant.delete(includeEmptyDirs: true) {
+            fileset(dir: getClassesDir().canonicalPath, includes: '**/*')
+        }
+        ant.delete(includeEmptyDirs: true) {
+            fileset(dir: getTestClassesDir().canonicalPath, includes: '**/*')
+        }
+        ant.move(file: getClassesBackupDir().canonicalPath, tofile: getClassesDir().canonicalPath, failonerror: true)
+        ant.move(file: getTestClassesBackupDir().canonicalPath, tofile: getTestClassesDir().canonicalPath, failonerror: false)
     }
 
     private void writeReport(String outfile, String type) {

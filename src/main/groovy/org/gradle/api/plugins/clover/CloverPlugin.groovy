@@ -241,7 +241,7 @@ class CloverPlugin implements Plugin<Project> {
             addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.java.srcDirs)
             addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.groovy.srcDirs)
         }
-        else {
+        else if(hasJavaPlugin(project)) {
             addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.java.srcDirs)
         }
 

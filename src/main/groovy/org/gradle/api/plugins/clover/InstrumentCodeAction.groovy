@@ -96,7 +96,7 @@ class InstrumentCodeAction implements Action<Task> {
             }
 
             // Move original classes
-            ant.move(file: getClassesDir().canonicalPath, tofile: getClassesBackupDir().canonicalPath)
+            ant.move(file: getClassesDir().canonicalPath, tofile: getClassesBackupDir().canonicalPath, failonerror: true)
             ant.move(file: getTestClassesDir().canonicalPath, tofile: getTestClassesBackupDir().canonicalPath, failonerror: false)
 
             // Compile instrumented classes
@@ -105,7 +105,7 @@ class InstrumentCodeAction implements Action<Task> {
             compileClasses(ant)
 
             // Copy resources
-            ant.copy(todir: getClassesDir().canonicalPath) {
+            ant.copy(todir: getClassesDir().canonicalPath, failonerror: true) {
                 fileset(dir: getClassesBackupDir().canonicalPath, excludes: '**/*.class')
             }
             ant.copy(todir: getTestClassesDir().canonicalPath, failonerror: false) {
