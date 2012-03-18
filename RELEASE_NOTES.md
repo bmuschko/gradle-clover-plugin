@@ -1,3 +1,9 @@
+### Version 0.5.1 (March 18, 2012)
+
+* Original classes directory didn't get restored correctly - [Issue 12](https://github.com/bmuschko/gradle-clover-plugin/issues/12).
+* The task `cloverAggregateReports` depends on `cloverGenerateReport` - [Issue 13](https://github.com/bmuschko/gradle-clover-plugin/issues/13).
+* Upgrade to Gradle Wrapper 1.0-m9.
+
 ### Version 0.5 (January 12, 2012)
 
 * Make root project not automatically apply Java plugin - [Issue 4](https://github.com/bmuschko/gradle-clover-plugin/issues/4).

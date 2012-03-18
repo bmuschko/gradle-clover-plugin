@@ -24,7 +24,7 @@ plugin and declare the `clover` dependency within the `allprojects` closure.
         }
 
         dependencies {
-            classpath 'bmuschko:gradle-clover-plugin:0.5'
+            classpath 'bmuschko:gradle-clover-plugin:0.5.1'
         }
     }
 
@@ -38,7 +38,7 @@ The Clover plugin defines the following tasks:
 
 * `cloverGenerateReport`: Generates Clover code coverage report.
 * `cloverAggregateReports`: Aggregate Clover code coverage reports in a multi-module project setup. This task can only be
-run from the root directory of your project and requires at least one submodule.
+run from the root directory of your project and requires at least one submodule. This task depends on `cloverGenerateReport`.
 
 ## Convention properties
 
