@@ -66,6 +66,7 @@ class CloverPlugin implements Plugin<Project> {
         InstrumentCodeAction instrumentCodeAction = constructor.newInstance()
         instrumentCodeAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('compileGroovy') { hasGroovyPlugin(project) }
+        instrumentCodeAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
         instrumentCodeAction.conventionMapping.map('testRuntimeClasspath') { getTestRuntimeClasspath(project).asFileTree }
         instrumentCodeAction.conventionMapping.map('groovyClasspath') { project.configurations.groovy.asFileTree }
         instrumentCodeAction.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
@@ -107,7 +108,7 @@ class CloverPlugin implements Plugin<Project> {
             generateCoverageReportTask.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('testClassesBackupDir') { getTestClassesBackupDirectory(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project, cloverPluginConvention) }
-            generateCoverageReportTask.conventionMapping.map('testRuntimeClasspath') { getTestRuntimeClasspath(project).asFileTree }
+            generateCoverageReportTask.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
             generateCoverageReportTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('targetPercentage') { cloverPluginConvention.targetPercentage }
             generateCoverageReportTask.conventionMapping.map('filter') { cloverPluginConvention.report.filter }
@@ -123,7 +124,7 @@ class CloverPlugin implements Plugin<Project> {
     private void configureAggregateReportsTask(Project project, CloverPluginConvention cloverPluginConvention) {
         project.tasks.withType(AggregateReportsTask).whenTaskAdded { AggregateReportsTask aggregateReportsTask ->
             aggregateReportsTask.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
-            aggregateReportsTask.conventionMapping.map('testRuntimeClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
+            aggregateReportsTask.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
             aggregateReportsTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             aggregateReportsTask.conventionMapping.map('buildDir') { project.buildDir }
             aggregateReportsTask.conventionMapping.map('subprojectBuildDirs') { project.subprojects.collect { it.buildDir } }

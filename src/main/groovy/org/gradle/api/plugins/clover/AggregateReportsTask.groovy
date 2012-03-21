@@ -29,7 +29,7 @@ import org.gradle.api.tasks.TaskAction
 @Slf4j
 class AggregateReportsTask extends CloverReportTask {
     String initString
-    FileCollection testRuntimeClasspath
+    FileCollection cloverClasspath
     @InputFile File licenseFile
     @InputDirectory File buildDir
     List<File> subprojectBuildDirs
@@ -43,7 +43,7 @@ class AggregateReportsTask extends CloverReportTask {
     private void aggregateReports() {
         log.info 'Starting to aggregate Clover code coverage reports.'
 
-        ant.taskdef(resource: 'cloverlib.xml', classpath: getTestRuntimeClasspath().asPath)
+        ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
         ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
 
         ant.'clover-merge'(initString: "${getBuildDir().canonicalPath}/${getInitString()}") {

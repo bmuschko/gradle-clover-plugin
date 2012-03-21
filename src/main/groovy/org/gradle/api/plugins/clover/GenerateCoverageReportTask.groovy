@@ -35,7 +35,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
     File classesBackupDir
     File testClassesBackupDir
     @InputFiles Set<File> testSrcDirs
-    FileCollection testRuntimeClasspath
+    FileCollection cloverClasspath
     @InputFile File licenseFile
     List<String> testIncludes
     String filter
@@ -69,7 +69,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
     private void generateReport() {
         log.info 'Starting to generate Clover code coverage report.'
 
-        ant.taskdef(resource: 'cloverlib.xml', classpath: getTestRuntimeClasspath().asPath)
+        ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
         ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
 
         restoreOriginalClasses()

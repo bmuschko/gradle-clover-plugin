@@ -32,6 +32,7 @@ import org.gradle.api.tasks.OutputDirectory
 class InstrumentCodeAction implements Action<Task> {
     String initString
     Boolean compileGroovy
+    FileCollection cloverClasspath
     FileCollection testRuntimeClasspath
     FileCollection groovyClasspath
     @OutputDirectory File classesBackupDir
@@ -60,7 +61,7 @@ class InstrumentCodeAction implements Action<Task> {
             log.info 'Starting to instrument code using Clover.'
 
             def ant = new AntBuilder()
-            ant.taskdef(resource: 'cloverlib.xml', classpath: getTestRuntimeClasspath().asPath)
+            ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
             ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
             ant."clover-clean"(initString: "${getBuildDir()}/${getInitString()}")
 
