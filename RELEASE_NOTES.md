@@ -1,3 +1,7 @@
+### Version 0.5.2 (March 21, 2012)
+
+* Resolve Clover Ant task definitions only using the `clover` configuration.
+
 ### Version 0.5.1 (March 18, 2012)
 
 * Original classes directory didn't get restored correctly - [Issue 12](https://github.com/bmuschko/gradle-clover-plugin/issues/12).

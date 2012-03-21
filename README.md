@@ -24,7 +24,7 @@ plugin and declare the `clover` dependency within the `allprojects` closure.
         }
 
         dependencies {
-            classpath 'bmuschko:gradle-clover-plugin:0.5.1'
+            classpath 'bmuschko:gradle-clover-plugin:0.5.2'
         }
     }
 
