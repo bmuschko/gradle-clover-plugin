@@ -1,3 +1,7 @@
+### Version 0.5.3 (May 8, 2012)
+
+* Correctly evaluate `targetPercentage` convention property - [Issue 16](https://github.com/bmuschko/gradle-clover-plugin/issues/16).
+
 ### Version 0.5.2 (March 21, 2012)
 
 * Resolve Clover Ant task definitions only using the `clover` configuration.

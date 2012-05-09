@@ -92,6 +92,10 @@ class GenerateCoverageReportTask extends CloverReportTask {
                                     title: getProjectName())
         }
 
+        if(getTargetPercentage()) {
+            ant."clover-check"(initString: "${getBuildDir()}/${getInitString()}", target: getTargetPercentage(), haltOnFailure: true)
+        }
+
         log.info 'Finished generating Clover code coverage report.'
     }
 
