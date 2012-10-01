@@ -32,6 +32,6 @@ class LicenceDefaultResolverTest extends Specification {
             File file = new LicenceDefaultResolver().resolve(projectRootDir, location)
 
         then: "the file matches the expected path"
-            file.absolutePath == '/home/ben/clover.license'
+            file.absolutePath == new File('/home/ben/clover.license').absolutePath
     }
 }
