@@ -44,6 +44,7 @@ class CloverPlugin implements Plugin<Project> {
     static final String DEFAULT_JAVA_TEST_INCLUDES = '**/*Test.java'
     static final String DEFAULT_GROOVY_TEST_INCLUDES = '**/*Test.groovy'
     static final String DEFAULT_CLOVER_DATABASE = '.clover/clover.db'
+    static final String DEFAULT_CLOVER_SNAPSHOT = '.clover/coverage.db.snapshot'
 
     @Override
     void apply(Project project) {
@@ -53,17 +54,14 @@ class CloverPlugin implements Plugin<Project> {
         CloverPluginConvention cloverPluginConvention = new CloverPluginConvention()
         project.convention.plugins.clover = cloverPluginConvention
 
-        configureInstrumentationAction(project, cloverPluginConvention)
+        configureActions(project, cloverPluginConvention)
         configureGenerateCoverageReportTask(project, cloverPluginConvention)
         configureAggregateReportsTask(project, cloverPluginConvention)
     }
 
-    private void configureInstrumentationAction(Project project, CloverPluginConvention cloverPluginConvention) {
-        AsmBackedClassGenerator generator = new AsmBackedClassGenerator()
-        Class<? extends InstrumentCodeAction> instrumentClass = generator.generate(InstrumentCodeAction)
-        Constructor<InstrumentCodeAction> constructor = instrumentClass.getConstructor()
+    private void configureActions(Project project, CloverPluginConvention cloverPluginConvention) {
 
-        InstrumentCodeAction instrumentCodeAction = constructor.newInstance()
+        InstrumentCodeAction instrumentCodeAction = createInstance(InstrumentCodeAction)
         instrumentCodeAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('compileGroovy') { hasGroovyPlugin(project) }
         instrumentCodeAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
@@ -85,14 +83,34 @@ class CloverPlugin implements Plugin<Project> {
         instrumentCodeAction.conventionMapping.map('statementContexts') { cloverPluginConvention.contexts.statements }
         instrumentCodeAction.conventionMapping.map('methodContexts') { cloverPluginConvention.contexts.methods }
 
+        OptimizeTestSetAction optimizeTestSetAction = createInstance(OptimizeTestSetAction)
+        optimizeTestSetAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
+        optimizeTestSetAction.conventionMapping.map('optimizeTests') { cloverPluginConvention.optimizeTests }
+        optimizeTestSetAction.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, false) }
+        optimizeTestSetAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
+        optimizeTestSetAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
+        optimizeTestSetAction.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project, cloverPluginConvention) }
+        optimizeTestSetAction.conventionMapping.map('buildDir') { project.buildDir }
+
+        CreateSnapshotAction createSnapshotAction = createInstance(CreateSnapshotAction)
+        createSnapshotAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
+        createSnapshotAction.conventionMapping.map('optimizeTests') { cloverPluginConvention.optimizeTests }
+        createSnapshotAction.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, true) }
+        createSnapshotAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
+        createSnapshotAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
+        createSnapshotAction.conventionMapping.map('buildDir') { project.buildDir }
+
         project.gradle.taskGraph.whenReady { TaskExecutionGraph graph ->
             def generateReportTask = project.tasks.getByName(GENERATE_REPORT_TASK_NAME)
 
-            // Only invoke instrumentation when Clover report generation task is run
+            // Only invoke instrumentation / test set optimization / snapshot creation when Clover report generation task is run
             if(graph.hasTask(generateReportTask)) {
                 project.tasks.withType(Test).each { Test test ->
                     test.classpath += project.configurations.getByName(CONFIGURATION_NAME).asFileTree
-                    test.doFirst instrumentCodeAction
+                    test.doFirst optimizeTestSetAction // add first, gets executed second
+                    test.doFirst instrumentCodeAction // add second, gets executed first
+                    test.include optimizeTestSetAction // action is also a file inclusion spec
+                    test.doLast createSnapshotAction
                 }
             }
         }
@@ -112,6 +130,7 @@ class CloverPlugin implements Plugin<Project> {
             generateCoverageReportTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('targetPercentage') { cloverPluginConvention.targetPercentage }
             generateCoverageReportTask.conventionMapping.map('filter') { cloverPluginConvention.report.filter }
+            generateCoverageReportTask.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, false) }
             setCloverReportConventionMappings(project, cloverPluginConvention, generateCoverageReportTask)
         }
 
@@ -127,6 +146,7 @@ class CloverPlugin implements Plugin<Project> {
             aggregateReportsTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             aggregateReportsTask.conventionMapping.map('buildDir') { project.buildDir }
             aggregateReportsTask.conventionMapping.map('subprojectBuildDirs') { project.subprojects.collect { it.buildDir } }
+            aggregateReportsTask.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, false) }
             setCloverReportConventionMappings(project, cloverPluginConvention, aggregateReportsTask)
         }
 
@@ -155,6 +175,19 @@ class CloverPlugin implements Plugin<Project> {
         task.conventionMapping.map('html') { cloverPluginConvention.report.html }
         task.conventionMapping.map('pdf') { cloverPluginConvention.report.pdf }
         task.conventionMapping.map('projectName') { project.name }
+    }
+
+    /**
+     * Creates an instance of the specified class, using an ASM-backed class generator.
+     *
+     * @param clazz the type of object to create
+     * @return an instance of the specified type
+     */
+    private createInstance(Class clazz) {
+        AsmBackedClassGenerator generator = new AsmBackedClassGenerator()
+        Class instrumentClass = generator.generate(clazz)
+        Constructor constructor = instrumentClass.getConstructor()
+        return constructor.newInstance()
     }
 
     /**
@@ -198,6 +231,21 @@ class CloverPlugin implements Plugin<Project> {
      */
     private File getLicenseFile(Project project, CloverPluginConvention cloverPluginConvention) {
         LicenseResolverFactory.instance.getResolver(cloverPluginConvention.licenseLocation).resolve(project.rootDir, cloverPluginConvention.licenseLocation)
+    }
+
+    /**
+     * Gets the Clover snapshot file location.
+     *
+     * @param project Project
+     * @param cloverPluginConvention Clover plugin convention
+     * @param force if true, return the snapshot file even if it doesn't exist; if false, don't return the snapshot file if it doesn't exist
+     * @return the Clover snapshot file location
+     */
+    private File getSnapshotFile(Project project, CloverPluginConvention cloverPluginConvention, boolean force) {
+        File file = cloverPluginConvention.snapshotFile != null && cloverPluginConvention.snapshotFile != '' ?
+            project.file(cloverPluginConvention.snapshotFile) :
+            project.file(DEFAULT_CLOVER_SNAPSHOT)
+        return file.exists() || force ? file : null
     }
 
     /**
