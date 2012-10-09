@@ -37,7 +37,6 @@ class GenerateCoverageReportTask extends CloverReportTask {
     @InputFiles Set<File> testSrcDirs
     FileCollection cloverClasspath
     @InputFile File licenseFile
-    List<String> testIncludes
     String filter
     String targetPercentage
 
@@ -113,13 +112,6 @@ class GenerateCoverageReportTask extends CloverReportTask {
     private void writeReport(String outfile, String type) {
         ant."clover-report"(initString: "${getBuildDir()}/${getInitString()}") {
             current(outfile: outfile, title: getProjectName()) {
-                getTestSrcDirs().each { testSrcDir ->
-                    ant.testsources(dir: testSrcDir) {
-                        getTestIncludes().each { include ->
-                            ant.include(name: include)
-                        }
-                    }
-                }
                 if(getFilter()) {
                     format(type: type, filter: getFilter())
                 }
