@@ -100,19 +100,12 @@ class CloverPlugin implements Plugin<Project> {
         createSnapshotAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
         createSnapshotAction.conventionMapping.map('buildDir') { project.buildDir }
 
-        project.gradle.taskGraph.whenReady { TaskExecutionGraph graph ->
-            def generateReportTask = project.tasks.getByName(GENERATE_REPORT_TASK_NAME)
-
-            // Only invoke instrumentation / test set optimization / snapshot creation when Clover report generation task is run
-            if(graph.hasTask(generateReportTask)) {
-                project.tasks.withType(Test).each { Test test ->
-                    test.classpath += project.configurations.getByName(CONFIGURATION_NAME).asFileTree
-                    test.doFirst optimizeTestSetAction // add first, gets executed second
-                    test.doFirst instrumentCodeAction // add second, gets executed first
-                    test.include optimizeTestSetAction // action is also a file inclusion spec
-                    test.doLast createSnapshotAction
-                }
-            }
+        project.tasks.withType(Test).each { Test test ->
+            test.classpath += project.configurations.getByName(CONFIGURATION_NAME).asFileTree
+            test.doFirst optimizeTestSetAction // add first, gets executed second
+            test.doFirst instrumentCodeAction // add second, gets executed first
+            test.include optimizeTestSetAction // action is also a file inclusion spec
+            test.doLast createSnapshotAction
         }
     }
 
