@@ -144,6 +144,29 @@ class CloverPluginTest extends Specification {
             sourceFile.text = sourceFile.text.trim()
     }
 
+    def "Build a Java multi-project"() {
+
+        given: "a Java multi-project"
+            projectName = 'project4'
+
+        when: "the top-level Clover aggregation task is run"
+            runTasks('clean', 'cloverAggregateReports')
+
+        then: "the aggregated Clover coverage database is generated"
+            cloverDb.exists()
+
+        and: "the aggregated Clover report is generated and is correct"
+            cloverReport.exists()
+            def coverage = new XmlSlurper().parse(cloverReport)
+            coverage.project.package.file[0].@name == 'Car.java'
+            coverage.project.package.file[1].@name == 'Truck.java'
+            coverage.testproject.package.file[0].@name == 'CarTest.java'
+            coverage.testproject.package.file[1].@name == 'TruckTest.java'
+
+        and: "the Clover snapshot is not generated because test optimization is not enabled"
+            cloverSnapshot.exists() == false
+    }
+
     private File getProjectDir() {
         new File('src/test/resources', projectName)
     }

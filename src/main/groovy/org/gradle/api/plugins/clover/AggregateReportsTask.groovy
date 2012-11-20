@@ -49,10 +49,10 @@ class AggregateReportsTask extends CloverReportTask {
         ant.'clover-merge'(initString: "${getBuildDir().canonicalPath}/${getInitString()}") {
             getSubprojectBuildDirs().each { subprojectBuildDir ->
                 File cloverDb = new File("$subprojectBuildDir.canonicalPath/${getInitString()}")
-
-                // Some subproject might not have any tests
                 if(cloverDb.exists()) {
                     ant.cloverDb(initString: cloverDb.canonicalPath)
+                } else {
+                    logger.debug "Unable to find Clover DB file $cloverDb; subproject may not have any tests."
                 }
             }
         }
