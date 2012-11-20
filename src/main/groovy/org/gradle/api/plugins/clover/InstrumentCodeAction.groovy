@@ -79,7 +79,7 @@ class InstrumentCodeAction implements Action<Task> {
                 }
 
                 getTestSrcDirs().each { testSrcDir ->
-                    ant.testsources(dir: testSrcDir) {
+                    ant.fileset(dir: testSrcDir) {
                         getTestIncludes().each { include ->
                             ant.include(name: include)
                         }

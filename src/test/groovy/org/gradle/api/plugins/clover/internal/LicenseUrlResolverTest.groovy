@@ -42,7 +42,7 @@ class LicenseUrlResolverTest extends Specification {
             File file = new LicenseUrlResolver().resolve(testDir, location)
 
         then: "the file matches the expected path"
-            file.path == 'build/tmp/tests/clover.license'
+            file.path == new File('build/tmp/tests/clover.license').path
 
         cleanup: "delete license file"
             testDir.deleteDir()
@@ -63,7 +63,7 @@ class LicenseUrlResolverTest extends Specification {
             File file = new LicenseUrlResolver().resolve(testDir, location)
 
         then: "the file matches the expected path"
-            file.path == 'build/tmp/tests/clover.license'
+            file.path == new File('build/tmp/tests/clover.license').path
 
         and: "content matches"
             file.text == 'rPRmrDnHpSSpJOKpmAOhjNHWMrorrVaukFsQtTGGidLBbCm\n' +

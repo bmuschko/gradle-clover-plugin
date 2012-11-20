@@ -18,6 +18,8 @@ package org.gradle.api.plugins.clover
 import groovy.util.logging.Slf4j
 import org.gradle.api.DefaultTask
 import org.gradle.api.InvalidUserDataException
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 
 /**
@@ -27,6 +29,7 @@ import org.gradle.api.tasks.OutputDirectory
  */
 @Slf4j
 class CloverReportTask extends DefaultTask {
+    @Optional @InputFile File snapshotFile
     @OutputDirectory File reportsDir
     Boolean xml
     Boolean json
