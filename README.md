@@ -10,23 +10,23 @@ To use the Clover plugin, include in your build script:
 
     apply plugin: 'clover'
 
-The plugin JAR needs to be defined in the classpath of your build script. You can either get the plugin from the GitHub download
-section or upload it to your local repository. To define the Clover dependency please use the `clover`
-configuration name in your `dependencies` closure. If you are working with a multi-module project make sure you apply the
-plugin and declare the `clover` dependency within the `allprojects` closure.
+The plugin JAR needs to be defined in the classpath of your build script. It is directly available on
+[Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.gradle.api.plugins%22%20AND%20a%3A%22gradle-clover-plugin%22).
+Alternatively, you can download it from GitHub and deploy it to your local repository. The following code snippet shows an
+example on how to retrieve it from Maven Central:
 
     buildscript {
         repositories {
-            add(new org.apache.ivy.plugins.resolver.URLResolver()) {
-                name = 'GitHub'
-                addArtifactPattern 'http://cloud.github.com/downloads/[organisation]/[module]/[module]-[revision].[ext]'
-            }
+            mavenCentral()
         }
 
         dependencies {
-            classpath 'bmuschko:gradle-clover-plugin:0.5.3'
+            classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.5.3'
         }
     }
+
+To define the Clover dependency please use the `clover` configuration name in your `dependencies` closure. If you are working
+with a multi-module project make sure you apply the plugin and declare the `clover` dependency within the `allprojects` closure.
 
     dependencies {
         clover 'com.cenqua.clover:clover:3.1.2'
