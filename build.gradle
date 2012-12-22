@@ -1,7 +1,9 @@
 apply plugin: 'groovy'
 apply plugin: 'idea'
+apply plugin: 'nexus'
 apply plugin: 'clover'
 
+group = 'org.gradle.api.plugins'
 version = '0.5.3'
 defaultTasks 'clean', 'build'
 
@@ -11,10 +13,12 @@ buildscript {
             name = 'GitHub'
             addArtifactPattern 'http://cloud.github.com/downloads/[organisation]/[module]/[module]-[revision].[ext]'
         }
+        mavenCentral()
     }
 
     dependencies {
         classpath 'bmuschko:gradle-clover-plugin:0.5'
+        classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.2'
     }
 }
 
@@ -64,5 +68,36 @@ clover {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.0-milestone-9'
+    gradleVersion = '1.3'
+}
+
+modifyPom {
+    project {
+        name 'Gradle Clover plugin'
+        description 'Gradle plugin for generating a code coverage report using Clover.'
+        url 'https://github.com/bmuschko/gradle-clover-plugin'
+        inceptionYear '2012'
+
+        scm {
+            url 'https://github.com/bmuschko/gradle-clover-plugin'
+            connection 'scm:https://bmuschko@github.com/bmuschko/gradle-clover-plugin.git'
+            developerConnection 'scm:git://github.com/bmuschko/gradle-clover-plugin.git'
+        }
+
+        licenses {
+            license {
+                name 'The Apache Software License, Version 2.0'
+                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution 'repo'
+            }
+        }
+
+        developers {
+            developer {
+                id 'bmuschko'
+                name 'Benjamin Muschko'
+                email 'benjamin.muschko@gmail.com'
+            }
+        }
+    }
 }
