@@ -15,7 +15,6 @@
  */
 package org.gradle.api.plugins.clover
 
-import groovy.util.logging.Slf4j
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
@@ -26,7 +25,6 @@ import org.gradle.api.tasks.TaskAction
  *
  * @author Benjamin Muschko
  */
-@Slf4j
 class AggregateReportsTask extends CloverReportTask {
     String initString
     FileCollection cloverClasspath
@@ -41,7 +39,7 @@ class AggregateReportsTask extends CloverReportTask {
     }
 
     private void aggregateReports() {
-        log.info 'Starting to aggregate Clover code coverage reports.'
+        logger.info 'Starting to aggregate Clover code coverage reports.'
 
         ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
         ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
@@ -49,9 +47,11 @@ class AggregateReportsTask extends CloverReportTask {
         ant.'clover-merge'(initString: "${getBuildDir().canonicalPath}/${getInitString()}") {
             getSubprojectBuildDirs().each { subprojectBuildDir ->
                 File cloverDb = new File("$subprojectBuildDir.canonicalPath/${getInitString()}")
+
                 if(cloverDb.exists()) {
                     ant.cloverDb(initString: cloverDb.canonicalPath)
-                } else {
+                }
+                else {
                     logger.debug "Unable to find Clover DB file $cloverDb; subproject may not have any tests."
                 }
             }
@@ -76,7 +76,7 @@ class AggregateReportsTask extends CloverReportTask {
                                     outfile: "$cloverReportDir/clover.pdf", title: getProjectName())
         }
 
-        log.info 'Finished aggregating Clover code coverage reports.'
+        logger.info 'Finished aggregating Clover code coverage reports.'
     }
 
     private void writeReport(String outfile, String type) {

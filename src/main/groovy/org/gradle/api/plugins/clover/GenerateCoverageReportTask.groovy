@@ -15,10 +15,8 @@
  */
 package org.gradle.api.plugins.clover
 
-import groovy.util.logging.Slf4j
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.TaskAction
 
 /**
@@ -26,7 +24,6 @@ import org.gradle.api.tasks.TaskAction
  *
  * @author Benjamin Muschko
  */
-@Slf4j
 class GenerateCoverageReportTask extends CloverReportTask {
     String initString
     File buildDir
@@ -34,7 +31,6 @@ class GenerateCoverageReportTask extends CloverReportTask {
     File testClassesDir
     File classesBackupDir
     File testClassesBackupDir
-    @InputFiles Set<File> testSrcDirs
     FileCollection cloverClasspath
     @InputFile File licenseFile
     String filter
@@ -66,7 +62,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
     }
 
     private void generateReport() {
-        log.info 'Starting to generate Clover code coverage report.'
+        logger.info 'Starting to generate Clover code coverage report.'
 
         ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
         ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
@@ -95,7 +91,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
             ant."clover-check"(initString: "${getBuildDir()}/${getInitString()}", target: getTargetPercentage(), haltOnFailure: true)
         }
 
-        log.info 'Finished generating Clover code coverage report.'
+        logger.info 'Finished generating Clover code coverage report.'
     }
 
     private void restoreOriginalClasses() {

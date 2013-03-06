@@ -4,7 +4,7 @@ apply plugin: 'nexus'
 apply plugin: 'clover'
 
 group = 'org.gradle.api.plugins'
-version = '0.5.3'
+version = '0.6'
 defaultTasks 'clean', 'build'
 
 buildscript {
@@ -64,7 +64,7 @@ clover {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.3'
+    gradleVersion = '1.4'
 }
 
 modifyPom {
