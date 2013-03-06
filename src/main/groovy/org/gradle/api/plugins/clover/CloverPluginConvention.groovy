@@ -28,6 +28,8 @@ class CloverPluginConvention {
     String licenseLocation
     String initString
     String targetPercentage
+    boolean optimizeTests
+    String snapshotFile
     Set<File> additionalSourceDirs
     Set<File> additionalTestDirs
     List<String> includes

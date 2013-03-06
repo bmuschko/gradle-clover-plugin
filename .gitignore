@@ -4,4 +4,5 @@ out
 *.ipr
 *.iws
 .idea
+.clover
 .gradle

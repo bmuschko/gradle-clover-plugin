@@ -57,6 +57,12 @@ to `'**/*.java'` and `'**/*.groovy'` for Groovy projects).
 * `additionalTestDirs`: Defines custom test source sets to be added for instrumentation e.g. `sourceSets.integTest.allSource.srcDirs`.
 * `targetPercentage`: The required target percentage total coverage e.g. "10%". The build fails if that goals is not met.
 If not specified no target percentage will be checked.
+* `optimizeTests`: If `true`, Clover will try to [optimize your tests](https://confluence.atlassian.com/display/CLOVER/About+Test+Optimization);
+if `false` Clover will not try to optimize your tests. Test optimization is disabled by default. Note that Clover does not
+yet fully support test optimization for Groovy code; see [CLOV-1152](https://jira.atlassian.com/browse/CLOV-1152) for more information.
+* `snapshotFile`: The location of the Clover snapshot file used for test optimization, relative to the project directory.
+The snapshot file should survive clean builds, so it should *not* be placed in the project's build directory. The default
+location is `.clover/coverage.db.snapshot`.
 
 Within `clover` you can define [coverage contexts](http://confluence.atlassian.com/display/CLOVER/Using+Coverage+Contexts)
 in a closure named `contexts`. There are two types of coverage contexts: statement contexts and method contexts. You can
