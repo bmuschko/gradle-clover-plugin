@@ -1,3 +1,9 @@
+### Version 0.6 (March 9, 2013)
+
+* Added support for test optimization - [Pull Request 20](https://github.com/bmuschko/gradle-clover-plugin/pull/20).
+* Upgrade to Clover 3.1.10.
+* Upgrade to Gradle Wrapper 1.4.
+
 ### Version 0.5.3 (May 8, 2012)
 
 * Correctly evaluate `targetPercentage` convention property - [Issue 16](https://github.com/bmuschko/gradle-clover-plugin/issues/16).
