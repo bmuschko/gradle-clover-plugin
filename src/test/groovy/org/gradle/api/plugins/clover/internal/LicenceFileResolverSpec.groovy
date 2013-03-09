@@ -22,7 +22,7 @@ import spock.lang.Specification
  *
  * @author Benjamin Muschko
  */
-class LicenceFileResolverTest extends Specification {
+class LicenceFileResolverSpec extends Specification {
     def "Resolve fully qualified file path"() {
         given: "the location"
             def projectRootDir = new File('/home/ben/myproject')

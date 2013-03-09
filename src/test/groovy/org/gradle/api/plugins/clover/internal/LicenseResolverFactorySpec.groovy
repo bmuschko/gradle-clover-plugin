@@ -22,7 +22,7 @@ import spock.lang.Specification
  *
  * @author Benjamin Muschko
  */
-class LicenseResolverFactoryTest extends Specification {
+class LicenseResolverFactorySpec extends Specification {
     def "Get resolver for empty location"() {
         given: "a empty location"
             def location = ''

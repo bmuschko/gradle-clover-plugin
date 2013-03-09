@@ -22,7 +22,7 @@ import spock.lang.Specification
  *
  * @author Benjamin Muschko
  */
-class LicenseUrlResolverTest extends Specification {
+class LicenseUrlResolverSpec extends Specification {
     private final File testDir = new File('build/tmp/tests')
 
     def "Resolve file for existing Clover license file"() {

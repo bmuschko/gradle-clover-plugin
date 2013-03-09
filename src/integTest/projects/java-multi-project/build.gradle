@@ -1,0 +1,34 @@
+buildscript {
+    dependencies {
+        classpath files('../../../../build/classes/main')
+    }
+}
+
+allprojects {
+
+    apply plugin: 'java'
+    apply plugin: org.gradle.api.plugins.clover.CloverPlugin
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        testCompile 'junit:junit:4.10'
+        clover 'com.cenqua.clover:clover:3.1.8'
+    }
+
+    clover {
+        report.html = true
+    }
+}
+
+subprojects {
+    clover {
+        licenseLocation = file('../../../../../clover.license').absolutePath
+    }
+}
+
+clover {
+    licenseLocation = file('../../../../clover.license').absolutePath
+}
