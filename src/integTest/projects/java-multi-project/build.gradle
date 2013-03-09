@@ -4,6 +4,8 @@ buildscript {
     }
 }
 
+apply from: '../deps.gradle'
+
 allprojects {
 
     apply plugin: 'java'
@@ -14,11 +16,12 @@ allprojects {
     }
 
     dependencies {
-        testCompile 'junit:junit:4.10'
-        clover 'com.cenqua.clover:clover:3.1.8'
+        testCompile deps.junit
+        clover deps.clover
     }
 
     clover {
+        licenseLocation = file('../../../../clover.license').absolutePath
         report.html = true
     }
 }
@@ -27,8 +30,4 @@ subprojects {
     clover {
         licenseLocation = file('../../../../../clover.license').absolutePath
     }
-}
-
-clover {
-    licenseLocation = file('../../../../clover.license').absolutePath
 }
