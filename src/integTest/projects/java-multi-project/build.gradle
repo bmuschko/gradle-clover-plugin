@@ -7,8 +7,6 @@ buildscript {
 apply from: '../deps.gradle'
 
 allprojects {
-    apply plugin: 'java'
-
     repositories {
         mavenCentral()
     }
@@ -28,6 +26,8 @@ allprojects {
 }
 
 subprojects {
+    apply plugin: 'java'
+
     dependencies {
         testCompile deps.junit
     }

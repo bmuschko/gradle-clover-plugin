@@ -99,8 +99,10 @@ class CloverPlugin implements Plugin<Project> {
         createSnapshotAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
         createSnapshotAction.conventionMapping.map('buildDir') { project.buildDir }
 
-        project.tasks.withType(Test).each { Test test ->
-            test.classpath += project.configurations.getByName(CONFIGURATION_NAME).asFileTree
+        project.tasks.withType(Test) { Test test ->
+            project.afterEvaluate {
+                test.classpath += project.configurations.getByName(CONFIGURATION_NAME).asFileTree
+            }
             test.doFirst optimizeTestSetAction // add first, gets executed second
             test.doFirst instrumentCodeAction // add second, gets executed first
             test.include optimizeTestSetAction // action is also a file inclusion spec
