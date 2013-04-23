@@ -141,16 +141,13 @@ class CloverPlugin implements Plugin<Project> {
             setCloverReportConventionMappings(project, cloverPluginConvention, aggregateReportsTask)
         }
 
-        project.afterEvaluate {
-            // Only add task to root project
-            if(project == project.rootProject && project.subprojects.size() > 0) {
-                AggregateReportsTask aggregateReportsTask = project.rootProject.tasks.add(AGGREGATE_REPORTS_TASK_NAME, AggregateReportsTask)
-                aggregateReportsTask.description = 'Aggregates Clover code coverage reports.'
-                aggregateReportsTask.group = REPORT_GROUP
-                aggregateReportsTask.dependsOn project.tasks.getByName(GENERATE_REPORT_TASK_NAME)
-                project.subprojects.each { subproject ->
-                    aggregateReportsTask.dependsOn subproject.tasks.getByName(GENERATE_REPORT_TASK_NAME)
-                }
+        // Only add task to root project
+        if(project == project.rootProject && project.subprojects.size() > 0) {
+            AggregateReportsTask aggregateReportsTask = project.rootProject.tasks.add(AGGREGATE_REPORTS_TASK_NAME, AggregateReportsTask)
+            aggregateReportsTask.description = 'Aggregates Clover code coverage reports.'
+            aggregateReportsTask.group = REPORT_GROUP
+            project.allprojects*.tasks*.withType(GenerateCoverageReportTask) {
+                aggregateReportsTask.dependsOn it
             }
         }
     }
