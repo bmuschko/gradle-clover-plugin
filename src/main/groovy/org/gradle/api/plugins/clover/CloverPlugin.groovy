@@ -38,7 +38,9 @@ class CloverPlugin implements Plugin<Project> {
     static final String CONFIGURATION_NAME = 'clover'
     static final String GENERATE_REPORT_TASK_NAME = 'cloverGenerateReport'
     static final String AGGREGATE_REPORTS_TASK_NAME = 'cloverAggregateReports'
+    static final String AGGREGATE_DATABASES_TASK_NAME = 'cloverAggregateDatabases'
     static final String REPORT_GROUP = 'report'
+    static final String CLOVER_GROUP = 'clover'
     static final String DEFAULT_JAVA_INCLUDES = '**/*.java'
     static final String DEFAULT_GROOVY_INCLUDES = '**/*.groovy'
     static final String DEFAULT_JAVA_TEST_INCLUDES = '**/*Test.java'
@@ -54,26 +56,99 @@ class CloverPlugin implements Plugin<Project> {
         CloverPluginConvention cloverPluginConvention = new CloverPluginConvention()
         project.convention.plugins.clover = cloverPluginConvention
 
-        configureActions(project, cloverPluginConvention)
-        configureGenerateCoverageReportTask(project, cloverPluginConvention)
+        AggregateDatabasesTask aggregateDatabasesTask = configureAggregateDatabasesTask(project, cloverPluginConvention)
+        configureActions(project, cloverPluginConvention, aggregateDatabasesTask)
+        configureGenerateCoverageReportTask(project, cloverPluginConvention, aggregateDatabasesTask)
         configureAggregateReportsTask(project, cloverPluginConvention)
     }
 
-    private void configureActions(Project project, CloverPluginConvention cloverPluginConvention) {
+    private AggregateDatabasesTask configureAggregateDatabasesTask(Project project, CloverPluginConvention cloverPluginConvention) {
+        project.tasks.withType(AggregateDatabasesTask).whenTaskAdded { AggregateDatabasesTask aggregateDatabasesTask ->
+            aggregateDatabasesTask.conventionMapping.with {
+                map('initString') { getInitString(cloverPluginConvention) }
+                map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
+                map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
+            }
+        }
+
+        AggregateDatabasesTask aggregateDatabasesTask = project.tasks.add(AGGREGATE_DATABASES_TASK_NAME, AggregateDatabasesTask)
+        aggregateDatabasesTask.description = 'Aggregates Clover code coverage databases for the project.'
+        aggregateDatabasesTask.group = CLOVER_GROUP
+        aggregateDatabasesTask
+    }
+
+    private void configureActions(Project project, CloverPluginConvention cloverPluginConvention, AggregateDatabasesTask aggregateDatabasesTask) {
+        project.tasks.withType(Test) { Test test ->
+            project.afterEvaluate {
+                if (cloverPluginConvention.tasksToIntrospect) {
+                    if (test.name in cloverPluginConvention.tasksToIntrospect) {
+                        configureActionsForTask(test, project, cloverPluginConvention, aggregateDatabasesTask)
+                    }
+                } else if (!(test.name in cloverPluginConvention.doNotIntrospectTasks)) {
+                    configureActionsForTask(test, project, cloverPluginConvention, aggregateDatabasesTask)
+                }
+            }
+        }
+    }
+
+    private void configureActionsForTask(Test test, Project project, CloverPluginConvention cloverPluginConvention, AggregateDatabasesTask aggregateDatabasesTask) {
+        test.classpath += project.configurations.getByName(CONFIGURATION_NAME).asFileTree
+        OptimizeTestSetAction optimizeTestSetAction = createOptimizeTestSetAction(cloverPluginConvention, project, test)
+        test.doFirst optimizeTestSetAction // add first, gets executed second
+        test.doFirst createInstrumentCodeAction(cloverPluginConvention, project, test) // add second, gets executed first
+        test.include optimizeTestSetAction // action is also a file inclusion spec
+        test.doLast createCreateSnapshotAction(cloverPluginConvention, project, test)
+        test.doLast createRestoreOriginalClassesAction(cloverPluginConvention, project, test)
+        aggregateDatabasesTask.aggregate(test)
+    }
+
+    private RestoreOriginalClassesAction createRestoreOriginalClassesAction(CloverPluginConvention cloverPluginConvention, Project project, Test testTask) {
+        RestoreOriginalClassesAction restoreOriginalClassesAction = createInstance(RestoreOriginalClassesAction)
+        restoreOriginalClassesAction.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
+        restoreOriginalClassesAction.conventionMapping.map('testClassesBackupDir') { getTestClassesBackupDirectory(project, cloverPluginConvention) }
+        restoreOriginalClassesAction.conventionMapping.map('classesDir') { project.sourceSets.main.output.classesDir }
+        restoreOriginalClassesAction.conventionMapping.map('testClassesDir') { testTask.testClassesDir }
+        restoreOriginalClassesAction
+    }
+
+    private CreateSnapshotAction createCreateSnapshotAction(CloverPluginConvention cloverPluginConvention, Project project, Test testTask) {
+        CreateSnapshotAction createSnapshotAction = createInstance(CreateSnapshotAction)
+        createSnapshotAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention, testTask) }
+        createSnapshotAction.conventionMapping.map('optimizeTests') { cloverPluginConvention.optimizeTests }
+        createSnapshotAction.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, true, testTask) }
+        createSnapshotAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
+        createSnapshotAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
+        createSnapshotAction.conventionMapping.map('buildDir') { project.buildDir }
+        createSnapshotAction
+    }
+
+    private OptimizeTestSetAction createOptimizeTestSetAction(CloverPluginConvention cloverPluginConvention, Project project, Test testTask) {
+        OptimizeTestSetAction optimizeTestSetAction = createInstance(OptimizeTestSetAction)
+        optimizeTestSetAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention, testTask) }
+        optimizeTestSetAction.conventionMapping.map('optimizeTests') { cloverPluginConvention.optimizeTests }
+        optimizeTestSetAction.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, false, testTask) }
+        optimizeTestSetAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
+        optimizeTestSetAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
+        optimizeTestSetAction.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project, cloverPluginConvention, testTask) }
+        optimizeTestSetAction.conventionMapping.map('buildDir') { project.buildDir }
+        optimizeTestSetAction
+    }
+
+    private InstrumentCodeAction createInstrumentCodeAction(CloverPluginConvention cloverPluginConvention, Project project, Test testTask) {
         InstrumentCodeAction instrumentCodeAction = createInstance(InstrumentCodeAction)
-        instrumentCodeAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
+        instrumentCodeAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention, testTask) }
         instrumentCodeAction.conventionMapping.map('compileGroovy') { hasGroovyPlugin(project) }
         instrumentCodeAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
-        instrumentCodeAction.conventionMapping.map('testRuntimeClasspath') { getTestRuntimeClasspath(project).asFileTree }
+        instrumentCodeAction.conventionMapping.map('testRuntimeClasspath') { getTestRuntimeClasspath(project, testTask).asFileTree }
         instrumentCodeAction.conventionMapping.map('groovyClasspath') { project.configurations.groovy.asFileTree }
         instrumentCodeAction.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('testClassesBackupDir') { getTestClassesBackupDirectory(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('buildDir') { project.buildDir }
         instrumentCodeAction.conventionMapping.map('classesDir') { project.sourceSets.main.output.classesDir }
-        instrumentCodeAction.conventionMapping.map('testClassesDir') { project.sourceSets.test.output.classesDir }
+        instrumentCodeAction.conventionMapping.map('testClassesDir') { testTask.testClassesDir }
         instrumentCodeAction.conventionMapping.map('srcDirs') { getSourceDirectories(project, cloverPluginConvention) }
-        instrumentCodeAction.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project, cloverPluginConvention) }
+        instrumentCodeAction.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project, cloverPluginConvention, testTask) }
         instrumentCodeAction.conventionMapping.map('sourceCompatibility') { project.sourceCompatibility?.toString() }
         instrumentCodeAction.conventionMapping.map('targetCompatibility') { project.targetCompatibility?.toString() }
         instrumentCodeAction.conventionMapping.map('includes') { getIncludes(project, cloverPluginConvention) }
@@ -81,49 +156,18 @@ class CloverPlugin implements Plugin<Project> {
         instrumentCodeAction.conventionMapping.map('testIncludes') { getTestIncludes(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('statementContexts') { cloverPluginConvention.contexts.statements }
         instrumentCodeAction.conventionMapping.map('methodContexts') { cloverPluginConvention.contexts.methods }
-
-        OptimizeTestSetAction optimizeTestSetAction = createInstance(OptimizeTestSetAction)
-        optimizeTestSetAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
-        optimizeTestSetAction.conventionMapping.map('optimizeTests') { cloverPluginConvention.optimizeTests }
-        optimizeTestSetAction.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, false) }
-        optimizeTestSetAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
-        optimizeTestSetAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
-        optimizeTestSetAction.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project, cloverPluginConvention) }
-        optimizeTestSetAction.conventionMapping.map('buildDir') { project.buildDir }
-
-        CreateSnapshotAction createSnapshotAction = createInstance(CreateSnapshotAction)
-        createSnapshotAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
-        createSnapshotAction.conventionMapping.map('optimizeTests') { cloverPluginConvention.optimizeTests }
-        createSnapshotAction.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, true) }
-        createSnapshotAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
-        createSnapshotAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
-        createSnapshotAction.conventionMapping.map('buildDir') { project.buildDir }
-
-        project.tasks.withType(Test) { Test test ->
-            project.afterEvaluate {
-                test.classpath += project.configurations.getByName(CONFIGURATION_NAME).asFileTree
-            }
-            test.doFirst optimizeTestSetAction // add first, gets executed second
-            test.doFirst instrumentCodeAction // add second, gets executed first
-            test.include optimizeTestSetAction // action is also a file inclusion spec
-            test.doLast createSnapshotAction
-        }
+        instrumentCodeAction
     }
 
-    private void configureGenerateCoverageReportTask(Project project, CloverPluginConvention cloverPluginConvention) {
+    private void configureGenerateCoverageReportTask(Project project, CloverPluginConvention cloverPluginConvention, AggregateDatabasesTask aggregateDatabasesTask) {
         project.tasks.withType(GenerateCoverageReportTask).whenTaskAdded { GenerateCoverageReportTask generateCoverageReportTask ->
-            generateCoverageReportTask.dependsOn project.tasks.withType(Test)
+            generateCoverageReportTask.dependsOn aggregateDatabasesTask
             generateCoverageReportTask.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('buildDir') { project.buildDir }
-            generateCoverageReportTask.conventionMapping.map('classesDir') { hasJavaPlugin(project) ? project.sourceSets.main.output.classesDir : null }
-            generateCoverageReportTask.conventionMapping.map('testClassesDir') { hasJavaPlugin(project) ? project.sourceSets.test.output.classesDir : null }
-            generateCoverageReportTask.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
-            generateCoverageReportTask.conventionMapping.map('testClassesBackupDir') { getTestClassesBackupDirectory(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
             generateCoverageReportTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             generateCoverageReportTask.conventionMapping.map('targetPercentage') { cloverPluginConvention.targetPercentage }
             generateCoverageReportTask.conventionMapping.map('filter') { cloverPluginConvention.report.filter }
-            generateCoverageReportTask.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, false) }
             setCloverReportConventionMappings(project, cloverPluginConvention, generateCoverageReportTask)
         }
 
@@ -139,7 +183,6 @@ class CloverPlugin implements Plugin<Project> {
             aggregateReportsTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             aggregateReportsTask.conventionMapping.map('buildDir') { project.buildDir }
             aggregateReportsTask.conventionMapping.map('subprojectBuildDirs') { project.subprojects.collect { it.buildDir } }
-            aggregateReportsTask.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, false) }
             setCloverReportConventionMappings(project, cloverPluginConvention, aggregateReportsTask)
         }
 
@@ -193,6 +236,10 @@ class CloverPlugin implements Plugin<Project> {
         cloverPluginConvention.initString ?: DEFAULT_CLOVER_DATABASE
     }
 
+    private String getInitString(CloverPluginConvention cloverPluginConvention, Test testTask) {
+        "${getInitString(cloverPluginConvention)}-${testTask.name}"
+    }
+
     /**
      * Gets classes backup directory.
      *
@@ -234,10 +281,10 @@ class CloverPlugin implements Plugin<Project> {
      * @param force if true, return the snapshot file even if it doesn't exist; if false, don't return the snapshot file if it doesn't exist
      * @return the Clover snapshot file location
      */
-    private File getSnapshotFile(Project project, CloverPluginConvention cloverPluginConvention, boolean force) {
+    private File getSnapshotFile(Project project, CloverPluginConvention cloverPluginConvention, boolean force, Test testTask) {
         File file = cloverPluginConvention.snapshotFile != null && cloverPluginConvention.snapshotFile != '' ?
-            project.file(cloverPluginConvention.snapshotFile) :
-            project.file(DEFAULT_CLOVER_SNAPSHOT)
+            project.file("${cloverPluginConvention.snapshotFile}-${testTask.name}") :
+            project.file("${DEFAULT_CLOVER_SNAPSHOT}-${testTask.name}")
         return file.exists() || force ? file : null
     }
 
@@ -275,15 +322,20 @@ class CloverPlugin implements Plugin<Project> {
      * @param cloverPluginConvention Clover plugin convention
      * @return Test source directories
      */
-    private Set<File> getTestSourceDirectories(Project project, CloverPluginConvention cloverPluginConvention) {
+    private Set<File> getTestSourceDirectories(Project project, CloverPluginConvention cloverPluginConvention, Test testTask) {
         def testSrcDirs = [] as Set<File>
 
-        if(hasGroovyPlugin(project)) {
-            addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.java.srcDirs)
-            addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.groovy.srcDirs)
-        }
-        else if(hasJavaPlugin(project)) {
-            addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.java.srcDirs)
+        //default test task
+        if (testTask.testSrcDirs as Set<File> == project.sourceSets.test.java.srcDirs) {
+            if(hasGroovyPlugin(project)) {
+                addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.java.srcDirs)
+                addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.groovy.srcDirs)
+            }
+            else if(hasJavaPlugin(project)) {
+                addExistingSourceDirectories(testSrcDirs, project.sourceSets.test.java.srcDirs)
+            }
+        } else {
+            addExistingSourceDirectories(testSrcDirs, testTask.testSrcDirs as Set)
         }
 
         if(cloverPluginConvention.additionalTestDirs) {
@@ -370,14 +422,7 @@ class CloverPlugin implements Plugin<Project> {
         project.plugins.hasPlugin(GroovyPlugin)
     }
 
-    /**
-     * Gets testRuntime classpath which consists of the existing testRuntime configuration FileTree and the Clover
-     * configuration FileTree.
-     *
-     * @param project Project
-     * @return File collection
-     */
-    private FileCollection getTestRuntimeClasspath(Project project) {
-        project.configurations.testRuntime.asFileTree + project.configurations.getByName(CONFIGURATION_NAME).asFileTree
+    private FileCollection getTestRuntimeClasspath(Project project, Test testTask) {
+        testTask.classpath.filter { !it.directory } + project.configurations.getByName(CONFIGURATION_NAME)
     }
 }

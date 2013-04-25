@@ -1,0 +1,5 @@
+apply from: 'common.gradle'
+
+clover {
+    doNotIntrospectTasks = ['test']
+}

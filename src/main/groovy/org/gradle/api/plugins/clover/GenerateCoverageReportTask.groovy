@@ -27,10 +27,6 @@ import org.gradle.api.tasks.TaskAction
 class GenerateCoverageReportTask extends CloverReportTask {
     String initString
     File buildDir
-    File classesDir
-    File testClassesDir
-    File classesBackupDir
-    File testClassesBackupDir
     FileCollection cloverClasspath
     @InputFile File licenseFile
     String filter
@@ -46,15 +42,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
     }
 
     private boolean allowReportGeneration() {
-        isCloverDatabaseExistent() && existsClassesDir() && existsClassesBackupDir()
-    }
-
-    private boolean existsClassesDir() {
-        getClassesDir() && getClassesDir().exists()
-    }
-
-    private boolean existsClassesBackupDir() {
-        getClassesBackupDir() && getClassesBackupDir().exists()
+        isCloverDatabaseExistent()
     }
 
     private boolean isCloverDatabaseExistent() {
@@ -67,7 +55,6 @@ class GenerateCoverageReportTask extends CloverReportTask {
         ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
         ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
 
-        restoreOriginalClasses()
         String cloverReportDir = "${getReportsDir()}/clover"
 
         if(getXml()) {
@@ -92,17 +79,6 @@ class GenerateCoverageReportTask extends CloverReportTask {
         }
 
         logger.info 'Finished generating Clover code coverage report.'
-    }
-
-    private void restoreOriginalClasses() {
-        ant.delete(includeEmptyDirs: true) {
-            fileset(dir: getClassesDir().canonicalPath, includes: '**/*')
-        }
-        ant.delete(includeEmptyDirs: true) {
-            fileset(dir: getTestClassesDir().canonicalPath, includes: '**/*')
-        }
-        ant.move(file: getClassesBackupDir().canonicalPath, tofile: getClassesDir().canonicalPath, failonerror: true)
-        ant.move(file: getTestClassesBackupDir().canonicalPath, tofile: getTestClassesDir().canonicalPath, failonerror: false)
     }
 
     private void writeReport(String outfile, String type) {
