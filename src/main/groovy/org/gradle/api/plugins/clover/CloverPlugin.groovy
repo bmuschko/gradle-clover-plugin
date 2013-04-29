@@ -80,11 +80,11 @@ class CloverPlugin implements Plugin<Project> {
     private void configureActions(Project project, CloverPluginConvention cloverPluginConvention, AggregateDatabasesTask aggregateDatabasesTask) {
         project.tasks.withType(Test) { Test test ->
             project.afterEvaluate {
-                if (cloverPluginConvention.tasksToIntrospect) {
-                    if (test.name in cloverPluginConvention.tasksToIntrospect) {
+                if (cloverPluginConvention.includeTasks) {
+                    if (test.name in cloverPluginConvention.includeTasks) {
                         configureActionsForTask(test, project, cloverPluginConvention, aggregateDatabasesTask)
                     }
-                } else if (!(test.name in cloverPluginConvention.doNotIntrospectTasks)) {
+                } else if (!(test.name in cloverPluginConvention.excludeTasks)) {
                     configureActionsForTask(test, project, cloverPluginConvention, aggregateDatabasesTask)
                 }
             }

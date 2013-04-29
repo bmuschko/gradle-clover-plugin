@@ -63,8 +63,8 @@ yet fully support test optimization for Groovy code; see [CLOV-1152](https://jir
 * `snapshotFile`: The location of the Clover snapshot file used for test optimization, relative to the project directory.
 The snapshot file should survive clean builds, so it should *not* be placed in the project's build directory. The default
 location is `.clover/coverage.db.snapshot`.
-* `tasksToIntrospect`: a list of task names, allows to explicitly specify which test tasks should be introspected and used to gather coverage information - usefull if there are more than one `Test` tasks in a project.
-* `doNotIntrospectTasks`: a list of tasks names, allows to exclude test tasks from introspection and gathering coverage information - usefull if there are more than one `Test` tasks in a project.
+* `includeTasks`: A list of task names, allows to explicitly specify which test tasks should be introspected and used to gather coverage information - useful if there are more than one `Test` tasks in a project.
+* `excludeTasks`: A list of task names, allows to exclude test tasks from introspection and gathering coverage information - useful if there are more than one `Test` tasks in a project.
 
 Within `clover` you can define [coverage contexts](http://confluence.atlassian.com/display/CLOVER/Using+Coverage+Contexts)
 in a closure named `contexts`. There are two types of coverage contexts: statement contexts and method contexts. You can

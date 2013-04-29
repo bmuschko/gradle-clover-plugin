@@ -37,8 +37,8 @@ class CloverPluginConvention {
     List<String> testIncludes
     CloverReportConvention report = new CloverReportConvention()
     CloverContextsConvention contexts = new CloverContextsConvention()
-    List<String> tasksToIntrospect
-    List<String> doNotIntrospectTasks
+    List<String> includeTasks
+    List<String> excludeTasks
 
     def clover(Closure closure) {
         ConfigureUtil.configure(closure, this)

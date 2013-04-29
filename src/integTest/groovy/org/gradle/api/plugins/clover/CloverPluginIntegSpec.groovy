@@ -152,10 +152,14 @@ class CloverPluginIntegSpec extends Specification {
         and: "the aggregated Clover report is generated and is correct"
             cloverReport.exists()
             def coverage = new XmlSlurper().parse(cloverReport)
+            coverage.project.package.file.size() == 2
             coverage.project.package.file[0].@name == 'Car.java'
             coverage.project.package.file[1].@name == 'Truck.java'
+            !coverage.project.package.file*.@name.contains('Motorbike.java')
+            coverage.testproject.package.file.size() == 2
             coverage.testproject.package.file[0].@name == 'CarTest.java'
             coverage.testproject.package.file[1].@name == 'TruckTest.java'
+            !coverage.testproject.package.file*.@name.contains('MotorbikeTest.java')
 
         and: "the Clover snapshot is not generated because test optimization is not enabled"
             cloverSnapshot.exists() == false
@@ -167,9 +171,7 @@ class CloverPluginIntegSpec extends Specification {
         projectName = 'java-multi-test-task-project'
 
         when: "the top-level Clover aggregation task is run"
-        runTasks(['clean', 'cloverGenerateReport']) {
-            withArguments '-b', "${buildFile}.gradle"
-        }
+        runTasks(['-b', "${buildFile}.gradle"], 'clean', 'cloverGenerateReport')
 
         then: "the aggregated Clover coverage database is generated"
         cloverDb.exists()
@@ -184,8 +186,8 @@ class CloverPluginIntegSpec extends Specification {
         where:
         scenario        | buildFile | startMethodCoverage | stopMethodCoverage
         'for all tasks' | 'common'  | '1'                 | '1'
-        'only for test' | 'onlyFor' | '1'                 | '0'
-        'except test'   | 'except'  | '0'                 | '1'
+        'only for test' | 'include' | '1'                 | '0'
+        'except test'   | 'exclude' | '0'                 | '1'
     }
 
     private File getProjectDir() {
@@ -204,26 +206,20 @@ class CloverPluginIntegSpec extends Specification {
         new File(projectDir, 'build/reports/clover/clover.xml')
     }
 
-    private void runTasks(List<String> tasks, Closure builderConfigurationClosure) {
+    private void runTasks(List<String> arguments = [], String... tasks) {
         ProjectConnection conn = GradleConnector.newConnector().forProjectDirectory(projectDir).connect()
 
         try {
             ByteArrayOutputStream stream = new ByteArrayOutputStream()
             def builder = conn.newBuild()
-            if (builderConfigurationClosure) {
-                builderConfigurationClosure.delegate = builder
-                builderConfigurationClosure.resolveStrategy = Closure.DELEGATE_FIRST
-                builderConfigurationClosure.call()
+            if (arguments) {
+                builder.withArguments(*arguments)
             }
-            builder.forTasks(*tasks).setStandardOutput(stream).run()
+            builder.forTasks(tasks).setStandardOutput(stream).run()
             output = stream.toString()
         }
         finally {
             conn.close()
         }
-    }
-
-    private void runTasks(String... tasks) {
-        runTasks(tasks as List, null)
     }
 }
