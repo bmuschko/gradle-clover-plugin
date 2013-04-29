@@ -7,27 +7,28 @@ buildscript {
 apply from: '../deps.gradle'
 
 allprojects {
-
-    apply plugin: 'java'
-    apply plugin: org.gradle.api.plugins.clover.CloverPlugin
-
     repositories {
         mavenCentral()
     }
 
-    dependencies {
-        testCompile deps.junit
-        clover deps.clover
-    }
+    if (path != ':project4c') {
+        apply plugin: org.gradle.api.plugins.clover.CloverPlugin
 
-    clover {
-        licenseLocation = file('../../../../clover.license').absolutePath
-        report.html = true
+        dependencies {
+            clover deps.clover
+        }
+
+        clover {
+            licenseLocation = rootProject.file('../../../../clover.license').absolutePath
+            report.html = true
+        }
     }
 }
 
 subprojects {
-    clover {
-        licenseLocation = file('../../../../../clover.license').absolutePath
+    apply plugin: 'java'
+
+    dependencies {
+        testCompile deps.junit
     }
 }

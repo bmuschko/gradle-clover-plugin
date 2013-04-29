@@ -1,0 +1,43 @@
+buildscript {
+    dependencies {
+        classpath files('../../../../build/classes/main')
+    }
+}
+
+apply from: '../deps.gradle'
+apply plugin: org.gradle.api.plugins.clover.CloverPlugin
+apply plugin: 'java'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile deps.junit
+    clover deps.clover
+}
+
+configurations {
+    customTestCompile.extendsFrom testCompile
+    customTestRuntime.extendsFrom testRuntime
+}
+
+sourceSets {
+    customTest {
+        compileClasspath += main.output
+        runtimeClasspath += main.output
+    }
+}
+
+clover {
+    licenseLocation = file('../../../../clover.license').absolutePath
+    report.html = true
+}
+
+task customTest(type: Test) {
+    testClassesDir = sourceSets.customTest.output.classesDir
+    classpath = sourceSets.customTest.runtimeClasspath
+    testSrcDirs = sourceSets.customTest.java.srcDirs as List
+}
+
+check.dependsOn customTest
