@@ -1,3 +1,9 @@
+### Version 0.6.1 (May 5, 2013)
+
+* Allow to apply Clover plugin before applying Java plugin - [Issue 24](https://github.com/bmuschko/gradle-clover-plugin/issues/24).
+* Support multiple Test tasks per project - [Issue 25](https://github.com/bmuschko/gradle-clover-plugin/issues/25).
+* Allow usage of Clover plugin for projects where not all subprojects have the plugin applied to them - [Issue 26](https://github.com/bmuschko/gradle-clover-plugin/issues/26).
+
 ### Version 0.6 (March 9, 2013)
 
 * Added support for test optimization - [Pull Request 20](https://github.com/bmuschko/gradle-clover-plugin/pull/20).
