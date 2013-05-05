@@ -18,6 +18,7 @@ package org.gradle.api.plugins.clover
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
 import spock.lang.Specification
+import spock.lang.Unroll
 
 /**
  * Some integration tests for the Clover plugin.
@@ -116,9 +117,6 @@ class CloverPluginIntegSpec extends Specification {
             output.contains('For the current test set, Clover detected no modified source files')
             output.contains('Clover included 0 test classes in this run (total # test classes : 1)')
 
-        and: "the Clover report wasn't generated"
-            cloverReport.exists() == false
-
         when: "the code is modified, and the Clover report generation task is run a third time"
             sourceFile << ' '
             runTasks('clean', 'cloverGenerateReport')
@@ -154,13 +152,42 @@ class CloverPluginIntegSpec extends Specification {
         and: "the aggregated Clover report is generated and is correct"
             cloverReport.exists()
             def coverage = new XmlSlurper().parse(cloverReport)
+            coverage.project.package.file.size() == 2
             coverage.project.package.file[0].@name == 'Car.java'
             coverage.project.package.file[1].@name == 'Truck.java'
+            !coverage.project.package.file*.@name.contains('Motorbike.java')
+            coverage.testproject.package.file.size() == 2
             coverage.testproject.package.file[0].@name == 'CarTest.java'
             coverage.testproject.package.file[1].@name == 'TruckTest.java'
+            !coverage.testproject.package.file*.@name.contains('MotorbikeTest.java')
 
         and: "the Clover snapshot is not generated because test optimization is not enabled"
             cloverSnapshot.exists() == false
+    }
+
+    @Unroll
+    def "Build a Java multi-test-task project #scenario"() {
+        given: "a Java multi-test-task project"
+        projectName = 'java-multi-test-task-project'
+
+        when: "the top-level Clover aggregation task is run"
+        runTasks(['-b', "${buildFile}.gradle"], 'clean', 'cloverGenerateReport')
+
+        then: "the aggregated Clover coverage database is generated"
+        cloverDb.exists()
+
+        and: "the aggregated Clover report is generated and is correct"
+        cloverReport.exists()
+        def coverage = new XmlSlurper().parse(cloverReport)
+        def carCoverage = coverage.project.package.file.find { it.@name.text() == 'Car.java' }
+        carCoverage.line.find { it.@num.text() == "21" }.@count.text() == startMethodCoverage
+        carCoverage.line.find { it.@num.text() == "26" }.@count.text() == stopMethodCoverage
+
+        where:
+        scenario        | buildFile | startMethodCoverage | stopMethodCoverage
+        'for all tasks' | 'common'  | '1'                 | '1'
+        'only for test' | 'include' | '1'                 | '0'
+        'except test'   | 'exclude' | '0'                 | '1'
     }
 
     private File getProjectDir() {
@@ -172,19 +199,23 @@ class CloverPluginIntegSpec extends Specification {
     }
 
     private File getCloverSnapshot() {
-        new File(projectDir, '.clover/coverage.db.snapshot')
+        new File(projectDir, '.clover/coverage.db.snapshot-test')
     }
 
     private File getCloverReport() {
         new File(projectDir, 'build/reports/clover/clover.xml')
     }
 
-    private void runTasks(String... tasks) {
+    private void runTasks(List<String> arguments = [], String... tasks) {
         ProjectConnection conn = GradleConnector.newConnector().forProjectDirectory(projectDir).connect()
 
         try {
             ByteArrayOutputStream stream = new ByteArrayOutputStream()
-            conn.newBuild().forTasks(tasks).setStandardOutput(stream).run()
+            def builder = conn.newBuild()
+            if (arguments) {
+                builder.withArguments(*arguments)
+            }
+            builder.forTasks(tasks).setStandardOutput(stream).run()
             output = stream.toString()
         }
         finally {
