@@ -1,3 +1,7 @@
+### Version 0.6.2 (September 6, 2013)
+
+* Coercing GStrings into Strings - [Pull Request 30](https://github.com/bmuschko/gradle-clover-plugin/pull/30).
+
 ### Version 0.6.1 (May 5, 2013)
 
 * Allow to apply Clover plugin before applying Java plugin - [Issue 24](https://github.com/bmuschko/gradle-clover-plugin/issues/24).
