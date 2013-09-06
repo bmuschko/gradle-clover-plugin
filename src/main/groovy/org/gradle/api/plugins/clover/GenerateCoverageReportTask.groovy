@@ -58,15 +58,15 @@ class GenerateCoverageReportTask extends CloverReportTask {
         String cloverReportDir = "${getReportsDir()}/clover"
 
         if(getXml()) {
-            writeReport("$cloverReportDir/clover.xml", ReportType.XML.format)
+            writeReport("$cloverReportDir/clover.xml" as String, ReportType.XML.format)
         }
 
         if(getJson()) {
-            writeReport("$cloverReportDir/json", ReportType.JSON.format)
+            writeReport("$cloverReportDir/json" as String, ReportType.JSON.format)
         }
 
         if(getHtml()) {
-            writeReport("$cloverReportDir/html", ReportType.HTML.format)
+            writeReport("$cloverReportDir/html" as String, ReportType.HTML.format)
         }
 
         if(getPdf()) {
