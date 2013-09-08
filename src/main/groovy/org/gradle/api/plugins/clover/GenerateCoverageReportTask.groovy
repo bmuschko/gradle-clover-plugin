@@ -36,7 +36,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
     }
 
     private boolean isCloverDatabaseExistent() {
-        new File("${getBuildDir()}/${getInitString()}").exists()
+        new File("$project.buildDir/${getInitString()}").exists()
     }
 
     private void generateReport() {
@@ -50,7 +50,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
 
     private void checkTargetPercentage() {
         if(getTargetPercentage()) {
-            ant."clover-check"(initString: "${getBuildDir()}/${getInitString()}", target: getTargetPercentage(), haltOnFailure: true)
+            ant."clover-check"(initString: "$project.buildDir/${getInitString()}", target: getTargetPercentage(), haltOnFailure: true)
         }
     }
 }

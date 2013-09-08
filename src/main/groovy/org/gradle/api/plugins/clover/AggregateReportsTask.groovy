@@ -38,7 +38,7 @@ class AggregateReportsTask extends CloverReportTask {
     }
 
     private void mergeSubprojectCloverDatabases() {
-        ant.'clover-merge'(initString: "${getBuildDir().canonicalPath}/${getInitString()}") {
+        ant.'clover-merge'(initString: "${project.buildDir.canonicalPath}/${getInitString()}") {
             getSubprojectBuildDirs().each { subprojectBuildDir ->
                 File cloverDb = new File("$subprojectBuildDir.canonicalPath/${getInitString()}")
 

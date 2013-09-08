@@ -39,12 +39,6 @@ abstract class CloverReportTask extends DefaultTask {
     String initString
 
     /**
-     * Build directory.
-     */
-    @InputDirectory
-    File buildDir
-
-    /**
      * Directory for writing reports.
      */
     @OutputDirectory
@@ -55,12 +49,6 @@ abstract class CloverReportTask extends DefaultTask {
      */
     @InputFile
     File licenseFile
-
-    /**
-     * Name of project used for reporting.
-     */
-    @Input
-    String projectName
 
     Boolean xml
     Boolean json
@@ -133,8 +121,8 @@ abstract class CloverReportTask extends DefaultTask {
         }
 
         if(getPdf()) {
-            ant."clover-pdf-report"(initString: "${getBuildDir().canonicalPath}/${getInitString()}",
-                    outfile: new File(cloverReportDir, 'clover.pdf'), title: getProjectName())
+            ant."clover-pdf-report"(initString: "${project.buildDir.canonicalPath}/${getInitString()}",
+                    outfile: new File(cloverReportDir, 'clover.pdf'), title: project.name)
         }
     }
 
@@ -146,8 +134,8 @@ abstract class CloverReportTask extends DefaultTask {
      * @param filter Optional filter
      */
     private void writeReport(File outfile, ReportType reportType, String filter) {
-        ant."clover-report"(initString: "${getBuildDir()}/${getInitString()}") {
-            current(outfile: outfile, title: getProjectName()) {
+        ant."clover-report"(initString: "$project.buildDir/${getInitString()}") {
+            current(outfile: outfile, title: project.name) {
                 if(filter) {
                     format(type: reportType.format, filter: filter)
                 }

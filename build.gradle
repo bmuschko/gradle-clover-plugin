@@ -1,7 +1,7 @@
 apply plugin: 'groovy'
 apply plugin: 'idea'
 apply plugin: 'nexus'
-apply plugin: 'clover'
+//apply plugin: 'clover'
 
 group = 'org.gradle.api.plugins'
 version = '0.7'
@@ -46,7 +46,7 @@ dependencies {
     testCompile('org.spockframework:spock-core:0.7-groovy-1.8') {
         exclude group: 'org.codehaus.groovy', module: 'groovy-all'
     }
-    clover 'com.cenqua.clover:clover:3.1.10'
+    //clover 'com.cenqua.clover:clover:3.1.10'
 }
 
 jar {
@@ -79,11 +79,11 @@ idea.module {
     testSourceDirs += file('src/integTest/groovy')
 }
 
-clover {
+/*clover {
     report {
         html = true
     }
-}
+}*/
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.7'
