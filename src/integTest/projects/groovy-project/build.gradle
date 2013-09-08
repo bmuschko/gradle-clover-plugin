@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    groovy localGroovy()
+    compile localGroovy()
     testCompile deps.junit
     clover deps.clover
 }
