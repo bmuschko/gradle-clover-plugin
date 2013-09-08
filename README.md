@@ -21,7 +21,7 @@ example on how to retrieve it from Maven Central:
         }
 
         dependencies {
-            classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.6.2'
+            classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.7'
         }
     }
 

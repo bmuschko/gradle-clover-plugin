@@ -15,35 +15,29 @@
  */
 package org.gradle.api.plugins.clover
 
-import org.gradle.api.file.FileCollection
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.TaskAction
-
 /**
  * Task for aggregrating Clover code coverage reports.
  *
  * @author Benjamin Muschko
  */
 class AggregateReportsTask extends CloverReportTask {
-    String initString
-    FileCollection cloverClasspath
-    @InputFile File licenseFile
-    @InputDirectory File buildDir
     List<File> subprojectBuildDirs
 
-    @TaskAction
-    void start() {
-        validateConfiguration()
+    @Override
+    void generateCodeCoverage() {
         aggregateReports()
     }
 
     private void aggregateReports() {
         logger.info 'Starting to aggregate Clover code coverage reports.'
 
-        ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-        ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
+        mergeSubprojectCloverDatabases()
+        writeReports()
 
+        logger.info 'Finished aggregating Clover code coverage reports.'
+    }
+
+    private void mergeSubprojectCloverDatabases() {
         ant.'clover-merge'(initString: "${getBuildDir().canonicalPath}/${getInitString()}") {
             getSubprojectBuildDirs().each { subprojectBuildDir ->
                 File cloverDb = new File("$subprojectBuildDir.canonicalPath/${getInitString()}")
@@ -54,35 +48,6 @@ class AggregateReportsTask extends CloverReportTask {
                 else {
                     logger.debug "Unable to find Clover DB file $cloverDb; subproject may not have any tests."
                 }
-            }
-        }
-
-        String cloverReportDir = "${getReportsDir()}/clover"
-
-        if(getXml()) {
-            writeReport("$cloverReportDir/clover.xml", ReportType.XML.format)
-        }
-
-        if(getJson()) {
-            writeReport("$cloverReportDir/json", ReportType.JSON.format)
-        }
-
-        if(getHtml()) {
-            writeReport("$cloverReportDir/html", ReportType.HTML.format)
-        }
-
-        if(getPdf()) {
-            ant."clover-pdf-report"(initString: "${getBuildDir().canonicalPath}/${getInitString()}",
-                                    outfile: "$cloverReportDir/clover.pdf", title: getProjectName())
-        }
-
-        logger.info 'Finished aggregating Clover code coverage reports.'
-    }
-
-    private void writeReport(String outfile, String type) {
-        ant."clover-report"(initString: "${getBuildDir().canonicalPath}/${getInitString()}") {
-            current(outfile: outfile, title: getProjectName()) {
-                format(type: type)
             }
         }
     }

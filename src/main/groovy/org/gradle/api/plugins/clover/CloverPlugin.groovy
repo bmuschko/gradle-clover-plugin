@@ -50,7 +50,7 @@ class CloverPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        project.configurations.add(CONFIGURATION_NAME).setVisible(false).setTransitive(true)
+        project.configurations.create(CONFIGURATION_NAME).setVisible(false).setTransitive(true)
                 .setDescription('The Clover library to be used for this project.')
 
         CloverPluginConvention cloverPluginConvention = new CloverPluginConvention()
@@ -71,7 +71,7 @@ class CloverPlugin implements Plugin<Project> {
             }
         }
 
-        AggregateDatabasesTask aggregateDatabasesTask = project.tasks.add(AGGREGATE_DATABASES_TASK_NAME, AggregateDatabasesTask)
+        AggregateDatabasesTask aggregateDatabasesTask = project.tasks.create(AGGREGATE_DATABASES_TASK_NAME, AggregateDatabasesTask)
         aggregateDatabasesTask.description = 'Aggregates Clover code coverage databases for the project.'
         aggregateDatabasesTask.group = CLOVER_GROUP
         aggregateDatabasesTask
@@ -140,7 +140,7 @@ class CloverPlugin implements Plugin<Project> {
         instrumentCodeAction.conventionMapping.map('compileGroovy') { hasGroovyPlugin(project) }
         instrumentCodeAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
         instrumentCodeAction.conventionMapping.map('testRuntimeClasspath') { getTestRuntimeClasspath(project, testTask).asFileTree }
-        instrumentCodeAction.conventionMapping.map('groovyClasspath') { project.configurations.groovy.asFileTree }
+        instrumentCodeAction.conventionMapping.map('groovyClasspath') { project.configurations.compile.asFileTree }
         instrumentCodeAction.conventionMapping.map('classesBackupDir') { getClassesBackupDirectory(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('testClassesBackupDir') { getTestClassesBackupDirectory(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
@@ -171,7 +171,7 @@ class CloverPlugin implements Plugin<Project> {
             setCloverReportConventionMappings(project, cloverPluginConvention, generateCoverageReportTask)
         }
 
-        GenerateCoverageReportTask generateCoverageReportTask = project.tasks.add(GENERATE_REPORT_TASK_NAME, GenerateCoverageReportTask)
+        GenerateCoverageReportTask generateCoverageReportTask = project.tasks.create(GENERATE_REPORT_TASK_NAME, GenerateCoverageReportTask)
         generateCoverageReportTask.description = 'Generates Clover code coverage report.'
         generateCoverageReportTask.group = REPORT_GROUP
     }
@@ -188,7 +188,7 @@ class CloverPlugin implements Plugin<Project> {
 
         // Only add task to root project
         if(project == project.rootProject && project.subprojects.size() > 0) {
-            AggregateReportsTask aggregateReportsTask = project.rootProject.tasks.add(AGGREGATE_REPORTS_TASK_NAME, AggregateReportsTask)
+            AggregateReportsTask aggregateReportsTask = project.rootProject.tasks.create(AGGREGATE_REPORTS_TASK_NAME, AggregateReportsTask)
             aggregateReportsTask.description = 'Aggregates Clover code coverage reports.'
             aggregateReportsTask.group = REPORT_GROUP
             project.allprojects*.tasks*.withType(GenerateCoverageReportTask) {

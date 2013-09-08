@@ -4,7 +4,7 @@ apply plugin: 'nexus'
 apply plugin: 'clover'
 
 group = 'org.gradle.api.plugins'
-version = '0.6.2'
+version = '0.7'
 defaultTasks 'clean', 'build'
 
 buildscript {
@@ -14,7 +14,7 @@ buildscript {
 
     dependencies {
         classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.5.3'
-        classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.2'
+        classpath 'org.gradle.api.plugins:gradle-nexus-plugin:0.3'
     }
 }
 
@@ -41,7 +41,7 @@ repositories {
 }
 
 dependencies {
-    groovy localGroovy()
+    compile localGroovy()
     compile gradleApi()
     testCompile('org.spockframework:spock-core:0.7-groovy-1.8') {
         exclude group: 'org.codehaus.groovy', module: 'groovy-all'
@@ -86,7 +86,7 @@ clover {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.4'
+    gradleVersion = '1.7'
 }
 
 modifyPom {

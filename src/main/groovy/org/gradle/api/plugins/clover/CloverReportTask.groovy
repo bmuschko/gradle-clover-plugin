@@ -17,27 +17,62 @@ package org.gradle.api.plugins.clover
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.InvalidUserDataException
-import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.*
 
 /**
  * Base class for Clover report tasks.
  *
  * @author Benjamin Muschko
  */
-class CloverReportTask extends DefaultTask {
-    @OutputDirectory File reportsDir
+abstract class CloverReportTask extends DefaultTask {
+    /**
+     * Classpath for Clover Ant tasks.
+     */
+    @InputFiles
+    FileCollection cloverClasspath
+
+    /**
+     * The location to write the Clover coverage database.
+     */
+    @Input
+    String initString
+
+    /**
+     * Build directory.
+     */
+    @InputDirectory
+    File buildDir
+
+    /**
+     * Directory for writing reports.
+     */
+    @OutputDirectory
+    File reportsDir
+
+    /**
+     * Mandatory Clover license file.
+     */
+    @InputFile
+    File licenseFile
+
+    /**
+     * Name of project used for reporting.
+     */
+    @Input
+    String projectName
+
     Boolean xml
     Boolean json
     Boolean html
     Boolean pdf
-    String projectName
 
     /**
      * Checks to see if at least on report type is selected.
      *
      * @return Flag
      */
-    boolean isAtLeastOneReportTypeSelected() {
+    private boolean isAtLeastOneReportTypeSelected() {
         getXml() || getJson() || getHtml() || getPdf()
     }
 
@@ -46,7 +81,7 @@ class CloverReportTask extends DefaultTask {
      *
      * @return Selected report types.
      */
-    List getSelectedReportTypes() {
+    private List getSelectedReportTypes() {
         def selectedReportTypes = []
 
         if(getXml()) {
@@ -68,7 +103,7 @@ class CloverReportTask extends DefaultTask {
     /**
      * Validates configuration before running the task.
      */
-    void validateConfiguration() {
+    private void validateConfiguration() {
         if(!isAtLeastOneReportTypeSelected()) {
             throw new InvalidUserDataException("No report type selected. Please pick at least one: ${ReportType.getAllFormats()}.")
         }
@@ -76,4 +111,67 @@ class CloverReportTask extends DefaultTask {
             logger.info "Selected report types = ${getSelectedReportTypes()}"
         }
     }
+
+    /**
+     * Writes reports.
+     *
+     * @param filter Optional filter
+     */
+    protected void writeReports(String filter = null) {
+        File cloverReportDir = new File("${getReportsDir()}/clover")
+
+        if(getXml()) {
+            writeReport(new File(cloverReportDir, 'clover.xml'), ReportType.XML, filter)
+        }
+
+        if(getJson()) {
+            writeReport(new File(cloverReportDir, 'json'), ReportType.JSON, filter)
+        }
+
+        if(getHtml()) {
+            writeReport(new File(cloverReportDir, 'html'), ReportType.HTML, filter)
+        }
+
+        if(getPdf()) {
+            ant."clover-pdf-report"(initString: "${getBuildDir().canonicalPath}/${getInitString()}",
+                    outfile: new File(cloverReportDir, 'clover.pdf'), title: getProjectName())
+        }
+    }
+
+    /**
+     * Writes the report with a given type.
+     *
+     * @param outfile Report output file
+     * @param reportType Report type
+     * @param filter Optional filter
+     */
+    private void writeReport(File outfile, ReportType reportType, String filter) {
+        ant."clover-report"(initString: "${getBuildDir()}/${getInitString()}") {
+            current(outfile: outfile, title: getProjectName()) {
+                if(filter) {
+                    format(type: reportType.format, filter: filter)
+                }
+                else {
+                    format(type: reportType.format)
+                }
+            }
+        }
+    }
+
+    /**
+     * Initializes Clover Ant tasks.
+     */
+    private void initAntTasks() {
+        ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
+        ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
+    }
+
+    @TaskAction
+    void start() {
+        validateConfiguration()
+        initAntTasks()
+        generateCodeCoverage()
+    }
+
+    abstract void generateCodeCoverage()
 }

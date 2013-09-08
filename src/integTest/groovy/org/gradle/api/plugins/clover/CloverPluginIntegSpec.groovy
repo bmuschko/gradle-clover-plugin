@@ -43,14 +43,17 @@ class CloverPluginIntegSpec extends Specification {
             cloverDb.exists()
 
         and: "the Clover report is generated and is correct"
-            cloverReport.exists()
-            def coverage = new XmlSlurper().parse(cloverReport)
+            cloverXmlReport.exists()
+            def coverage = new XmlSlurper().parse(cloverXmlReport)
             coverage.project.metrics.@classes == '1'
             coverage.project.metrics.@methods == '2'
             coverage.project.metrics.@coveredmethods == '1'
             coverage.testproject.metrics.@classes == '1'
             coverage.testproject.metrics.@methods == '1'
             coverage.testproject.metrics.@coveredmethods == '1'
+            cloverHtmlReport.exists()
+            cloverJsonReport.exists()
+            cloverPdfReport.exists()
 
         and: "the Clover snapshot is not generated because test optimization is not enabled"
             cloverSnapshot.exists() == false
@@ -68,14 +71,17 @@ class CloverPluginIntegSpec extends Specification {
             cloverDb.exists()
 
         and: "the Clover report is generated and is correct"
-            cloverReport.exists()
-            def coverage = new XmlSlurper().parse(cloverReport)
+            cloverXmlReport.exists()
+            def coverage = new XmlSlurper().parse(cloverXmlReport)
             coverage.project.metrics.@classes == '1'
             coverage.project.metrics.@methods == '2'
             coverage.project.metrics.@coveredmethods == '1'
             coverage.testproject.metrics.@classes == '2'
             coverage.testproject.metrics.@methods == '2'
             coverage.testproject.metrics.@coveredmethods == '2'
+            cloverHtmlReport.exists()
+            cloverJsonReport.exists()
+            cloverPdfReport.exists()
 
         and: "the Clover snapshot is not generated because test optimization is not enabled"
             cloverSnapshot.exists() == false
@@ -98,14 +104,17 @@ class CloverPluginIntegSpec extends Specification {
             cloverDb.exists()
 
         and: "the Clover report is generated and is correct"
-            cloverReport.exists()
-            def coverage = new XmlSlurper().parse(cloverReport)
+            cloverXmlReport.exists()
+            def coverage = new XmlSlurper().parse(cloverXmlReport)
             coverage.project.metrics.@classes == '1'
             coverage.project.metrics.@methods == '2'
             coverage.project.metrics.@coveredmethods == '1'
             coverage.testproject.metrics.@classes == '1'
             coverage.testproject.metrics.@methods == '1'
             coverage.testproject.metrics.@coveredmethods == '1'
+            cloverHtmlReport.exists()
+            cloverJsonReport.exists()
+            cloverPdfReport.exists()
 
         and: "the Clover snapshot is generated"
             cloverSnapshot.exists()
@@ -126,14 +135,17 @@ class CloverPluginIntegSpec extends Specification {
             output.contains('Clover included 1 test class in this run (total # test classes : 1)')
 
         and: "the Clover report was generated and is correct"
-            cloverReport.exists()
-            def coverage2 = new XmlSlurper().parse(cloverReport)
+            cloverXmlReport.exists()
+            def coverage2 = new XmlSlurper().parse(cloverXmlReport)
             coverage2.project.metrics.@classes == '1'
             coverage2.project.metrics.@methods == '2'
             coverage2.project.metrics.@coveredmethods == '1'
             coverage2.testproject.metrics.@classes == '1'
             coverage2.testproject.metrics.@methods == '1'
             coverage2.testproject.metrics.@coveredmethods == '1'
+            cloverHtmlReport.exists()
+            cloverJsonReport.exists()
+            cloverPdfReport.exists()
 
         cleanup: "undo the source modification"
             sourceFile.text = sourceFile.text.trim()
@@ -150,8 +162,8 @@ class CloverPluginIntegSpec extends Specification {
             cloverDb.exists()
 
         and: "the aggregated Clover report is generated and is correct"
-            cloverReport.exists()
-            def coverage = new XmlSlurper().parse(cloverReport)
+            cloverXmlReport.exists()
+            def coverage = new XmlSlurper().parse(cloverXmlReport)
             coverage.project.package.file.size() == 2
             coverage.project.package.file[0].@name == 'Car.java'
             coverage.project.package.file[1].@name == 'Truck.java'
@@ -160,6 +172,9 @@ class CloverPluginIntegSpec extends Specification {
             coverage.testproject.package.file[0].@name == 'CarTest.java'
             coverage.testproject.package.file[1].@name == 'TruckTest.java'
             !coverage.testproject.package.file*.@name.contains('MotorbikeTest.java')
+            cloverHtmlReport.exists()
+            cloverJsonReport.exists()
+            cloverPdfReport.exists()
 
         and: "the Clover snapshot is not generated because test optimization is not enabled"
             cloverSnapshot.exists() == false
@@ -177,11 +192,14 @@ class CloverPluginIntegSpec extends Specification {
         cloverDb.exists()
 
         and: "the aggregated Clover report is generated and is correct"
-        cloverReport.exists()
-        def coverage = new XmlSlurper().parse(cloverReport)
+        cloverXmlReport.exists()
+        def coverage = new XmlSlurper().parse(cloverXmlReport)
         def carCoverage = coverage.project.package.file.find { it.@name.text() == 'Car.java' }
         carCoverage.line.find { it.@num.text() == "21" }.@count.text() == startMethodCoverage
         carCoverage.line.find { it.@num.text() == "26" }.@count.text() == stopMethodCoverage
+        cloverHtmlReport.exists()
+        cloverJsonReport.exists()
+        cloverPdfReport.exists()
 
         where:
         scenario        | buildFile | startMethodCoverage | stopMethodCoverage
@@ -202,8 +220,24 @@ class CloverPluginIntegSpec extends Specification {
         new File(projectDir, '.clover/coverage.db.snapshot-test')
     }
 
-    private File getCloverReport() {
-        new File(projectDir, 'build/reports/clover/clover.xml')
+    private File getCloverXmlReport() {
+        new File(getReportsDir(), 'clover.xml')
+    }
+
+    private File getCloverHtmlReport() {
+        new File(getReportsDir(), 'html')
+    }
+
+    private File getCloverJsonReport() {
+        new File(getReportsDir(), 'json')
+    }
+
+    private File getCloverPdfReport() {
+        new File(getReportsDir(), 'clover.pdf')
+    }
+
+    private File getReportsDir() {
+        new File(projectDir, 'build/reports/clover')
     }
 
     private void runTasks(List<String> arguments = [], String... tasks) {

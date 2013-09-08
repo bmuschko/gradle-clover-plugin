@@ -15,27 +15,17 @@
  */
 package org.gradle.api.plugins.clover
 
-import org.gradle.api.file.FileCollection
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.TaskAction
-
 /**
  * Task for generating Clover code coverage report.
  *
  * @author Benjamin Muschko
  */
 class GenerateCoverageReportTask extends CloverReportTask {
-    String initString
-    File buildDir
-    FileCollection cloverClasspath
-    @InputFile File licenseFile
     String filter
     String targetPercentage
 
-    @TaskAction
-    void start() {
-        validateConfiguration()
-
+    @Override
+    void generateCodeCoverage() {
         if(allowReportGeneration()) {
             generateReport()
         }
@@ -52,45 +42,15 @@ class GenerateCoverageReportTask extends CloverReportTask {
     private void generateReport() {
         logger.info 'Starting to generate Clover code coverage report.'
 
-        ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-        ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
-
-        String cloverReportDir = "${getReportsDir()}/clover"
-
-        if(getXml()) {
-            writeReport("$cloverReportDir/clover.xml" as String, ReportType.XML.format)
-        }
-
-        if(getJson()) {
-            writeReport("$cloverReportDir/json" as String, ReportType.JSON.format)
-        }
-
-        if(getHtml()) {
-            writeReport("$cloverReportDir/html" as String, ReportType.HTML.format)
-        }
-
-        if(getPdf()) {
-            ant."clover-pdf-report"(initString: "${getBuildDir()}/${getInitString()}", outfile: "$cloverReportDir/clover.pdf",
-                                    title: getProjectName())
-        }
-
-        if(getTargetPercentage()) {
-            ant."clover-check"(initString: "${getBuildDir()}/${getInitString()}", target: getTargetPercentage(), haltOnFailure: true)
-        }
+        writeReports(getFilter())
+        checkTargetPercentage()
 
         logger.info 'Finished generating Clover code coverage report.'
     }
 
-    private void writeReport(String outfile, String type) {
-        ant."clover-report"(initString: "${getBuildDir()}/${getInitString()}") {
-            current(outfile: outfile, title: getProjectName()) {
-                if(getFilter()) {
-                    format(type: type, filter: getFilter())
-                }
-                else {
-                    format(type: type)
-                }
-            }
+    private void checkTargetPercentage() {
+        if(getTargetPercentage()) {
+            ant."clover-check"(initString: "${getBuildDir()}/${getInitString()}", target: getTargetPercentage(), haltOnFailure: true)
         }
     }
 }

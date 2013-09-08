@@ -31,7 +31,12 @@ sourceSets {
 
 clover {
     licenseLocation = file('../../../../clover.license').absolutePath
-    report.html = true
+
+    report {
+        json = true
+        html = true
+        pdf = true
+    }
 }
 
 task customTest(type: Test) {

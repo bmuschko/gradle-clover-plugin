@@ -1,3 +1,10 @@
+### Version 0.7 (September 8, 2013)
+
+* Fix AggregateReportsTask String coercion - [Issue 31](https://github.com/bmuschko/gradle-clover-plugin/issues/31).
+* Fix deprecation warnings - [Issue 29](https://github.com/bmuschko/gradle-clover-plugin/issues/29).
+* Remove dependency on project.configurations.groovy (Gradle 1.4+) - [Issue 23](https://github.com/bmuschko/gradle-clover-plugin/issues/23).
+* Upgrade to Gradle Wrapper 1.7.
+
 ### Version 0.6.2 (September 6, 2013)
 
 * Coercing GStrings into Strings - [Pull Request 30](https://github.com/bmuschko/gradle-clover-plugin/pull/30).
