@@ -424,12 +424,10 @@ class CloverPlugin implements Plugin<Project> {
     }
 
     private FileCollection getGroovyClasspath(Project project) {
-        FileCollection groovyClasspath = project.configurations.compile.asFileTree
-
-        if(project.configurations.getByName('groovy')) {
-            groovyClasspath + project.configurations.groovy.asFileTree
+        if(project.configurations.findByName('groovy')?.files.size() > 0) {
+            return project.configurations.groovy.asFileTree
         }
 
-        groovyClasspath
+        project.configurations.compile.asFileTree
     }
 }

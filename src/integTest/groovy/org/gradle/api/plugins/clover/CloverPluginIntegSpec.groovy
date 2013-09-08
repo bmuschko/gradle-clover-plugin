@@ -59,10 +59,38 @@ class CloverPluginIntegSpec extends Specification {
             cloverSnapshot.exists() == false
     }
 
-    def "Build a Groovy project"() {
+    def "Build a Groovy project using old configuration"() {
 
         given: "a Groovy project"
-            projectName = 'groovy-project'
+            projectName = 'groovy-project-old-config'
+
+        when: "the Clover report generation task is run"
+            runTasks('clean', 'cloverGenerateReport')
+
+        then: "the Clover coverage database is generated"
+            cloverDb.exists()
+
+        and: "the Clover report is generated and is correct"
+            cloverXmlReport.exists()
+            def coverage = new XmlSlurper().parse(cloverXmlReport)
+            coverage.project.metrics.@classes == '1'
+            coverage.project.metrics.@methods == '2'
+            coverage.project.metrics.@coveredmethods == '1'
+            coverage.testproject.metrics.@classes == '2'
+            coverage.testproject.metrics.@methods == '2'
+            coverage.testproject.metrics.@coveredmethods == '2'
+            cloverHtmlReport.exists()
+            cloverJsonReport.exists()
+            cloverPdfReport.exists()
+
+        and: "the Clover snapshot is not generated because test optimization is not enabled"
+            cloverSnapshot.exists() == false
+    }
+
+    def "Build a Groovy project using compile configuration"() {
+
+        given: "a Groovy project"
+            projectName = 'groovy-project-compile-config'
 
         when: "the Clover report generation task is run"
             runTasks('clean', 'cloverGenerateReport')
