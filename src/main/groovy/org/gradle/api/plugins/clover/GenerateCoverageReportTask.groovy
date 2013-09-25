@@ -41,16 +41,27 @@ class GenerateCoverageReportTask extends CloverReportTask {
 
     private void generateReport() {
         logger.info 'Starting to generate Clover code coverage report.'
+        String filter = getFilter();
 
-        writeReports(getFilter())
-        checkTargetPercentage()
+        writeReports(filter)
+        checkTargetPercentage(filter)
 
         logger.info 'Finished generating Clover code coverage report.'
     }
 
-    private void checkTargetPercentage() {
+    private void checkTargetPercentage(String filter) {
         if(getTargetPercentage()) {
-            ant."clover-check"(initString: "$project.buildDir/${getInitString()}", target: getTargetPercentage(), haltOnFailure: true)
+            Map arguments = [
+                initString: "$project.buildDir/${getInitString()}",
+                target: getTargetPercentage(),
+                haltOnFailure: true
+            ]
+
+            if (filter) {
+                arguments['filter'] = filter
+            }
+
+            ant."clover-check"(arguments)
         }
     }
 }
