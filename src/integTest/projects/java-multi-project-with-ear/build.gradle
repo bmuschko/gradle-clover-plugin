@@ -50,7 +50,8 @@ subprojects {
         }
     }
     
-    if (path == ':projectDriver' || path == ':projectCar') {      
+    if (path == ':projectDriver' || path == ':projectCar') { 
+        apply plugin: 'java'
         dependencies {
             testCompile deps.junit
         }
