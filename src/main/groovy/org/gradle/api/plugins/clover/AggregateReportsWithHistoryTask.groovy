@@ -33,6 +33,11 @@ import org.gradle.api.tasks.TaskAction
 class AggregateReportsWithHistoryTask extends AggregateReportsTask {
 	
     @OutputDirectory File historyDir
+    
+    public AggregateReportsWithHistoryTask() {
+        // always execute the task as there is always a new history file
+        outputs.upToDateWhen { false }
+    }
 	
     @Override
     void generateCodeCoverage() {
@@ -50,11 +55,11 @@ class AggregateReportsWithHistoryTask extends AggregateReportsTask {
     }
 	
     private void createHistoryPoint() {
-        log.info 'Starting to create a Clover history point to ${getHistoryDir()}.'
+        logger.info 'Starting to create a Clover history point to ${getHistoryDir()}.'
 		
         ant."clover-historypoint"(initString: "$project.buildDir/${getInitString()}", historyDir: getHistoryDir())
 		
-        log.info 'Finished creating a Clover history point.'
+        logger.info 'Finished creating a Clover history point.'
     }
 	
     /**
@@ -67,12 +72,12 @@ class AggregateReportsWithHistoryTask extends AggregateReportsTask {
         File cloverReportDir = new File("${getReportsDir()}/clover")
 		
         if(getXml()) {
-            log.info "Format 'xml' is not allowed for historical reports. Reporting without historical data."
+            logger.info "Format 'xml' is not allowed for historical reports. Reporting without historical data."
             writeReport(new File(cloverReportDir, 'clover.xml'), ReportType.XML, filter)
         }
 
         if(getJson()) {
-            log.warn "Format 'json' is not allowed for historical reports. Reporting without historical data."
+            logger.warn "Format 'json' is not allowed for historical reports. Reporting without historical data."
             writeReport(new File(cloverReportDir, 'json'), ReportType.JSON, filter)
         }
 		
@@ -81,7 +86,7 @@ class AggregateReportsWithHistoryTask extends AggregateReportsTask {
         }
 
         if(getPdf()) {
-            log.warn "Format 'pdf' is not allowed for historical reports. Reporting without historical data."
+            logger.warn "Format 'pdf' is not allowed for historical reports. Reporting without historical data."
             // note: 'pdf' would be allowed as well in the ant task, but is not implemented in this plugin
             ant."clover-pdf-report"(initString: "${project.buildDir.canonicalPath}/${getInitString()}",
                 outfile: new File(cloverReportDir, 'clover.pdf'), title: project.name)
@@ -93,7 +98,7 @@ class AggregateReportsWithHistoryTask extends AggregateReportsTask {
             current(outfile: outfile, title: project.name) {
                 format(type: type)
             }
-            if (type == ReportType.HTML.format) {
+            if (type == ReportType.HTML) {
                 historical(outfile: outfile, title: project.name, historyDir: getHistoryDir()) {
                     format(type: type)
                     overview()
@@ -103,7 +108,7 @@ class AggregateReportsWithHistoryTask extends AggregateReportsTask {
                     metrics()
                 }
             } else {
-                log.info 'Format '+type+' is not allowed for historical reports. Allowed formats are: html.'
+                logger.info 'Format '+type+' is not allowed for historical reports. Allowed formats are: html.'
             }
         }
     }

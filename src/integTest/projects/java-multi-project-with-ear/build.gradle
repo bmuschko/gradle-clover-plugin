@@ -1,0 +1,73 @@
+buildscript {
+    dependencies {
+        classpath files('../../../../build/classes/main')
+    }
+}
+
+apply from: '../deps.gradle'
+apply plugin: 'java'
+
+// apply plugin to root
+apply plugin: org.gradle.api.plugins.clover.CloverPlugin
+    
+dependencies {
+    clover deps.clover
+}
+
+clover {
+    licenseLocation = rootProject.file('../../../../clover.license').absolutePath
+
+    report {
+        json = true
+        html = true
+        pdf = true
+    }
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+
+}
+
+subprojects {
+
+    // apply plugin to subprojects
+    apply plugin: org.gradle.api.plugins.clover.CloverPlugin
+    
+    dependencies {
+        clover deps.clover
+    }
+
+    clover {
+        licenseLocation = rootProject.file('../../../../clover.license').absolutePath
+
+        report {
+            json = true
+            html = true
+            pdf = true
+        }
+    }
+    
+    if (path == ':projectDriver' || path == ':projectCar') {      
+        dependencies {
+            testCompile deps.junit
+        }
+    }
+    
+    if (path == ':projectDriver') {
+        dependencies {
+            compile project(':projectCar')
+        }
+    }
+    
+    if (path == ':projectEar') {
+        apply plugin: 'ear'
+        
+        dependencies {
+            deploy project(':projectDriver')
+            earlib project(':projectCar')
+        }
+    }
+}
