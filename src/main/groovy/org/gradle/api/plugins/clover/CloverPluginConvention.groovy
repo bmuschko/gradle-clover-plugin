@@ -25,7 +25,7 @@ import org.gradle.util.ConfigureUtil
 class CloverPluginConvention {
     File classesBackupDir
     File testClassesBackupDir
-	File historyDir
+    File historyDir
     String licenseLocation
     String initString
     String targetPercentage
@@ -38,7 +38,7 @@ class CloverPluginConvention {
     List<String> testIncludes
     CloverReportConvention report = new CloverReportConvention()
     CloverContextsConvention contexts = new CloverContextsConvention()
-	CloverClasspathConvention classpath = new CloverClasspathConvention()
+    CloverClasspathConvention classpath = new CloverClasspathConvention()
     List<String> includeTasks
     List<String> excludeTasks
 

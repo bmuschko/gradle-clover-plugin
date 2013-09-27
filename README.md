@@ -39,6 +39,8 @@ The Clover plugin defines the following tasks:
 * `cloverGenerateReport`: Generates Clover code coverage report.
 * `cloverAggregateReports`: Aggregate Clover code coverage reports in a multi-module project setup. This task can only be
 run from the root directory of your project and requires at least one submodule. This task depends on `cloverGenerateReport`.
+* `cloverAggregateReportsWithHistory`: Aggregate Clover code coverage reports including historical data in a multi-module project setup. This task can only be
+run from the root directory of your project and requires at least one submodule. This task depends on `cloverGenerateReport`.
 
 ## Convention properties
 
@@ -65,6 +67,8 @@ The snapshot file should survive clean builds, so it should *not* be placed in t
 location is `.clover/coverage.db.snapshot`.
 * `includeTasks`: A list of task names, allows to explicitly specify which test tasks should be introspected and used to gather coverage information - useful if there are more than one `Test` tasks in a project.
 * `excludeTasks`: A list of task names, allows to exclude test tasks from introspection and gathering coverage information - useful if there are more than one `Test` tasks in a project.
+* `historyDir`: The location to write the Clover history database (defaults to `.clover/history`).
+* `classpath.plusConfigurations`: The configurations whose files are to be added as classpath entries. 
 
 Within `clover` you can define [coverage contexts](http://confluence.atlassian.com/display/CLOVER/Using+Coverage+Contexts)
 in a closure named `contexts`. There are two types of coverage contexts: statement contexts and method contexts. You can
@@ -113,6 +117,15 @@ The Clover plugin defines the following convention properties in the `clover` cl
             filter = 'log,if,else'
         }
     }
+
+## Project Properties
+
+The Clover plugin defines the following properties:
+
+* `-PcloverInstrumentedJar`: The `jar` task uses clover to build a JAR with clover instrumented classes. This property can be used to prepare a JAR or EAR for distributed code coverage. 
+
+When mixing `-PcloverInstrumentedJar` and any of the tasks, make sure the "jar" task is executed before "test" (i.e. `gradle jar test cloverGenerateReport -PcloverInstrumentedJar`)
+
 
 ## FAQ
 
