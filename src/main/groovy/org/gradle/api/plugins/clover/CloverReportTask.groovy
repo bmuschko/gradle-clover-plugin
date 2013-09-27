@@ -133,7 +133,7 @@ abstract class CloverReportTask extends DefaultTask {
      * @param reportType Report type
      * @param filter Optional filter
      */
-    private void writeReport(File outfile, ReportType reportType, String filter) {
+    protected void writeReport(File outfile, ReportType reportType, String filter) {
         ant."clover-report"(initString: "$project.buildDir/${getInitString()}") {
             current(outfile: outfile, title: project.name) {
                 if(filter) {

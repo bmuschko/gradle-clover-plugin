@@ -9,22 +9,29 @@ class AggregateDatabasesTask extends DefaultTask {
     FileCollection cloverClasspath
     String initString
     File licenseFile
-    List<Task> testTasks = new ArrayList<Task>()
+    List<Task> tasks = new ArrayList<Task>()
 
-    void aggregate(Task testTask) {
-        dependsOn testTask
-        testTasks << testTask
+    void aggregate(Task task) {
+        dependsOn task
+        tasks << task
     }
 
     @TaskAction
     void aggregateDatabases() {
-        if (testTasks) {
-            ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-            ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
-
-            ant.'clover-merge'(initString: "${project.buildDir.canonicalPath}/${getInitString()}") {
-                testTasks.each {
-                    ant.cloverDb(initString: "${project.buildDir.canonicalPath}/${getInitString()}-${it.name}")
+        if (tasks) {
+            Task taskWithCloverDb = tasks.find { new File("${project.buildDir.canonicalPath}/${getInitString()}-${it.name}").exists() }
+            if (taskWithCloverDb != null) {
+			
+                ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
+                ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
+	
+                ant.'clover-merge'(initString: "${project.buildDir.canonicalPath}/${getInitString()}") {
+                    tasks.each {
+                        File file = new File("${project.buildDir.canonicalPath}/${getInitString()}-${it.name}")
+                        if (file.exists()) {
+                            ant.cloverDb(initString: "${project.buildDir.canonicalPath}/${getInitString()}-${it.name}")
+                        }
+                    }
                 }
             }
         }
