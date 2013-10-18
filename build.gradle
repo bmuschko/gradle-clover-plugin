@@ -4,7 +4,7 @@ apply plugin: 'nexus'
 //apply plugin: 'clover'
 
 group = 'org.gradle.api.plugins'
-version = '0.7'
+version = '0.8'
 defaultTasks 'clean', 'build'
 
 buildscript {
