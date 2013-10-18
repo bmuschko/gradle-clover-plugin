@@ -21,7 +21,7 @@ example on how to retrieve it from Maven Central:
         }
 
         dependencies {
-            classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.7'
+            classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.8'
         }
     }
 
@@ -29,7 +29,7 @@ To define the Clover dependency please use the `clover` configuration name in yo
 with a multi-module project make sure you apply the plugin and declare the `clover` dependency within the `allprojects` closure.
 
     dependencies {
-        clover 'com.cenqua.clover:clover:3.1.10'
+        clover 'com.cenqua.clover:clover:3.1.12.1'
     }
 
 ## Tasks

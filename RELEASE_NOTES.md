@@ -1,3 +1,7 @@
+### Version 0.8 (October 18, 2013)
+
+* Context filters not applied to 'clover-check' task. - [Pull Request 35](https://github.com/bmuschko/gradle-clover-plugin/issues/35).
+
 ### Version 0.7 (September 8, 2013)
 
 * Fix AggregateReportsTask String coercion - [Issue 31](https://github.com/bmuschko/gradle-clover-plugin/issues/31).

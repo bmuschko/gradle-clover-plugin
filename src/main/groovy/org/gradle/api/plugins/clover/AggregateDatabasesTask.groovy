@@ -22,16 +22,10 @@ class AggregateDatabasesTask extends DefaultTask {
             ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
             ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
 
-            File cloverDb = new File("${project.buildDir.canonicalPath}/${getInitString()}")
-
-            if (cloverDb.exists()) {
-                ant.'clover-merge'(initString: "${cloverDb.canonicalPath}") {
-                    testTasks.each {
-                        ant.cloverDb(initString: "${cloverDb.canonicalPath}-${it.name}")
-                    }
+            ant.'clover-merge'(initString: "${project.buildDir.canonicalPath}/${getInitString()}") {
+                testTasks.each {
+                    ant.cloverDb(initString: "${project.buildDir.canonicalPath}/${getInitString()}-${it.name}")
                 }
-            } else {
-                logger.debug "Unable to find Clover DB file $cloverDb; $project.name may not have any tests."
             }
         }
     }

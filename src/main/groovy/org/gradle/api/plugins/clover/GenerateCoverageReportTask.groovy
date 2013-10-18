@@ -41,8 +41,8 @@ class GenerateCoverageReportTask extends CloverReportTask {
 
     private void generateReport() {
         logger.info 'Starting to generate Clover code coverage report.'
-        String filter = getFilter();
 
+        String filter = getFilter()
         writeReports(filter)
         checkTargetPercentage(filter)
 
@@ -57,7 +57,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
                 haltOnFailure: true
             ]
 
-            if (filter) {
+            if(filter) {
                 arguments['filter'] = filter
             }
 
