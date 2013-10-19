@@ -33,7 +33,8 @@ class InstrumentCodeAction implements Action<Task> {
     String initString
     Boolean compileGroovy
     FileCollection cloverClasspath
-    FileCollection testRuntimeClasspath
+	FileCollection testCompileClasspath
+	FileCollection compileClasspath
     FileCollection groovyClasspath
     @OutputDirectory File classesBackupDir
     @OutputDirectory File testClassesBackupDir
@@ -50,6 +51,8 @@ class InstrumentCodeAction implements Action<Task> {
     List<String> testIncludes
     def statementContexts
     def methodContexts
+	Boolean instrumentTestClasses = true
+	Boolean performClean = true
 
     @Override
     void execute(Task task) {
@@ -57,27 +60,32 @@ class InstrumentCodeAction implements Action<Task> {
     }
 
     void instrumentCode() {
-        if(getClassesDir().exists()) {
-            log.info 'Starting to instrument code using Clover.'
+        log.info 'Starting to instrument code using Clover.'
 
-            def ant = new AntBuilder()
-            ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-            ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
-            ant."clover-clean"(initString: "${getBuildDir()}/${getInitString()}")
+        def ant = new AntBuilder()
+        ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
+        ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
+		
+		if (performClean) {
+			ant."clover-clean"(initString: "${getBuildDir()}/${getInitString()}")
+		}
 
-            ant.'clover-setup'(initString: "${getBuildDir()}/${getInitString()}") {
-                getSrcDirs().each { srcDir ->
-                    ant.fileset(dir: srcDir) {
-                        getIncludes().each { include ->
-                            ant.include(name: include)
-                        }
+        ant.'clover-setup'(initString: "${getBuildDir()}/${getInitString()}") {
+			
+			if (instrumentClasses) {
+				getSrcDirs().each { srcDir ->
+					ant.fileset(dir: srcDir) {
+						getIncludes().each { include ->
+							ant.include(name: include)
+						}
 
-                        getExcludes().each { exclude ->
-                            ant.exclude(name: exclude)
-                        }
-                    }
-                }
-
+						getExcludes().each { exclude ->
+							ant.exclude(name: exclude)
+						}
+					}
+				}
+			}
+			if (instrumentTestClasses) {
                 getTestSrcDirs().each { testSrcDir ->
                     ant.fileset(dir: testSrcDir) {
                         getTestIncludes().each { include ->
@@ -85,37 +93,50 @@ class InstrumentCodeAction implements Action<Task> {
                         }
                     }
                 }
+			}
 
-                // Apply statement and method coverage contexts
-                getStatementContexts().each {
-                    ant.statementContext(name: it.name, regexp: it.regexp)
-                }
-
-                getMethodContexts().each {
-                    ant.methodContext(name: it.name, regexp: it.regexp)
-                }
+            // Apply statement and method coverage contexts
+            getStatementContexts().each {
+                ant.statementContext(name: it.name, regexp: it.regexp)
             }
 
-            // Move original classes
+            getMethodContexts().each {
+                ant.methodContext(name: it.name, regexp: it.regexp)
+            }
+        }
+
+        // Move original classes
+		if (instrumentClasses) {
             ant.move(file: getClassesDir().canonicalPath, tofile: getClassesBackupDir().canonicalPath, failonerror: true)
-            ant.move(file: getTestClassesDir().canonicalPath, tofile: getTestClassesBackupDir().canonicalPath, failonerror: false)
+			getClassesDir().mkdirs()
+		}
+		
+		if (instrumentTestClasses) {
+			ant.move(file: getTestClassesDir().canonicalPath, tofile: getTestClassesBackupDir().canonicalPath, failonerror: false)
+			getTestClassesDir().mkdirs()
+		}
 
-            // Compile instrumented classes
-            getClassesDir().mkdirs()
-            getTestClassesDir().mkdirs()
-            compileClasses(ant)
+        // Compile instrumented classes
+        compileClasses(ant)
 
-            // Copy resources
+        // Copy resources
+		if (instrumentClasses) {
             ant.copy(todir: getClassesDir().canonicalPath, failonerror: true) {
                 fileset(dir: getClassesBackupDir().canonicalPath, excludes: '**/*.class')
             }
+		}
+		if (instrumentTestClasses) {
             ant.copy(todir: getTestClassesDir().canonicalPath, failonerror: false) {
                 fileset(dir: getTestClassesBackupDir().canonicalPath, excludes: '**/*.class')
             }
+		}
 
-            log.info 'Finished instrumenting code using Clover.'
-        }
+        log.info 'Finished instrumenting code using Clover.'
     }
+	
+	public boolean getInstrumentClasses() {
+		return getClassesDir().exists()
+	}
 
     /**
      * Compiles Java classes. If project has Groovy plugin applied run the joint compiler.
@@ -125,39 +146,68 @@ class InstrumentCodeAction implements Action<Task> {
     private void compileClasses(AntBuilder ant) {
         if(getCompileGroovy()) {
             ant.taskdef(name: 'groovyc', classname: 'org.codehaus.groovy.ant.Groovyc', classpath: getGroovyClasspath().asPath)
-            compileGroovyAndJavaSrcFiles(ant)
 
-            if(getTestSrcDirs().size() > 0) {
+			if (instrumentClasses) {
+				log.debug 'Instrumenting groovy and java src/main files'
+				compileGroovyAndJavaSrcFiles(ant)
+			}
+
+            if (instrumentTestClasses && getTestSrcDirs().size() > 0) {
+            	log.debug 'Instrumenting groovy and java src/test files'
                 compileGroovyAndJavaTestSrcFiles(ant)
             }
         }
         else {
-            compileJavaSrcFiles(ant)
+        	if (instrumentClasses) {
+        		log.debug 'Instrumenting java src/main files'
+				compileJavaSrcFiles(ant)
+        	}
 
-            if(getTestSrcDirs().size() > 0) {
+            if(instrumentTestClasses && getTestSrcDirs().size() > 0) {
+				log.debug 'Instrumenting java src/test files'
                 compileJavaTestSrcFiles(ant)
             }
         }
+		addMarkerFile(getClassesDir())
     }
 
     /**
-     * Gets Groovyc classpath. Make sure the Groovy version defined in project is used on classpath first to avoid using the
+     * Gets Groovyc classpath (compile). Make sure the Groovy version defined in project is used on classpath first to avoid using the
      * default version bundled with Gradle.
      *
      * @return Classpath
      */
-    private String getGroovycClasspath() {
-        getGroovyClasspath().asPath + System.getProperty('path.separator') + getTestRuntimeClasspath().asPath
+    private String getGroovyCompileClasspath() {
+        getGroovyClasspath().asPath + System.getProperty('path.separator') + getCompileClasspath().asPath
     }
+	
+	/**
+	 * Gets Groovyc classpath (testCompile). Make sure the Groovy version defined in project is used on classpath first to avoid using the
+	 * default version bundled with Gradle.
+	 *
+	 * @return Classpath
+	 */
+	private String getGroovyTestCompileClasspath() {
+		getGroovyClasspath().asPath + System.getProperty('path.separator') + getTestCompileClasspath().asPath
+	}
 
-    /**
-     * Gets Javac classpath.
-     *
-     * @return Classpath
-     */
-    private String getJavacClasspath() {
-        getTestRuntimeClasspath().asPath
-    }
+	/**
+	 * Gets Javac classpath (compile).
+	 *
+	 * @return Classpath
+	 */
+	private String getJavaCompileClasspath() {
+		getCompileClasspath().asPath
+	}
+	
+	/**
+	 * Gets Javac classpath (testCompile)
+	 *
+	 * @return Classpath
+	 */
+	private String getJavaTestCompileClasspath() {
+		getTestCompileClasspath().asPath
+	}
 
     /**
      * Compiles Groovy and Java source files.
@@ -165,7 +215,7 @@ class InstrumentCodeAction implements Action<Task> {
      * @param ant Ant builder
      */
     private void compileGroovyAndJavaSrcFiles(AntBuilder ant) {
-        compileGroovyAndJava(ant, getSrcDirs(), getClassesDir(), getGroovycClasspath())
+        compileGroovyAndJava(ant, getSrcDirs(), getClassesDir(), getGroovyCompileClasspath())
     }
 
     /**
@@ -174,7 +224,7 @@ class InstrumentCodeAction implements Action<Task> {
      * @param ant Ant builder
      */
     private void compileJavaSrcFiles(AntBuilder ant) {
-        compileJava(ant, getSrcDirs(), getClassesDir(), getJavacClasspath())
+        compileJava(ant, getSrcDirs(), getClassesDir(), getJavaCompileClasspath())
     }
 
     /**
@@ -183,7 +233,7 @@ class InstrumentCodeAction implements Action<Task> {
      * @param ant Ant builder
      */
     private void compileGroovyAndJavaTestSrcFiles(AntBuilder ant) {
-        String classpath = addClassesDirToClasspath(getGroovycClasspath())
+        String classpath = addClassesDirToClasspath(getGroovyTestCompileClasspath())
         compileGroovyAndJava(ant, getTestSrcDirs(), getTestClassesDir(), classpath)
     }
 
@@ -193,7 +243,7 @@ class InstrumentCodeAction implements Action<Task> {
      * @param ant Ant builder
      */
     private void compileJavaTestSrcFiles(AntBuilder ant) {
-        String classpath = addClassesDirToClasspath(getJavacClasspath())
+        String classpath = addClassesDirToClasspath(getJavaTestCompileClasspath())
         compileJava(ant, getTestSrcDirs(), getTestClassesDir(), classpath)
     }
 
@@ -241,4 +291,19 @@ class InstrumentCodeAction implements Action<Task> {
             }
         }
     }
+	
+	/**
+	 * Adds a marker file to the destination directory.
+	 */
+	private void addMarkerFile(File destDir) {
+		if (destDir.exists()) {
+			File marker = new File(destDir.canonicalPath + "/clover.instrumented")
+			log.debug 'Starting to write a marker file to: '+marker.canonicalPath
+			PrintWriter writer = new PrintWriter(marker)
+			writer.println("the classes in this directory are instrumented with clover")
+			writer.close()
+		} else {
+			log.debug 'Do not write a marker file because directory does not exist: '+destDir.canonicalPath
+		}
+	}
 }

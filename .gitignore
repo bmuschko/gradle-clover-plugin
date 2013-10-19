@@ -6,3 +6,4 @@ out
 .idea
 .clover
 .gradle
+/.nb-gradle/profiles/private/

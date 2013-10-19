@@ -31,7 +31,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
         }
     }
 
-    private boolean allowReportGeneration() {
+    protected boolean allowReportGeneration() {
         isCloverDatabaseExistent()
     }
 

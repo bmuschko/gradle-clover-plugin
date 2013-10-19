@@ -20,6 +20,10 @@ import org.gradle.tooling.ProjectConnection
 import spock.lang.Specification
 import spock.lang.Unroll
 
+import java.util.zip.ZipFile
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+
 /**
  * Some integration tests for the Clover plugin.
  *
@@ -207,6 +211,46 @@ class CloverPluginIntegSpec extends Specification {
         and: "the Clover snapshot is not generated because test optimization is not enabled"
             cloverSnapshot.exists() == false
     }
+ 
+    def "Build a Java multi-project with history report"() {
+        given: "a Java multi-project"
+            projectName = 'java-multi-project-with-ear'
+
+        when: "the top-level Clover aggregation with history task is run"
+            runTasks('clean', 'cloverAggregateReportsWithHistory')
+
+        // TODO then: "the history directory contains a new history snapshot entry"
+
+        then: "the aggregated Clover report contains a historical report"
+            def historicalFile = new File(cloverHtmlReport, 'historical.html')
+            historicalFile.exists()
+    }
+    
+    def "Build a Java multi-project with instrumented JARs in an EAR"() {
+        given: "a Java multi-project with EAR"
+            projectName = 'java-multi-project-with-ear'
+
+        when: "the EAR is built with instrumentation"
+            runTasks(["-PcloverInstrumentedJar"], 'clean', 'jar', 'ear', 'test')
+
+        then: "the JAR exists"
+            def carJar = new File(projectDir, 'projectCar/build/libs/projectCar.jar')
+            carJar.exists()
+            
+        and: "the JAR contains instrumented classes (marker)"
+            zipContains(carJar, "clover.instrumented")
+            
+        and: "the EAR exists"
+            def ear = new File(projectDir, 'projectEar/build/libs/projectEar.ear')
+            ear.exists()
+            
+        and: "the EAR contains the JAR"
+            zipContains(ear, "projectDriver.jar")
+            
+       and: "the JAR in the EAR contains instrumented classes (marker)"
+           def driverJar = getFromZip(ear, "projectDriver.jar")      
+           zipContains(driverJar, "clover.instrumented")
+    }
 
     @Unroll
     def "Build a Java multi-test-task project #scenario"() {
@@ -282,6 +326,39 @@ class CloverPluginIntegSpec extends Specification {
         }
         finally {
             conn.close()
+        }
+    }
+    
+    /**
+     * @returns true if the zip file contains a file with the given name.
+     */
+    private boolean zipContains(File zip, String fileName) {
+        def zipFile = new ZipFile(zip)
+        ZipEntry entry = zipFile.entries().find { ZipEntry zipEntry ->
+            zipEntry.name == fileName
+        }
+        return entry != null
+    }
+    
+    // http://www.java-tips.org/java-se-tips/java.util.zip/how-to-extract-file-files-from-a-zip-file-3.html
+    private File getFromZip(File zip, String fileName) {
+        ZipInputStream zipinputstream = new ZipInputStream(new FileInputStream(zip))
+        ZipEntry zipentry = zipinputstream.getNextEntry();
+        while (zipentry != null) 
+        { 
+            if (zipentry.name == fileName) {
+                File newFile = File.createTempFile(zipentry.name, null)
+                FileOutputStream fileoutputstream = new FileOutputStream(newFile)             
+                int n;
+                byte[] buf = new byte[1024];
+                while ((n = zipinputstream.read(buf, 0, 1024)) > -1) {
+                    fileoutputstream.write(buf, 0, n);
+                }                
+                fileoutputstream.close(); 
+                return newFile
+            } 
+            zipinputstream.closeEntry();
+            zipentry = zipinputstream.getNextEntry();
         }
     }
 }

@@ -37,7 +37,7 @@ class AggregateReportsTask extends CloverReportTask {
         logger.info 'Finished aggregating Clover code coverage reports.'
     }
 
-    private void mergeSubprojectCloverDatabases() {
+    protected void mergeSubprojectCloverDatabases() {
         ant.'clover-merge'(initString: "${project.buildDir.canonicalPath}/${getInitString()}") {
             getSubprojectBuildDirs().each { subprojectBuildDir ->
                 File cloverDb = new File("$subprojectBuildDir.canonicalPath/${getInitString()}")
