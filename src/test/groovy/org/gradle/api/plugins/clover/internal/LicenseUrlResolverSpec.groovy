@@ -66,11 +66,13 @@ class LicenseUrlResolverSpec extends Specification {
             file.path == new File('build/tmp/tests/clover.license').path
 
         and: "content matches"
-            file.text == 'rPRmrDnHpSSpJOKpmAOhjNHWMrorrVaukFsQtTGGidLBbCm\n' +
-                         'mj2L08g47giu<vNe7hVTxaxGW2Kb>278v8MkL5lsGWDUVh0\n' +
-                         'pQnPVwOrNPNppQPonPNTwQQpoqNMOOQppnssVSxSUwPsSXw\n' +
-                         'utrwuxVTuvwmpnrOnmqmUUnpqumspommmmmUUnpqumspomm\n' +
-                         'mmmUU7oXaibW3ilsboWGirdfkUUnmmmm'
+            file.text ==
+"""pnNRMjgrANeRKrxwQwbcprhwQQNJAjfnRpSFTlUwumbftm
+mi2KH8pKYC0wOhgO4qyk1LFU2Kqr2UzItE2o5lNmhw5rdq
+nrMOSsrpPoqPprmoRmpstMORNpQqoppNmnVSvWSvVuOvtS
+WTwOxxsuXwxWnMqqmnmqmUUnptvrvvommmmmUUnptvrvvo
+mmmmmUU7oXaibW3ilsboWGirdfkUUnmmmm
+"""
 
         cleanup: "delete license file"
             testDir.deleteDir()
