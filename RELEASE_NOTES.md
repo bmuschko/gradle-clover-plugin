@@ -2,6 +2,7 @@
 
 * Expose property through DSL for disabling code instrumation and coverage reporting - [Issue 37](https://github.com/bmuschko/gradle-clover-plugin/issues/37).
 * Fix aggregation step on sub-project containing no tests - [Issue 34](https://github.com/bmuschko/gradle-clover-plugin/issues/34).
+* Apply filter for report aggregation task - [Issue 40](https://github.com/bmuschko/gradle-clover-plugin/issues/40).
 * Upgrade to Clover 3.2.0.
 * Upgrade to Gradle Wrapper 1.10.
 * Publish to Bintray instead of Maven Central.

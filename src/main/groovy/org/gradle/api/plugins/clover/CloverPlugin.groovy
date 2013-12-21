@@ -63,8 +63,8 @@ class CloverPlugin implements Plugin<Project> {
     }
 
     private AggregateDatabasesTask configureAggregateDatabasesTask(Project project, CloverPluginConvention cloverPluginConvention) {
-        project.tasks.withType(AggregateDatabasesTask).whenTaskAdded { AggregateDatabasesTask aggregateDatabasesTask ->
-            aggregateDatabasesTask.conventionMapping.with {
+        project.tasks.withType(AggregateDatabasesTask) {
+            conventionMapping.with {
                 map('initString') { getInitString(cloverPluginConvention) }
                 map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
             }
@@ -160,13 +160,13 @@ class CloverPlugin implements Plugin<Project> {
     }
 
     private void configureGenerateCoverageReportTask(Project project, CloverPluginConvention cloverPluginConvention, AggregateDatabasesTask aggregateDatabasesTask) {
-        project.tasks.withType(GenerateCoverageReportTask).whenTaskAdded { GenerateCoverageReportTask generateCoverageReportTask ->
-            generateCoverageReportTask.dependsOn aggregateDatabasesTask
-            generateCoverageReportTask.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
-            generateCoverageReportTask.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
-            generateCoverageReportTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
-            generateCoverageReportTask.conventionMapping.map('targetPercentage') { cloverPluginConvention.targetPercentage }
-            generateCoverageReportTask.conventionMapping.map('filter') { cloverPluginConvention.report.filter }
+        project.tasks.withType(GenerateCoverageReportTask) { GenerateCoverageReportTask generateCoverageReportTask ->
+            dependsOn aggregateDatabasesTask
+            conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
+            conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
+            conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
+            conventionMapping.map('targetPercentage') { cloverPluginConvention.targetPercentage }
+            conventionMapping.map('filter') { cloverPluginConvention.report.filter }
             setCloverReportConventionMappings(project, cloverPluginConvention, generateCoverageReportTask)
         }
 
@@ -176,11 +176,12 @@ class CloverPlugin implements Plugin<Project> {
     }
 
     private void configureAggregateReportsTask(Project project, CloverPluginConvention cloverPluginConvention) {
-        project.tasks.withType(AggregateReportsTask).whenTaskAdded { AggregateReportsTask aggregateReportsTask ->
-            aggregateReportsTask.conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
-            aggregateReportsTask.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
-            aggregateReportsTask.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
-            aggregateReportsTask.conventionMapping.map('subprojectBuildDirs') { project.subprojects.collect { it.buildDir } }
+        project.tasks.withType(AggregateReportsTask) { AggregateReportsTask aggregateReportsTask ->
+            conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
+            conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
+            conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
+            conventionMapping.map('subprojectBuildDirs') { project.subprojects.collect { it.buildDir } }
+            conventionMapping.map('filter') { cloverPluginConvention.report.filter }
             setCloverReportConventionMappings(project, cloverPluginConvention, aggregateReportsTask)
         }
 
