@@ -31,6 +31,7 @@ import org.gradle.api.tasks.OutputDirectory
 @Slf4j
 class InstrumentCodeAction implements Action<Task> {
     String initString
+    Boolean enabled
     Boolean compileGroovy
     FileCollection cloverClasspath
     FileCollection testRuntimeClasspath
@@ -65,7 +66,7 @@ class InstrumentCodeAction implements Action<Task> {
             ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
             ant."clover-clean"(initString: "${getBuildDir()}/${getInitString()}")
 
-            ant.'clover-setup'(initString: "${getBuildDir()}/${getInitString()}") {
+            ant.'clover-setup'(getCloverSetupAttributes()) {
                 getSrcDirs().each { srcDir ->
                     ant.fileset(dir: srcDir) {
                         getIncludes().each { include ->
@@ -115,6 +116,16 @@ class InstrumentCodeAction implements Action<Task> {
 
             log.info 'Finished instrumenting code using Clover.'
         }
+    }
+
+    private Map getCloverSetupAttributes() {
+        def attributes = [initString: "${getBuildDir()}/${getInitString()}"]
+
+        if(!getEnabled()) {
+            attributes['enabled'] = false
+        }
+
+        attributes
     }
 
     /**

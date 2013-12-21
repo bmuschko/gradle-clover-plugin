@@ -1,3 +1,11 @@
+### Version 0.8.1 (December 21, 2013)
+
+* Expose property through DSL for disabling code instrumation and coverage reporting - [Issue 37](https://github.com/bmuschko/gradle-clover-plugin/issues/37).
+* Fix aggregation step on sub-project containing no tests - [Issue 34](https://github.com/bmuschko/gradle-clover-plugin/issues/34).
+* Upgrade to Clover 3.2.0.
+* Upgrade to Gradle Wrapper 1.10.
+* Publish to Bintray instead of Maven Central.
+
 ### Version 0.8 (October 18, 2013)
 
 * Context filters not applied to 'clover-check' task. - [Pull Request 35](https://github.com/bmuschko/gradle-clover-plugin/issues/35).

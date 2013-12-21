@@ -67,7 +67,6 @@ class CloverPlugin implements Plugin<Project> {
             aggregateDatabasesTask.conventionMapping.with {
                 map('initString') { getInitString(cloverPluginConvention) }
                 map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
-                map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             }
         }
 
@@ -137,6 +136,7 @@ class CloverPlugin implements Plugin<Project> {
     private InstrumentCodeAction createInstrumentCodeAction(CloverPluginConvention cloverPluginConvention, Project project, Test testTask) {
         InstrumentCodeAction instrumentCodeAction = createInstance(InstrumentCodeAction)
         instrumentCodeAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention, testTask) }
+        instrumentCodeAction.conventionMapping.map('enabled') { cloverPluginConvention.enabled }
         instrumentCodeAction.conventionMapping.map('compileGroovy') { hasGroovyPlugin(project) }
         instrumentCodeAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
         instrumentCodeAction.conventionMapping.map('testRuntimeClasspath') { getTestRuntimeClasspath(project, testTask).asFileTree }

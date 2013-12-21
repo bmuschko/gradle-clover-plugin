@@ -27,6 +27,7 @@ class CloverPluginConvention {
     File testClassesBackupDir
     String licenseLocation
     String initString
+    Boolean enabled = Boolean.TRUE
     String targetPercentage
     boolean optimizeTests
     String snapshotFile

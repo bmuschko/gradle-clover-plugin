@@ -11,17 +11,17 @@ To use the Clover plugin, include in your build script:
     apply plugin: 'clover'
 
 The plugin JAR needs to be defined in the classpath of your build script. It is directly available on
-[Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.gradle.api.plugins%22%20AND%20a%3A%22gradle-clover-plugin%22).
+[Bintray](https://bintray.com/bmuschko/gradle-plugins/gradle-clover-plugin).
 Alternatively, you can download it from GitHub and deploy it to your local repository. The following code snippet shows an
-example on how to retrieve it from Maven Central:
+example on how to retrieve it from Bintray:
 
     buildscript {
         repositories {
-            mavenCentral()
+            jcenter()
         }
 
         dependencies {
-            classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.8'
+            classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.8.1'
         }
     }
 
@@ -29,7 +29,7 @@ To define the Clover dependency please use the `clover` configuration name in yo
 with a multi-module project make sure you apply the plugin and declare the `clover` dependency within the `allprojects` closure.
 
     dependencies {
-        clover 'com.cenqua.clover:clover:3.1.12.1'
+        clover 'com.cenqua.clover:clover:3.2.0'
     }
 
 ## Tasks
@@ -44,6 +44,7 @@ run from the root directory of your project and requires at least one submodule.
 
 * `initString`: The location to write the Clover coverage database (defaults to `.clover/clover.db`). The location you
 define will always be relative to the project's build directory.
+* `enabled`: Controls whether Clover will instrument code during code compilation (defaults to `true`).
 * `classesBackupDir`: The temporary backup directory for classes (defaults to `file("${sourceSets.main.classesDir}-bak")`).
 * `licenseLocation`: The [Clover license](http://confluence.atlassian.com/display/CLOVER/How+to+configure+your+clover.license)
 to be used (defaults to `'clover.license'`). The location can either be a file or URL defined as String.

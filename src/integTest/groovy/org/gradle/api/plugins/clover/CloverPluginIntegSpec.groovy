@@ -59,6 +59,26 @@ class CloverPluginIntegSpec extends Specification {
             cloverSnapshot.exists() == false
     }
 
+    def "Build a Java project with disabled instrumentation"() {
+        given: "a Java project"
+            projectName = 'java-project-disabled-instrumentation'
+
+        when: "the Clover report generation task is run"
+            runTasks('clean', 'cloverGenerateReport')
+
+        then: "the Clover coverage database is generated"
+            !cloverDb.exists()
+
+        and: "the Clover report is not generated"
+            !cloverXmlReport.exists()
+            !cloverHtmlReport.exists()
+            !cloverJsonReport.exists()
+            !cloverPdfReport.exists()
+
+        and: "the Clover snapshot is not generated"
+            !cloverSnapshot.exists()
+    }
+
     def "Build a Groovy project using old configuration"() {
 
         given: "a Groovy project"
