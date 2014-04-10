@@ -46,6 +46,8 @@ class InstrumentCodeAction implements Action<Task> {
     Set<File> testSrcDirs
     String sourceCompatibility
     String targetCompatibility
+    String executable
+    String encoding
     List<String> includes
     List<String> excludes
     List<String> testIncludes
@@ -232,7 +234,8 @@ class InstrumentCodeAction implements Action<Task> {
                 src(path: srcDir)
             }
 
-            ant.javac(source: getSourceCompatibility(), target: getTargetCompatibility())
+            ant.javac(source: getSourceCompatibility(), target: getTargetCompatibility(), encoding: getEncoding(),
+                      executable: getExecutable())
         }
     }
 
@@ -246,10 +249,22 @@ class InstrumentCodeAction implements Action<Task> {
      */
     private void compileJava(AntBuilder ant, Set<File> srcDirs, File destDir, String classpath) {
         ant.javac(destdir: destDir.canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
-                  classpath: classpath) {
+                  classpath: classpath, encoding: getEncoding(), executable: getExecutable()) {
             srcDirs.each { srcDir ->
                 src(path: srcDir)
             }
         }
+    }
+
+    private Map makeExtraJavacOptions() {
+        Map options = [
+            encoding: getEncoding()
+        ]
+
+        if (getExecutable()) {
+            options.executable = getExecutable()
+        }
+
+        options
     }
 }
