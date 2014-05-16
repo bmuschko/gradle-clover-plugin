@@ -156,6 +156,15 @@ class CloverPlugin implements Plugin<Project> {
         instrumentCodeAction.conventionMapping.map('testIncludes') { getTestIncludes(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('statementContexts') { cloverPluginConvention.contexts.statements }
         instrumentCodeAction.conventionMapping.map('methodContexts') { cloverPluginConvention.contexts.methods }
+
+        instrumentCodeAction.conventionMapping.map('executable') {
+            cloverPluginConvention.executable
+        }
+
+        instrumentCodeAction.conventionMapping.map('encoding') {
+            cloverPluginConvention.encoding
+        }
+
         instrumentCodeAction
     }
 

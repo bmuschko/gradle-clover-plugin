@@ -1,0 +1,35 @@
+buildscript {
+    dependencies {
+        classpath files('../../../../build/classes/main')
+    }
+}
+
+apply from: '../deps.gradle'
+apply plugin: 'java'
+
+compileJava {
+    options.encoding = 'UTF-8'
+}
+
+apply plugin: org.gradle.api.plugins.clover.CloverPlugin
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile deps.junit
+    clover deps.clover
+}
+
+clover {
+    licenseLocation = file('../../../../clover.license').absolutePath
+
+    report {
+        json = true
+        html = true
+        pdf = true
+    }
+
+//    encoding = 'UTF-8'
+}
