@@ -40,6 +40,8 @@ class CloverPluginConvention {
     CloverContextsConvention contexts = new CloverContextsConvention()
     List<String> includeTasks
     List<String> excludeTasks
+    String encoding
+    String executable = "UTF-8"
 
     def clover(Closure closure) {
         ConfigureUtil.configure(closure, this)

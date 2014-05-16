@@ -255,16 +255,4 @@ class InstrumentCodeAction implements Action<Task> {
             }
         }
     }
-
-    private Map makeExtraJavacOptions() {
-        Map options = [
-            encoding: getEncoding()
-        ]
-
-        if (getExecutable()) {
-            options.executable = getExecutable()
-        }
-
-        options
-    }
 }

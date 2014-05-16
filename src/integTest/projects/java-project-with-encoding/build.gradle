@@ -30,4 +30,6 @@ clover {
         html = true
         pdf = true
     }
+
+//    encoding = 'UTF-8'
 }

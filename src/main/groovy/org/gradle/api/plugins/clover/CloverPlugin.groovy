@@ -24,8 +24,6 @@ import org.gradle.api.internal.AsmBackedClassGenerator
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.clover.internal.LicenseResolverFactory
-import org.gradle.api.tasks.compile.GroovyCompile
-import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.api.tasks.testing.Test
 
 import java.lang.reflect.Constructor
@@ -159,57 +157,15 @@ class CloverPlugin implements Plugin<Project> {
         instrumentCodeAction.conventionMapping.map('statementContexts') { cloverPluginConvention.contexts.statements }
         instrumentCodeAction.conventionMapping.map('methodContexts') { cloverPluginConvention.contexts.methods }
 
-        JavaCompilerConfiguration javaCompilerConfiguration = findCompileJavaConfiguration(project)
-
         instrumentCodeAction.conventionMapping.map('executable') {
-            javaCompilerConfiguration.executable
+            cloverPluginConvention.executable
         }
 
         instrumentCodeAction.conventionMapping.map('encoding') {
-             javaCompilerConfiguration.encoding ?: findCompileGroovyEncoding(project)
+            cloverPluginConvention.encoding
         }
 
         instrumentCodeAction
-    }
-
-    private String findCompileGroovyEncoding(Project project) {
-        def g = project.tasks.withType(GroovyCompile)
-        String encoding
-
-        if (!g.empty) {
-            def compileGroovy = g.getByName('compileGroovy')
-
-            encoding = compileGroovy.options.encoding ?: compileGroovy.groovyOptions.encoding
-        }
-
-        if (encoding) {
-            log.info('Using encoding {} from Groovy Compiler.', encoding)
-        }
-
-        encoding
-    }
-
-    private JavaCompilerConfiguration findCompileJavaConfiguration(Project project) {
-        def g = project.tasks.withType(JavaCompile)
-        String encoding
-        String executable
-
-        if (!g.empty) {
-            def compileJava = g.getByName('compileJava')
-
-            encoding = compileJava.options.encoding
-            executable = compileJava.options.forkOptions.executable
-        }
-
-        if (encoding) {
-            log.info('Using encoding {} from Java Compiler.', encoding)
-        }
-
-        if (executable) {
-            log.info('Using executable {} from Java Compiler.', executable)
-        }
-
-        new JavaCompilerConfiguration(encoding: encoding, executable: executable)
     }
 
     private void configureGenerateCoverageReportTask(Project project, CloverPluginConvention cloverPluginConvention, AggregateDatabasesTask aggregateDatabasesTask) {
@@ -483,11 +439,5 @@ class CloverPlugin implements Plugin<Project> {
         }
 
         project.configurations.compile.asFileTree
-    }
-
-    @Immutable
-    private static class JavaCompilerConfiguration {
-        String encoding
-        String executable
     }
 }
