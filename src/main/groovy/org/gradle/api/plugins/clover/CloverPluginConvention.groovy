@@ -38,10 +38,9 @@ class CloverPluginConvention {
     List<String> testIncludes
     CloverReportConvention report = new CloverReportConvention()
     CloverContextsConvention contexts = new CloverContextsConvention()
+    CloverCompilerConvention compiler = new CloverCompilerConvention()
     List<String> includeTasks
     List<String> excludeTasks
-    String encoding
-    String executable = "UTF-8"
 
     def clover(Closure closure) {
         ConfigureUtil.configure(closure, this)
@@ -69,5 +68,9 @@ class CloverPluginConvention {
 
     def report(Closure closure) {
         ConfigureUtil.configure(closure, report)
+    }
+
+    def compiler(Closure closure) {
+        ConfigureUtil.configure(closure, compiler)
     }
 }

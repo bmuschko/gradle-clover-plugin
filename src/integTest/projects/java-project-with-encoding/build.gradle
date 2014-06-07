@@ -31,5 +31,7 @@ clover {
         pdf = true
     }
 
-//    encoding = 'UTF-8'
+    compiler {
+        encoding = 'UTF-8'
+    }
 }

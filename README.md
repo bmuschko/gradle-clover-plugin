@@ -86,6 +86,13 @@ Within `clover` you can define which report types should be generated in a closu
 See [Using Coverage Contexts](http://confluence.atlassian.com/display/CLOVER/Using+Coverage+Contexts). By default no filter
 is applied.
 
+Furthermore, within `clover` you can define compiler settings which will be passed to java and groovyc upon compilation of instrumented sources.
+This is useful when specific compiler settings have been set on the main Java/Groovy compiler for your buildscript and
+need to be carried over to the compilation of the instrumented sources.  These are held within a closure named  `compiler`.
+
+* `encoding`: The (optional) encoding name.  If not provided, the platform default according to the JVM will be used. See [java.nio.charset.StandardCharsets](http://docs.oracle.com/javase/8/docs/api/java/nio/charset/StandardCharsets.html) for a full list of charsets.
+* `executable`: The (optional) javac executable to use, should be an absolute file.
+
 The Clover plugin defines the following convention properties in the `clover` closure:
 
 ### Example
@@ -106,6 +113,13 @@ The Clover plugin defines the following convention properties in the `clover` cl
                 name = 'main'
                 regexp = 'public static void main\\(String args\\[\\]\\).*'
             }
+        }
+        
+        compiler {
+            encoding = 'UTF-8'
+            
+            // if the javac executable used by ant should be the same as the one used elsewhere.
+            executable = file('/usr/local/java/jdk1.8.0_05') 
         }
 
         report {
