@@ -1,3 +1,7 @@
+### Version 0.8.2 (June 8, 2014)
+
+* Expose compiler encoding and executable of underlying Ant task - [Pull Request 47](https://github.com/bmuschko/gradle-clover-plugin/pull/47).
+
 ### Version 0.8.1 (December 21, 2013)
 
 * Expose property through DSL for disabling code instrumation and coverage reporting - [Issue 37](https://github.com/bmuschko/gradle-clover-plugin/issues/37).
@@ -9,7 +13,7 @@
 
 ### Version 0.8 (October 18, 2013)
 
-* Context filters not applied to 'clover-check' task. - [Pull Request 35](https://github.com/bmuschko/gradle-clover-plugin/issues/35).
+* Context filters not applied to 'clover-check' task. - [Pull Request 35](https://github.com/bmuschko/gradle-clover-plugin/pull/35).
 
 ### Version 0.7 (September 8, 2013)
 

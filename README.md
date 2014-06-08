@@ -21,7 +21,7 @@ example on how to retrieve it from Bintray:
         }
 
         dependencies {
-            classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.8.1'
+            classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.8.2'
         }
     }
 

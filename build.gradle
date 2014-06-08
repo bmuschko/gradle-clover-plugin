@@ -6,7 +6,7 @@ buildscript {
 
     dependencies {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.3'
-        classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.8'
+        //classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.8'
     }
 }
 
@@ -14,10 +14,10 @@ apply plugin: 'groovy'
 apply plugin: 'idea'
 apply plugin: 'maven-publish'
 apply plugin: 'bintray'
-apply plugin: 'clover'
+//apply plugin: 'clover'
 
 group = 'org.gradle.api.plugins'
-version = '0.8.1'
+version = '0.8.2'
 defaultTasks 'clean', 'build'
 
 sourceSets {
@@ -48,7 +48,7 @@ dependencies {
     testCompile('org.spockframework:spock-core:0.7-groovy-1.8') {
         exclude group: 'org.codehaus.groovy', module: 'groovy-all'
     }
-    clover 'com.cenqua.clover:clover:3.2.0'
+    //clover 'com.cenqua.clover:clover:3.2.0'
 }
 
 jar {
@@ -81,11 +81,11 @@ idea.module {
     testSourceDirs += file('src/integTest/groovy')
 }
 
-clover {
+/*clover {
     report {
         html = true
     }
-}
+}*/
 
 task sourcesJar(type: Jar) {
     classifier 'sources'
