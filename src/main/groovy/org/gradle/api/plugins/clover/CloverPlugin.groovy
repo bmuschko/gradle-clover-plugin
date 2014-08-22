@@ -357,7 +357,7 @@ class CloverPlugin implements Plugin<Project> {
                 target << it
             }
             else {
-                log.warn "The specified source directory '$it.canonicalPath' does not exist. It won't be included in Clover instrumentation."
+                log.info "The specified source directory '$it.canonicalPath' does not exist. It won't be included in Clover instrumentation."
             }
         }
     }
