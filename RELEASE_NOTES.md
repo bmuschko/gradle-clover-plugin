@@ -1,3 +1,10 @@
+### Version 2.0 (October 18, 2014)
+
+* Upgrade to Gradle Wrapper 2.1.
+* Changed package name to `com.bmuschko.gradle.clover`.
+* Changed group ID to `com.bmuschko`.
+* Adapted plugin IDs to be compatible with Gradle's plugin portal.
+
 ### Version 0.8.2 (June 8, 2014)
 
 * Expose compiler encoding and executable of underlying Ant task - [Pull Request 47](https://github.com/bmuschko/gradle-clover-plugin/pull/47).

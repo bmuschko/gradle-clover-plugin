@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.3'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.6'
         //classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.8'
     }
 }
@@ -13,11 +13,11 @@ buildscript {
 apply plugin: 'groovy'
 apply plugin: 'idea'
 apply plugin: 'maven-publish'
-apply plugin: 'bintray'
+apply plugin: 'com.jfrog.bintray'
 //apply plugin: 'clover'
 
-group = 'org.gradle.api.plugins'
-version = '0.8.2'
+group = 'com.bmuschko'
+version = '2.0'
 defaultTasks 'clean', 'build'
 
 sourceSets {
@@ -45,8 +45,8 @@ repositories {
 dependencies {
     compile localGroovy()
     compile gradleApi()
-    testCompile('org.spockframework:spock-core:0.7-groovy-1.8') {
-        exclude group: 'org.codehaus.groovy', module: 'groovy-all'
+    testCompile('org.spockframework:spock-core:0.7-groovy-2.0') {
+        exclude group: 'org.codehaus.groovy'
     }
     //clover 'com.cenqua.clover:clover:3.2.0'
 }
@@ -142,11 +142,27 @@ bintray {
 
     pkg {
         repo = 'gradle-plugins'
-        name = 'gradle-clover-plugin'
+        name = 'com.bmuschko:gradle-clover-plugin'
+        desc = 'Gradle plugin for generating a code coverage report using Clover.'
+        websiteUrl = "https://github.com/bmuschko/${project.name}"
+        issueTrackerUrl = "https://github.com/bmuschko/${project.name}/issues"
+        vcsUrl = "https://github.com/bmuschko/${project.name}.git"
         licenses = ['Apache-2.0']
+        labels = ['gradle', 'code', 'coverage', 'metrics', 'test', 'report', 'clover']
+        publicDownloadNumbers = true
+
+        version {
+            vcsTag = "v$project.version"
+            attributes = ['gradle-plugin': "com.bmuschko.clover:${project.group}:${project.name}"]
+
+            gpg {
+                sign = true
+                passphrase = project.hasProperty('gpgPassphrase') ? project.getProperty('gpgPassphrase') : null
+            }
+        }
     }
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.10'
+    gradleVersion = '2.1'
 }

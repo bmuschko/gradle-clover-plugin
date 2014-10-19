@@ -8,7 +8,7 @@ The plugin provides generation of code coverage reports using [Clover](http://ww
 
 To use the Clover plugin, include in your build script:
 
-    apply plugin: 'clover'
+    apply plugin: 'com.bmuschko.clover'
 
 The plugin JAR needs to be defined in the classpath of your build script. It is directly available on
 [Bintray](https://bintray.com/bmuschko/gradle-plugins/gradle-clover-plugin).
@@ -21,7 +21,7 @@ example on how to retrieve it from Bintray:
         }
 
         dependencies {
-            classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.8.2'
+            classpath 'com.bmuschko:gradle-clover-plugin:2.0'
         }
     }
 

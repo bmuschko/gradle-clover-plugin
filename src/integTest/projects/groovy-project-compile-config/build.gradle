@@ -1,3 +1,5 @@
+import com.bmuschko.gradle.clover.CloverPlugin
+
 buildscript {
     dependencies {
         classpath files('../../../../build/classes/main')
@@ -6,7 +8,7 @@ buildscript {
 
 apply from: '../deps.gradle'
 apply plugin: 'groovy'
-apply plugin: org.gradle.api.plugins.clover.CloverPlugin
+apply plugin: CloverPlugin
 
 repositories {
     mavenCentral()

@@ -1,3 +1,5 @@
+import com.bmuschko.gradle.clover.CloverPlugin
+
 buildscript {
     dependencies {
         classpath files('../../../../build/classes/main')
@@ -12,7 +14,7 @@ allprojects {
     }
 
     if (path != ':project4c') {
-        apply plugin: org.gradle.api.plugins.clover.CloverPlugin
+        apply plugin: CloverPlugin
 
         dependencies {
             clover deps.clover
