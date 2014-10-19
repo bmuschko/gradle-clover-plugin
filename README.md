@@ -11,7 +11,7 @@ To use the Clover plugin, include in your build script:
     apply plugin: 'com.bmuschko.clover'
 
 The plugin JAR needs to be defined in the classpath of your build script. It is directly available on
-[Bintray](https://bintray.com/bmuschko/gradle-plugins/gradle-clover-plugin).
+[Bintray](https://bintray.com/bmuschko/gradle-plugins/com.bmuschko%3Agradle-clover-plugin).
 Alternatively, you can download it from GitHub and deploy it to your local repository. The following code snippet shows an
 example on how to retrieve it from Bintray:
 
