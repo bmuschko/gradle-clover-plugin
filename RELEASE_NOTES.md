@@ -1,3 +1,7 @@
+### Version 2.0.1 (Novemver 15, 2014)
+
+* Changed log level from `warn` to `info` if project doesn't have source code - [Pull Request 49](https://github.com/bmuschko/gradle-clover-plugin/pull/49).
+
 ### Version 2.0 (October 18, 2014)
 
 * Upgrade to Gradle Wrapper 2.1.
