@@ -66,7 +66,6 @@ The snapshot file should survive clean builds, so it should *not* be placed in t
 location is `.clover/coverage.db.snapshot`.
 * `includeTasks`: A list of task names, allows to explicitly specify which test tasks should be introspected and used to gather coverage information - useful if there are more than one `Test` tasks in a project.
 * `excludeTasks`: A list of task names, allows to exclude test tasks from introspection and gathering coverage information - useful if there are more than one `Test` tasks in a project.
-* `debug`: Controls whether to invoke javac with the -g flag. This is useful for Spring MVC code that uses debugging symbols for parameter mapping. (defaults to `false`).
 
 Within `clover` you can define [coverage contexts](http://confluence.atlassian.com/display/CLOVER/Using+Coverage+Contexts)
 in a closure named `contexts`. There are two types of coverage contexts: statement contexts and method contexts. You can
@@ -93,6 +92,7 @@ need to be carried over to the compilation of the instrumented sources.  These a
 
 * `encoding`: The (optional) encoding name.  If not provided, the platform default according to the JVM will be used. See [java.nio.charset.StandardCharsets](http://docs.oracle.com/javase/8/docs/api/java/nio/charset/StandardCharsets.html) for a full list of charsets.
 * `executable`: The (optional) javac executable to use, should be an absolute file.
+* `debug`: Controls whether to invoke javac with the -g flag. This is useful for Spring MVC code that uses debugging symbols for parameter mapping. (defaults to `false`).
 
 The Clover plugin defines the following convention properties in the `clover` closure:
 

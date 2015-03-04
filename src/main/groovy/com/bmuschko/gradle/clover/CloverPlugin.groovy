@@ -158,7 +158,7 @@ class CloverPlugin implements Plugin<Project> {
         instrumentCodeAction.conventionMapping.map('methodContexts') { cloverPluginConvention.contexts.methods }
         instrumentCodeAction.conventionMapping.map('executable') { cloverPluginConvention.compiler.executable?.absolutePath }
         instrumentCodeAction.conventionMapping.map('encoding') { cloverPluginConvention.compiler.encoding }
-        instrumentCodeAction.conventionMapping.map('debug') { cloverPluginConvention.debug }
+        instrumentCodeAction.conventionMapping.map('debug') { cloverPluginConvention.compiler.debug }
         instrumentCodeAction
     }
 

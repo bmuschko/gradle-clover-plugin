@@ -41,7 +41,6 @@ class CloverPluginConvention {
     CloverCompilerConvention compiler = new CloverCompilerConvention()
     List<String> includeTasks
     List<String> excludeTasks
-    boolean debug = false
 
     def clover(Closure closure) {
         ConfigureUtil.configure(closure, this)
