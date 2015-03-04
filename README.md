@@ -66,6 +66,7 @@ The snapshot file should survive clean builds, so it should *not* be placed in t
 location is `.clover/coverage.db.snapshot`.
 * `includeTasks`: A list of task names, allows to explicitly specify which test tasks should be introspected and used to gather coverage information - useful if there are more than one `Test` tasks in a project.
 * `excludeTasks`: A list of task names, allows to exclude test tasks from introspection and gathering coverage information - useful if there are more than one `Test` tasks in a project.
+* `debug`: Controls whether to invoke javac with the -g flag. This is useful for Spring MVC code that uses debugging symbols for parameter mapping. (defaults to `false`).
 
 Within `clover` you can define [coverage contexts](http://confluence.atlassian.com/display/CLOVER/Using+Coverage+Contexts)
 in a closure named `contexts`. There are two types of coverage contexts: statement contexts and method contexts. You can
