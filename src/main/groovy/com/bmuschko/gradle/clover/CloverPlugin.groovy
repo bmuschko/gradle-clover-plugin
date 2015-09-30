@@ -67,6 +67,7 @@ class CloverPlugin implements Plugin<Project> {
             conventionMapping.with {
                 map('initString') { getInitString(cloverPluginConvention) }
                 map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
+                map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             }
         }
 
@@ -206,11 +207,13 @@ class CloverPlugin implements Plugin<Project> {
      * @param task Task
      */
     private void setCloverReportConventionMappings(Project project, CloverPluginConvention cloverPluginConvention, Task task) {
-        task.conventionMapping.map('reportsDir') { new File(project.buildDir, 'reports') }
+        def reportDir = new File(project.buildDir, 'reports')
+        task.conventionMapping.map('reportsDir') { reportDir }
         task.conventionMapping.map('xml') { cloverPluginConvention.report.xml }
         task.conventionMapping.map('json') { cloverPluginConvention.report.json }
         task.conventionMapping.map('html') { cloverPluginConvention.report.html }
         task.conventionMapping.map('pdf') { cloverPluginConvention.report.pdf }
+        task.outputs.dir(new File(reportDir, 'clover'))
     }
 
     /**
