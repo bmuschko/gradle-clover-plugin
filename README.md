@@ -92,6 +92,7 @@ need to be carried over to the compilation of the instrumented sources.  These a
 
 * `encoding`: The (optional) encoding name.  If not provided, the platform default according to the JVM will be used. See [java.nio.charset.StandardCharsets](http://docs.oracle.com/javase/8/docs/api/java/nio/charset/StandardCharsets.html) for a full list of charsets.
 * `executable`: The (optional) javac executable to use, should be an absolute file.
+* `debug`: If true, passes the -g flag to javac when compiling, if false (default), uses the default flags.
 
 The Clover plugin defines the following convention properties in the `clover` closure:
 
