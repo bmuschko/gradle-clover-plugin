@@ -66,6 +66,7 @@ class CloverPlugin implements Plugin<Project> {
         project.tasks.withType(AggregateDatabasesTask) {
             conventionMapping.with {
                 map('initString') { getInitString(cloverPluginConvention) }
+                map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
                 map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
             }
         }
