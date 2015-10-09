@@ -8,7 +8,6 @@ buildscript {
 
 apply from: '../deps.gradle'
 apply plugin: 'java'
-apply plugin: CloverPlugin
 
 sourceCompatibility = 1.8
 
@@ -18,11 +17,17 @@ repositories {
 
 dependencies {
     testCompile deps.junit
-    clover deps.clover
 }
 
-clover {
-    licenseLocation = file('../../../../clover.license').absolutePath
+// Prove that the plugin works if applied in an afterEvaluate listener
+afterEvaluate {
+    apply plugin: CloverPlugin
+    dependencies {
+        clover deps.clover
+    }
+    clover {
+        licenseLocation = file('../../../../clover.license').absolutePath
 
-    instrumentLambda = 'none'
+        instrumentLambda = 'none'
+    }
 }

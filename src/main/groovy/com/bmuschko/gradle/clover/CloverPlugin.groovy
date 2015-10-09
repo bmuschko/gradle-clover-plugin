@@ -79,27 +79,32 @@ class CloverPlugin implements Plugin<Project> {
 
     private void configureActions(Project project, CloverPluginConvention cloverPluginConvention, AggregateDatabasesTask aggregateDatabasesTask) {
         project.tasks.withType(Test) { Test test ->
-            project.afterEvaluate {
-                if (cloverPluginConvention.includeTasks) {
-                    if (test.name in cloverPluginConvention.includeTasks) {
-                        configureActionsForTask(test, project, cloverPluginConvention, aggregateDatabasesTask)
-                    }
-                } else if (!(test.name in cloverPluginConvention.excludeTasks)) {
+            // If it is too late for afterEvaluate configure now
+            if (project.state.executed) {
+                configureActionsForTask(test, project, cloverPluginConvention, aggregateDatabasesTask)
+            } else {
+                project.afterEvaluate {
                     configureActionsForTask(test, project, cloverPluginConvention, aggregateDatabasesTask)
                 }
             }
         }
     }
 
+    private boolean testTaskEnabled(Test test, CloverPluginConvention cloverPluginConvention) {
+        !((cloverPluginConvention.includeTasks && !(test.name in cloverPluginConvention.includeTasks)) || test.name in cloverPluginConvention.excludeTasks)
+    }
+
     private void configureActionsForTask(Test test, Project project, CloverPluginConvention cloverPluginConvention, AggregateDatabasesTask aggregateDatabasesTask) {
-        test.classpath += project.configurations.getByName(CONFIGURATION_NAME).asFileTree
-        OptimizeTestSetAction optimizeTestSetAction = createOptimizeTestSetAction(cloverPluginConvention, project, test)
-        test.doFirst optimizeTestSetAction // add first, gets executed second
-        test.doFirst createInstrumentCodeAction(cloverPluginConvention, project, test) // add second, gets executed first
-        test.include optimizeTestSetAction // action is also a file inclusion spec
-        test.doLast createCreateSnapshotAction(cloverPluginConvention, project, test)
-        test.doLast createRestoreOriginalClassesAction(cloverPluginConvention, project, test)
-        aggregateDatabasesTask.aggregate(test)
+        if (testTaskEnabled(test, cloverPluginConvention)) {
+            test.classpath += project.configurations.getByName(CONFIGURATION_NAME).asFileTree
+            OptimizeTestSetAction optimizeTestSetAction = createOptimizeTestSetAction(cloverPluginConvention, project, test)
+            test.doFirst optimizeTestSetAction // add first, gets executed second
+            test.doFirst createInstrumentCodeAction(cloverPluginConvention, project, test) // add second, gets executed first
+            test.include optimizeTestSetAction // action is also a file inclusion spec
+            test.doLast createCreateSnapshotAction(cloverPluginConvention, project, test)
+            test.doLast createRestoreOriginalClassesAction(cloverPluginConvention, project, test)
+            aggregateDatabasesTask.aggregate(test)
+        }
     }
 
     private RestoreOriginalClassesAction createRestoreOriginalClassesAction(CloverPluginConvention cloverPluginConvention, Project project, Test testTask) {
@@ -283,7 +288,7 @@ class CloverPlugin implements Plugin<Project> {
 
     private Set<CloverSourceSet> getSourceSets(Project project, CloverPluginConvention cloverPluginConvention) {
         def sourceSets = []
- 
+
          if(hasGroovyPlugin(project)) {
             CloverSourceSet cloverSourceSet = new CloverSourceSet()
             cloverSourceSet.srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.main.java.srcDirs))
@@ -299,20 +304,20 @@ class CloverPlugin implements Plugin<Project> {
             cloverSourceSet.backupDir = cloverPluginConvention.classesBackupDir ?: new File("${project.sourceSets.main.output.classesDir}-bak")
             sourceSets << cloverSourceSet
          }
- 
+
         if(cloverPluginConvention.additionalSourceSets) {
             cloverPluginConvention.additionalSourceSets.each { additionalSourceSet ->
                 additionalSourceSet.backupDir = cloverPluginConvention.classesBackupDir ?: new File("${additionalSourceSet.classesDir}-bak")
                 sourceSets << additionalSourceSet
             }
          }
- 
+
         sourceSets
      }
- 
+
     private Set<CloverSourceSet> getTestSourceSets(Project project, CloverPluginConvention cloverPluginConvention) {
         def testSourceSets = []
- 
+
          if(hasGroovyPlugin(project)) {
             CloverSourceSet cloverSourceSet = new CloverSourceSet()
             cloverSourceSet.srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.test.java.srcDirs))
@@ -328,14 +333,14 @@ class CloverPlugin implements Plugin<Project> {
             cloverSourceSet.backupDir = cloverPluginConvention.testClassesBackupDir ?: new File("${project.sourceSets.test.output.classesDir}-bak")
             testSourceSets << cloverSourceSet
          }
- 
+
         if(cloverPluginConvention.additionalTestSourceSets) {
             cloverPluginConvention.additionalTestSourceSets.each { additionalTestSourceSet ->
                 additionalTestSourceSet.backupDir = cloverPluginConvention.classesBackupDir ?: new File("${additionalTestSourceSet.classesDir}-bak")
                 testSourceSets << additionalTestSourceSet
             }
          }
- 
+
         testSourceSets
      }
 
