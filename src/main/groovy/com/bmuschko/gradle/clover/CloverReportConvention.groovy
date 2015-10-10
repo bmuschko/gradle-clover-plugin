@@ -26,4 +26,6 @@ class CloverReportConvention {
     Boolean html = false
     Boolean pdf = false
     String filter
+    String testResultsDir
+    String testResultsInclude = 'TEST-*.xml'
 }

@@ -108,6 +108,8 @@ Within `clover` you can define which report types should be generated in a closu
 * `filter`: A comma or space separated list of contexts to exclude when generating coverage reports.
 See [Using Coverage Contexts](http://confluence.atlassian.com/display/CLOVER/Using+Coverage+Contexts). By default no filter
 is applied.
+* `testResultsDir`: Specifies the location of the JUnit4 test results XML report. This is necessary when the test use the new JUnit4 @Rule mechanism to declare expected exceptions. Clover fails to detect coverage for methods when this mechanism is used. This solution uses a feature of Clover that takes the coverage information directly from the JUnit XML report.
+* `testResultsInclude`: If testResultsDir is specified this must be an Ant file name pattern to select the correct XML files within the directory (defaults to TEST-*.xml).
 
 Furthermore, within `clover` you can define compiler settings which will be passed to java and groovyc upon compilation of instrumented sources.
 This is useful when specific compiler settings have been set on the main Java/Groovy compiler for your buildscript and
@@ -151,6 +153,8 @@ The Clover plugin defines the following convention properties in the `clover` cl
             html = true
             pdf = true
             filter = 'log,if,else'
+            testResultsDir = project.tasks.getByName('test').reports.junitXml.destination
+            testResultsInclude = 'TEST-*.xml'
         }
     }
 

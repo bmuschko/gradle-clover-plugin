@@ -174,6 +174,8 @@ class CloverPlugin implements Plugin<Project> {
             conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             conventionMapping.map('targetPercentage') { cloverPluginConvention.targetPercentage }
             conventionMapping.map('filter') { cloverPluginConvention.report.filter }
+            conventionMapping.map('testResultsDir') { cloverPluginConvention.report.testResultsDir }
+            conventionMapping.map('testResultsInclude') { cloverPluginConvention.report.testResultsInclude }
             setCloverReportConventionMappings(project, cloverPluginConvention, generateCoverageReportTask)
         }
 
@@ -189,6 +191,8 @@ class CloverPlugin implements Plugin<Project> {
             conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
             conventionMapping.map('subprojectBuildDirs') { project.subprojects.collect { it.buildDir } }
             conventionMapping.map('filter') { cloverPluginConvention.report.filter }
+            conventionMapping.map('testResultsDir') { cloverPluginConvention.report.testResultsDir }
+            conventionMapping.map('testResultsInclude') { cloverPluginConvention.report.testResultsInclude }
             setCloverReportConventionMappings(project, cloverPluginConvention, aggregateReportsTask)
         }
 

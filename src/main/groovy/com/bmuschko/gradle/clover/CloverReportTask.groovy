@@ -105,19 +105,19 @@ abstract class CloverReportTask extends DefaultTask {
      *
      * @param filter Optional filter
      */
-    protected void writeReports(String filter = null) {
+    protected void writeReports(String filter, String testResultsDir = null, String testResultsInclude = null) {
         File cloverReportDir = new File("${getReportsDir()}/clover")
 
         if(getXml()) {
-            writeReport(new File(cloverReportDir, 'clover.xml'), ReportType.XML, filter)
+            writeReport(new File(cloverReportDir, 'clover.xml'), ReportType.XML, filter, testResultsDir, testResultsInclude)
         }
 
         if(getJson()) {
-            writeReport(new File(cloverReportDir, 'json'), ReportType.JSON, filter)
+            writeReport(new File(cloverReportDir, 'json'), ReportType.JSON, filter, testResultsDir, testResultsInclude)
         }
 
         if(getHtml()) {
-            writeReport(new File(cloverReportDir, 'html'), ReportType.HTML, filter)
+            writeReport(new File(cloverReportDir, 'html'), ReportType.HTML, filter, testResultsDir, testResultsInclude)
         }
 
         if(getPdf()) {
@@ -133,7 +133,7 @@ abstract class CloverReportTask extends DefaultTask {
      * @param reportType Report type
      * @param filter Optional filter
      */
-    private void writeReport(File outfile, ReportType reportType, String filter) {
+    private void writeReport(File outfile, ReportType reportType, String filter, String testResultsDir, String testResultsInclude) {
         ant."clover-report"(initString: "$project.buildDir/${getInitString()}") {
             current(outfile: outfile, title: project.name) {
                 if(filter) {
@@ -141,6 +141,9 @@ abstract class CloverReportTask extends DefaultTask {
                 }
                 else {
                     format(type: reportType.format)
+                }
+                if (testResultsDir) {
+                    testresults(dir: testResultsDir, includes: testResultsInclude)
                 }
             }
         }

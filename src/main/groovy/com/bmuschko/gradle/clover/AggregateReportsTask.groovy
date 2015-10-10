@@ -23,6 +23,8 @@ package com.bmuschko.gradle.clover
 class AggregateReportsTask extends CloverReportTask {
     List<File> subprojectBuildDirs
     String filter
+    String testResultsDir
+    String testResultsInclude
 
     @Override
     void generateCodeCoverage() {
@@ -33,7 +35,7 @@ class AggregateReportsTask extends CloverReportTask {
         logger.info 'Starting to aggregate Clover code coverage reports.'
 
         mergeSubprojectCloverDatabases()
-        writeReports(getFilter())
+        writeReports(getFilter(), getTestResultsDir(), getTestResultsInclude())
 
         logger.info 'Finished aggregating Clover code coverage reports.'
     }

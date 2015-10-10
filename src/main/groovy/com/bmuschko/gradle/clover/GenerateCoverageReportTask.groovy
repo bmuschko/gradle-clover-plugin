@@ -23,6 +23,8 @@ package com.bmuschko.gradle.clover
 class GenerateCoverageReportTask extends CloverReportTask {
     String filter
     String targetPercentage
+    String testResultsDir
+    String testResultsInclude
 
     @Override
     void generateCodeCoverage() {
@@ -43,7 +45,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
         logger.info 'Starting to generate Clover code coverage report.'
 
         String filter = getFilter()
-        writeReports(filter)
+        writeReports(filter, getTestResultsDir(), getTestResultsInclude())
         checkTargetPercentage(filter)
 
         logger.info 'Finished generating Clover code coverage report.'

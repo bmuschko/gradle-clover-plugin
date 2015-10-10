@@ -14,12 +14,24 @@
  * limitations under the License.
  */
 
-import junit.framework.TestCase;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-public class BookTest extends TestCase {
+public class BookTest {
 
+    @Rule
+    public ExpectedException exceptions = ExpectedException.none();
+
+    @Test
     public void testOpen() {
         new Book().open();
+    }
+
+    @Test
+    public void testThrowsRuntimeException() {
+        exceptions.expect(RuntimeException.class);
+        new Book().throwsRuntimeException();
     }
 
 }

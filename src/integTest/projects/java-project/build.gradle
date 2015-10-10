@@ -31,5 +31,8 @@ clover {
         json = true
         html = true
         pdf = true
+        // Test support for Clover's JUnit results coverage reporting
+        testResultsDir = project.tasks.getByName('test').reports.junitXml.destination
+        testResultsInclude = 'TEST-*.xml'
     }
 }

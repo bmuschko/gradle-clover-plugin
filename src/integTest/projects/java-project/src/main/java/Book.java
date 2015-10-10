@@ -21,6 +21,10 @@ public class Book {
         return true;
     }
 
+    public void throwsRuntimeException() {
+        throw new RuntimeException("Testing");
+    }
+
     // untested
     public boolean close() {
         return false;
