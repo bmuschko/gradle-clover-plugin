@@ -72,6 +72,9 @@ to `'**/*.java'` and `'**/*.groovy'` for Groovy projects).
 * `testIncludes`: A list of String Ant Glob Patterns to include for instrumentation for
 [per-test coverage](http://confluence.atlassian.com/display/CLOVER/Unit+Test+Results+and+Per-Test+Coverage) (defaults to
 `'**/*Test.java'` for Java projects, defaults to `'**/*Test.java'` and `'**/*Test.groovy'` for Groovy projects).
+* `testExcludes`: A list of String Ant Glob Patterns to exclude from instrumentation for
+[per-test coverage](http://confluence.atlassian.com/display/CLOVER/Unit+Test+Results+and+Per-Test+Coverage) (for example mock classes, defaults to
+empty list - no excludes).
 * `additionalSourceDirs`: Defines custom source sets to be added for instrumentation e.g. `sourceSets.custom.allSource.srcDirs`.
 * `additionalTestDirs`: Defines custom test source sets to be added for instrumentation e.g. `sourceSets.integTest.allSource.srcDirs`.
 * `targetPercentage`: The required target percentage total coverage e.g. "10%". The build fails if that goals is not met.
@@ -121,6 +124,7 @@ The Clover plugin defines the following convention properties in the `clover` cl
         classesBackupDir = file("${sourceSets.main.classesDir}-backup")
         licenseLocation = 'clover-license.txt'
         excludes = ['**/SynchronizedMultiValueMap.java']
+        testExcludes = ['**/Mock*.java']
         targetPercentage = '85%'
 
         contexts {

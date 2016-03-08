@@ -47,6 +47,7 @@ class InstrumentCodeAction implements Action<Task> {
     List<String> includes
     List<String> excludes
     List<String> testIncludes
+    List<String> testExcludes
     String instrumentLambda
     def statementContexts
     def methodContexts
@@ -96,6 +97,10 @@ class InstrumentCodeAction implements Action<Task> {
                     ant.fileset(dir: testSrcDir) {
                         getTestIncludes().each { include ->
                             ant.include(name: include)
+                        }
+
+                        getTestExcludes().each { exclude ->
+                            ant.exclude(name: exclude)
                         }
                     }
                 }
