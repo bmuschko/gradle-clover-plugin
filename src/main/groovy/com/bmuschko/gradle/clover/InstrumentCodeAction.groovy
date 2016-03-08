@@ -51,6 +51,7 @@ class InstrumentCodeAction implements Action<Task> {
     List<String> includes
     List<String> excludes
     List<String> testIncludes
+    String instrumentLambda
     def statementContexts
     def methodContexts
 
@@ -125,6 +126,10 @@ class InstrumentCodeAction implements Action<Task> {
 
         if(!getEnabled()) {
             attributes['enabled'] = false
+        }
+
+        if(getInstrumentLambda()) {
+            attributes['instrumentLambda'] = getInstrumentLambda()
         }
 
         attributes

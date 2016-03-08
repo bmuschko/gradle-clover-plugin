@@ -41,6 +41,7 @@ class CloverPluginConvention {
     CloverCompilerConvention compiler = new CloverCompilerConvention()
     List<String> includeTasks
     List<String> excludeTasks
+    String instrumentLambda
 
     def clover(Closure closure) {
         ConfigureUtil.configure(closure, this)
