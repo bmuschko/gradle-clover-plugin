@@ -36,6 +36,7 @@ class CloverPluginConvention {
     List<String> includes
     List<String> excludes
     List<String> testIncludes
+    List<String> testExcludes
     CloverReportConvention report = new CloverReportConvention()
     CloverContextsConvention contexts = new CloverContextsConvention()
     CloverCompilerConvention compiler = new CloverCompilerConvention()

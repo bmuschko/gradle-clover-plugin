@@ -154,6 +154,7 @@ class CloverPlugin implements Plugin<Project> {
         instrumentCodeAction.conventionMapping.map('includes') { getIncludes(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('excludes') { cloverPluginConvention.excludes }
         instrumentCodeAction.conventionMapping.map('testIncludes') { getTestIncludes(project, cloverPluginConvention) }
+        instrumentCodeAction.conventionMapping.map('testExcludes') { getTestExcludes(project, cloverPluginConvention) }
         instrumentCodeAction.conventionMapping.map('statementContexts') { cloverPluginConvention.contexts.statements }
         instrumentCodeAction.conventionMapping.map('methodContexts') { cloverPluginConvention.contexts.methods }
         instrumentCodeAction.conventionMapping.map('executable') { cloverPluginConvention.compiler.executable?.absolutePath }
@@ -400,6 +401,21 @@ class CloverPlugin implements Plugin<Project> {
         }
 
         [DEFAULT_JAVA_TEST_INCLUDES]
+    }
+
+    /**
+     * Gets test patterns excluded from instrumentation. The default is empty list - no excludes.
+     *
+     * @param project Project
+     * @param cloverPluginConvention Clover plugin convention
+     * @return Test excludes
+     */
+    private List getTestExcludes(Project project, CloverPluginConvention cloverPluginConvention) {
+        if(cloverPluginConvention.testExcludes) {
+            return cloverPluginConvention.testExcludes
+        }
+
+        []
     }
 
     /**
