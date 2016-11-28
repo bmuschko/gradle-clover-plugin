@@ -3,21 +3,18 @@ buildscript {
         maven { url 'http://jcenter.bintray.com' }
         mavenCentral()
     }
+}
 
-    dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.6'
-        //classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.8'
-    }
+plugins {
+    id "com.jfrog.bintray" version "1.3.1"
 }
 
 apply plugin: 'groovy'
 apply plugin: 'idea'
 apply plugin: 'maven-publish'
-apply plugin: 'com.jfrog.bintray'
-//apply plugin: 'clover'
 
-group = 'com.bmuschko'
-version = '2.0.1'
+group = 'com.miovision'
+version = '3.0.0.mio'
 defaultTasks 'clean', 'build'
 
 sourceSets {
@@ -48,16 +45,15 @@ dependencies {
     testCompile('org.spockframework:spock-core:0.7-groovy-2.0') {
         exclude group: 'org.codehaus.groovy'
     }
-    //clover 'com.cenqua.clover:clover:3.2.0'
 }
 
 jar {
     manifest {
         attributes 'Implementation-Title': 'Gradle Clover plugin',
-                   'Implementation-Version': version,
-                   'Built-By': System.getProperty("user.name"),
-                   'Built-Date': new Date(),
-                   'Built-JDK': System.getProperty("java.version")
+                'Implementation-Version': version,
+                'Built-By': System.getProperty("user.name"),
+                'Built-Date': new Date(),
+                'Built-JDK': System.getProperty("java.version")
     }
 }
 
@@ -80,12 +76,6 @@ idea.project {
 idea.module {
     testSourceDirs += file('src/integTest/groovy')
 }
-
-/*clover {
-    report {
-        html = true
-    }
-}*/
 
 task sourcesJar(type: Jar) {
     classifier 'sources'
@@ -138,35 +128,35 @@ publishing {
                 bmuschko.appendNode('id', 'bmuschko')
                 bmuschko.appendNode('name', 'Benjamin Muschko')
                 bmuschko.appendNode('email', 'benjamin.muschko@gmail.com')
+                def akowpak = developers.appendNode('developer')
+                akowpak.appendNode('id', 'akowpak')
+                akowpak.appendNode('name', 'Andrew Kowpak')
+                akowpak.appendNode('email', 'akowpak@miovision.com')
             }
         }
     }
 }
 
 bintray {
-    user = project.hasProperty('bintrayUser') ? project.getProperty('bintrayUser') : null
-    key =  project.hasProperty('bintrayKey') ? project.getProperty('bintrayKey') : null
+    user = System.getenv('BINTRAY_USER')
+    key =  System.getenv('BINTRAY_KEY')
     publications = ['mavenJava']
-
+    publish = true
     pkg {
-        repo = 'gradle-plugins'
-        name = 'com.bmuschko:gradle-clover-plugin'
+        userOrg = 'miovision'
+        repo = 'maven'
+        name = 'gradle-clover-plugin'
         desc = 'Gradle plugin for generating a code coverage report using Clover.'
-        websiteUrl = "https://github.com/bmuschko/${project.name}"
-        issueTrackerUrl = "https://github.com/bmuschko/${project.name}/issues"
-        vcsUrl = "https://github.com/bmuschko/${project.name}.git"
+        websiteUrl = "https://github.com/miovision/${project.name}"
+        issueTrackerUrl = "https://github.com/miovision/${project.name}/issues"
+        vcsUrl = "https://github.com/miovision/${project.name}.git"
         licenses = ['Apache-2.0']
         labels = ['gradle', 'code', 'coverage', 'metrics', 'test', 'report', 'clover']
-        publicDownloadNumbers = true
 
         version {
+            name = '3.0.0.mio'
             vcsTag = "v$project.version"
             attributes = ['gradle-plugin': "com.bmuschko.clover:${project.group}:${project.name}"]
-
-            gpg {
-                sign = true
-                passphrase = project.hasProperty('gpgPassphrase') ? project.getProperty('gpgPassphrase') : null
-            }
         }
     }
 }
