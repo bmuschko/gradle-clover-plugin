@@ -127,7 +127,7 @@ class CloverPlugin implements Plugin<Project> {
         optimizeTestSetAction.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, false, testTask) }
         optimizeTestSetAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
         optimizeTestSetAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
-        optimizeTestSetAction.conventionMapping.map('testSrcDirs') { getTestSourceDirectories(project, cloverPluginConvention, testTask) }
+        optimizeTestSetAction.conventionMapping.map('testSourceSets') { getTestSourceSets(project, cloverPluginConvention) }
         optimizeTestSetAction.conventionMapping.map('buildDir') { project.buildDir }
         optimizeTestSetAction
     }
