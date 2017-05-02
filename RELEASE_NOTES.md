@@ -1,4 +1,9 @@
-### Version 2.0.1 (Novemver 15, 2014)
+### Version 2.0.2 (TBD)
+
+* Fix Java project with groovy tests can't find groovyc - [Issue 59](https://github.com/bmuschko/gradle-clover-plugin/issues/37).
+* Fix License issues in multi-project config - [Issue 66](https://github.com/bmuschko/gradle-clover-plugin/issues/66).
+
+### Version 2.0.1 (November 15, 2014)
 
 * Changed log level from `warn` to `info` if project doesn't have source code - [Pull Request 49](https://github.com/bmuschko/gradle-clover-plugin/pull/49).
 
