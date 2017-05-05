@@ -48,6 +48,7 @@ class CloverPluginIntegSpec extends Specification {
         coverage.project.metrics.@classes == '1'
         coverage.project.metrics.@methods == '2'
         coverage.project.metrics.@coveredmethods == '1'
+        coverage.testproject.metrics.@files == '1'
         coverage.testproject.metrics.@classes == '1'
         coverage.testproject.metrics.@methods == '1'
         coverage.testproject.metrics.@coveredmethods == '1'
@@ -67,6 +68,31 @@ class CloverPluginIntegSpec extends Specification {
 
         then: "the Clover reports are generated again"
         cloverXmlReport.exists()
+        cloverHtmlReport.exists()
+        cloverJsonReport.exists()
+        cloverPdfReport.exists()
+    }
+
+    def "Build a Java project with additional tests"() {
+        given: "a Java project with additional tests"
+        projectName = 'java-project-with-additional-tests'
+
+        when: "the Clover report generation task is run"
+        runTasks('clean', 'cloverGenerateReport')
+
+        then: "the Clover coverage database is generated"
+        cloverDb.exists()
+
+        and: "the Clover report is generated and is correct"
+        cloverXmlReport.exists()
+        def coverage = new XmlSlurper().parse(cloverXmlReport)
+        coverage.project.metrics.@classes == '1'
+        coverage.project.metrics.@methods == '2'
+        coverage.project.metrics.@coveredmethods == '1'
+        coverage.testproject.metrics.@files == '2'
+        coverage.testproject.metrics.@classes == '2'
+        coverage.testproject.metrics.@methods == '2'
+        coverage.testproject.metrics.@coveredmethods == '2'
         cloverHtmlReport.exists()
         cloverJsonReport.exists()
         cloverPdfReport.exists()

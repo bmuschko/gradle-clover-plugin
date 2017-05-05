@@ -3,6 +3,7 @@
 * Fix Java project with groovy tests can't find groovyc - [Issue 59](https://github.com/bmuschko/gradle-clover-plugin/issues/37).
 * Fix License issues in multi-project config - [Issue 66](https://github.com/bmuschko/gradle-clover-plugin/issues/66).
 * Fix Support instrumentLambda Clover property - [Issue 62](https://github.com/bmuschko/gradle-clover-plugin/issues/62).
+* Fix additionalTestDirs adds sourceSet to test sourceSet - [Issue 11](https://github.com/bmuschko/gradle-clover-plugin/issues/11).
 
 ### Version 2.0.1 (November 15, 2014)
 

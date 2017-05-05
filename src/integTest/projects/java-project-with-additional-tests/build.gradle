@@ -1,0 +1,53 @@
+import com.bmuschko.gradle.clover.CloverPlugin
+
+buildscript {
+    dependencies {
+        classpath files('../../../../build/classes/main')
+    }
+}
+
+apply from: '../deps.gradle'
+apply plugin: 'java'
+apply plugin: CloverPlugin
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    testCompile deps.junit
+    clover deps.clover
+}
+
+sourceSets {
+    integTest {
+        java.srcDir file('src/integTest/java')
+        resources.srcDir file('src/integTest/resources')
+        compileClasspath = sourceSets.main.output + configurations.testRuntime
+        runtimeClasspath = output + compileClasspath
+    }
+}
+
+task integrationTest(type: Test, dependsOn: test) {
+    description = 'Runs the integration tests.'
+    group = 'verification'
+    testClassesDir = sourceSets.integTest.output.classesDir
+    classpath = sourceSets.integTest.runtimeClasspath
+}
+
+check.dependsOn integrationTest
+
+clover {
+    licenseLocation = file('../../../../clover.license').absolutePath
+
+    additionalTestSourceSets << [
+        srcDirs: sourceSets.integTest.allSource.srcDirs,
+        classesDir: sourceSets.integTest.output.classesDir
+    ]
+
+    report {
+        json = true
+        html = true
+        pdf = true
+    }
+}
