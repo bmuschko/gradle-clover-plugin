@@ -137,7 +137,7 @@ class InstrumentCodeAction implements Action<Task> {
      */
     private void compileClasses(AntBuilder ant) {
         if(getCompileGroovy()) {
-            ant.taskdef(name: 'groovyc', classname: 'org.codehaus.groovy.ant.Groovyc', classpath: getGroovyClasspath().asPath)
+            ant.taskdef(name: 'groovyc', classname: 'org.codehaus.groovy.ant.Groovyc', classpath: getGroovycClasspath())
             compileGroovyAndJavaSrcFiles(ant)
 
             if(getTestSrcDirs().size() > 0) {

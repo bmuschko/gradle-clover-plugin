@@ -1,0 +1,31 @@
+import com.bmuschko.gradle.clover.CloverPlugin
+
+buildscript {
+    dependencies {
+        classpath files('../../../../build/classes/main')
+    }
+}
+
+apply from: '../deps.gradle'
+apply plugin: 'groovy'
+apply plugin: CloverPlugin
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    testCompile('org.spockframework:spock-core:1.0-groovy-2.3')
+    clover deps.clover
+}
+
+clover {
+    licenseLocation = file('../../../../clover.license').absolutePath
+
+    report {
+        json = true
+        html = true
+        pdf = true
+    }
+}
+
