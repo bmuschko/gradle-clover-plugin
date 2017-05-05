@@ -57,6 +57,19 @@ class CloverPluginIntegSpec extends Specification {
 
         and: "the Clover snapshot is not generated because test optimization is not enabled"
         cloverSnapshot.exists() == false
+
+        when: "the Clover report generation task is run a second time without cleaning but the reports deleted"
+        cloverXmlReport.delete()
+        cloverHtmlReport.delete()
+        cloverJsonReport.delete()
+        cloverPdfReport.delete()
+        runTasks('cloverGenerateReport')
+
+        then: "the Clover reports are generated again"
+        cloverXmlReport.exists()
+        cloverHtmlReport.exists()
+        cloverJsonReport.exists()
+        cloverPdfReport.exists()
     }
 
     def "Build a Java project with disabled instrumentation"() {
