@@ -11,7 +11,7 @@ apply plugin: 'java'
 apply plugin: CloverPlugin
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 dependencies {

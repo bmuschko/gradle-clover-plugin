@@ -11,7 +11,7 @@ apply plugin: CloverPlugin
 apply plugin: 'java'
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 dependencies {
@@ -44,7 +44,6 @@ clover {
 task customTest(type: Test) {
     testClassesDir = sourceSets.customTest.output.classesDir
     classpath = sourceSets.customTest.runtimeClasspath
-    testSrcDirs = sourceSets.customTest.java.srcDirs as List
 }
 
 check.dependsOn customTest

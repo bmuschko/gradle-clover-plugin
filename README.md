@@ -5,16 +5,16 @@
 <table border=1>
     <tr>
         <td>
-            Over the past couple of years this plugin has seen many releases. Thanks to everyone involved! 
-            Unfortunately, I don't have much time to contribute anymore. In practice this means far less activity, 
+            Over the past couple of years this plugin has seen many releases. Thanks to everyone involved!
+            Unfortunately, I don't have much time to contribute anymore. In practice this means far less activity,
             responsiveness on issues and new releases from my end.
         </td>
     </tr>
     <tr>
         <td>
-            I am 
-            <a href="https://discuss.gradle.org/t/looking-for-new-owners-for-gradle-plugins/9735">actively looking for contributors</a> 
-            willing to take on maintenance and implementation of the project. If you are interested and would love to see this 
+            I am
+            <a href="https://discuss.gradle.org/t/looking-for-new-owners-for-gradle-plugins/9735">actively looking for contributors</a>
+            willing to take on maintenance and implementation of the project. If you are interested and would love to see this
             plugin continue to thrive, shoot me a <a href="mailto:benjamin.muschko@gmail.com">mail</a>.
         </td>
     </tr>
@@ -88,6 +88,7 @@ location is `.clover/coverage.db.snapshot`.
 * `includeTasks`: A list of task names, allows to explicitly specify which test tasks should be introspected and used to gather coverage information - useful if there are more than one `Test` tasks in a project.
 * `excludeTasks`: A list of task names, allows to exclude test tasks from introspection and gathering coverage information - useful if there are more than one `Test` tasks in a project.
 * `instrumentLambda`: Controls which lambda types to instrument. [Expression lambdas may cause instrumentation to crash](https://confluence.atlassian.com/cloverkb/java-8-code-instrumented-by-clover-fails-to-compile-442270815.html).
+* `useClover3`: Controls the selection of the Clover 3 compatible Ant task resource file when the Clover dependency does not have a versioned artifact. Normally the correct value is determined by inspecting the version of the dependency artifact.
 
 Within `clover` you can define [coverage contexts](http://confluence.atlassian.com/display/CLOVER/Using+Coverage+Contexts)
 in a closure named `contexts`. There are two types of coverage contexts: statement contexts and method contexts. You can
@@ -138,12 +139,12 @@ The Clover plugin defines the following convention properties in the `clover` cl
                 regexp = 'public static void main\\(String args\\[\\]\\).*'
             }
         }
-        
+
         compiler {
             encoding = 'UTF-8'
-            
+
             // if the javac executable used by ant should be the same as the one used elsewhere.
-            executable = file('/usr/local/java/jdk1.8.0_05') 
+            executable = file('/usr/local/java/jdk1.8.0_05')
         }
 
         report {
@@ -157,9 +158,9 @@ The Clover plugin defines the following convention properties in the `clover` cl
 
 **How do I use the code coverage results produced by this plugin with the Gradle Sonar plugin?**
 
-You will have to configure the [Gradle Sonar plugin](http://www.gradle.org/docs/current/userguide/sonar_plugin.html) 
-to parse the Clover coverage result file. The convention property [cloverReportPath](http://gradle.org/docs/current/groovydoc/org/gradle/api/plugins/sonar/model/SonarProject.html#cloverReportPath) 
-defines the path to the code coverage XML file. This path is only used if the property [dynamicAnalysis](http://gradle.org/docs/current/groovydoc/org/gradle/api/plugins/sonar/model/SonarProject.html#dynamicAnalysis) 
+You will have to configure the [Gradle Sonar plugin](http://www.gradle.org/docs/current/userguide/sonar_plugin.html)
+to parse the Clover coverage result file. The convention property [cloverReportPath](http://gradle.org/docs/current/groovydoc/org/gradle/api/plugins/sonar/model/SonarProject.html#cloverReportPath)
+defines the path to the code coverage XML file. This path is only used if the property [dynamicAnalysis](http://gradle.org/docs/current/groovydoc/org/gradle/api/plugins/sonar/model/SonarProject.html#dynamicAnalysis)
 has the value of `reuseReports`. The following code snippet shows an example.
 
     sonar {
@@ -169,8 +170,8 @@ has the value of `reuseReports`. The following code snippet shows an example.
     }
 
 In Sonar you will need to install the [Clover plugin](http://docs.codehaus.org/display/SONAR/Clover+Plugin). In order to
-make Sonar use the Clover code coverage engine, the property `sonar.core.codeCoveragePlugin` must be set to `clover` under 
-Configuration | General Settings | Code Coverage. If you run `gradle sonarAnalyze -i` you will see that the Gradle Sonar plugin parses your file. 
+make Sonar use the Clover code coverage engine, the property `sonar.core.codeCoveragePlugin` must be set to `clover` under
+Configuration | General Settings | Code Coverage. If you run `gradle sonarAnalyze -i` you will see that the Gradle Sonar plugin parses your file.
 It should look something like this:
 
     Parsing /Users/ben/dev/projects/testproject/build/reports/clover/clover.xml

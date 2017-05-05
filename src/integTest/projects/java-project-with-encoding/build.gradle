@@ -16,7 +16,7 @@ compileJava {
 apply plugin: CloverPlugin
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 dependencies {

@@ -1,12 +1,14 @@
 buildscript {
     repositories {
-        maven { url 'http://jcenter.bintray.com' }
-        mavenCentral()
+        jcenter()
+        mavenLocal()
     }
 
     dependencies {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.6'
-        //classpath 'org.gradle.api.plugins:gradle-clover-plugin:0.8'
+        if (project.hasProperty('selfCheck')) {
+            classpath 'com.bmuschko:gradle-clover-plugin:2.0.2'
+        }
     }
 }
 
@@ -14,7 +16,6 @@ apply plugin: 'groovy'
 apply plugin: 'idea'
 apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
-//apply plugin: 'clover'
 
 group = 'com.bmuschko'
 version = '2.0.2'
@@ -39,16 +40,16 @@ task integrationTest(type: Test, dependsOn: test) {
 check.dependsOn integrationTest
 
 repositories {
-    mavenCentral()
+    jcenter()
+    mavenLocal()
 }
 
 dependencies {
     compile localGroovy()
     compile gradleApi()
-    testCompile('org.spockframework:spock-core:0.7-groovy-2.0') {
+    testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
         exclude group: 'org.codehaus.groovy'
     }
-    //clover 'com.cenqua.clover:clover:3.2.0'
 }
 
 jar {
@@ -58,6 +59,25 @@ jar {
                    'Built-By': System.getProperty("user.name"),
                    'Built-Date': new Date(),
                    'Built-JDK': System.getProperty("java.version")
+    }
+}
+
+if (project.hasProperty('selfCheck')) {
+    apply plugin: 'com.bmuschko.clover'
+
+    dependencies {
+        clover 'org.openclover:clover:4.2.0'
+    }
+
+    clover {
+        additionalTestSourceSets << [
+            srcDirs: sourceSets.integrationTest.allSource.srcDirs,
+            classesDir: sourceSets.integrationTest.output.classesDir
+        ]
+
+        report {
+            html = true
+        }
     }
 }
 
@@ -80,12 +100,6 @@ idea.project {
 idea.module {
     testSourceDirs += file('src/integTest/groovy')
 }
-
-/*clover {
-    report {
-        html = true
-    }
-}*/
 
 task sourcesJar(type: Jar) {
     classifier 'sources'
@@ -172,5 +186,5 @@ bintray {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.1'
+    gradleVersion = '2.14.1'
 }

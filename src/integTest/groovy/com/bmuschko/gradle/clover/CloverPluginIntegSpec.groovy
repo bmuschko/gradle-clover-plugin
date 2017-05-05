@@ -99,7 +99,7 @@ class CloverPluginIntegSpec extends Specification {
     }
 
     def "Build a Java project with lambdas"() {
-        given: "a Java project"
+        given: "a Java project with lambdas"
         projectName = 'java-project-lambdas'
 
         when: "the Clover report generation task is run"
@@ -141,7 +141,7 @@ class CloverPluginIntegSpec extends Specification {
     }
 
     def "Build a Java project with disabled instrumentation"() {
-        given: "a Java project"
+        given: "a Java project with disabled instrumentation"
         projectName = 'java-project-disabled-instrumentation'
 
         when: "the Clover report generation task is run"
@@ -275,6 +275,39 @@ class CloverPluginIntegSpec extends Specification {
         sourceFile.text = sourceFile.text.trim()
     }
 
+    def "Build a Java project with test optimization enabled and invalid useClover3 override"() {
+        given: "a Java project with test optimization enabled"
+        projectName = 'java-test-opt'
+        File sourceFile = new File(projectDir, 'src/main/java/Book.java')
+        List<String> args = [ '-b', 'invalid.gradle' ]
+
+        when: "no task has been run yet"
+
+        then: "the cross-build Clover snapshot doesn't exist or can be deleted"
+        !cloverSnapshot.exists() || cloverSnapshot.delete()
+
+        when: "the Clover report generation task is run"
+        runTasks(args, 'clean', 'cloverGenerateReport')
+
+        then: "the Clover coverage database is generated"
+        cloverDb.exists()
+
+        and: "the Clover snapshot is generated"
+        cloverSnapshot.exists()
+
+        when: "no code is modified, and the Clover report generation task is run a second time"
+        runTasks(args, 'clean', 'cloverGenerateReport')
+
+        then: "Build fails with org.gradle.tooling.BuildException"
+        thrown(org.gradle.tooling.BuildException)
+
+        and: "Output has mention of cloverjunitlib.xml not found"
+        output.contains('Could not load definitions from resource cloverjunitlib.xml. It could not be found.')
+
+        cleanup: "undo the source modification"
+        sourceFile.text = sourceFile.text.trim()
+    }
+
     def "Build a Java multi-project"() {
         given: "a Java multi-project"
         projectName = 'java-multi-project'
@@ -376,8 +409,11 @@ class CloverPluginIntegSpec extends Specification {
             if (arguments) {
                 builder.withArguments(*arguments)
             }
-            builder.forTasks(tasks).setStandardOutput(stream).run()
-            output = stream.toString()
+            try {
+                builder.forTasks(tasks).setStandardOutput(stream).run()
+            } finally {
+                output = stream.toString()
+            }
         }
         finally {
             conn?.close()

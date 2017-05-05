@@ -21,11 +21,15 @@ dependencies {
 
 clover {
     licenseLocation = file('../../../../clover.license').absolutePath
-    enabled = false
+    // Testing that the user override works by making an invalid selection
+    // with Clover 4 when the flag is forcing version 3 semantics.
+    useClover3 = true
 
     report {
         json = true
         html = true
         pdf = true
     }
+
+    optimizeTests = true
 }

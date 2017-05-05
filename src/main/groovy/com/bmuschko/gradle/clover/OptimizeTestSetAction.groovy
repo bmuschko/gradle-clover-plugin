@@ -38,6 +38,7 @@ import org.gradle.api.tasks.Optional
 class OptimizeTestSetAction implements Action<Task>, Spec<FileTreeElement> {
     String initString
     boolean optimizeTests
+    boolean useClover3
     FileCollection cloverClasspath
     @InputFile File licenseFile
     @Optional @InputFile File snapshotFile
@@ -55,7 +56,8 @@ class OptimizeTestSetAction implements Action<Task>, Spec<FileTreeElement> {
             log.info 'Optimizing test set.'
 
             def ant = new AntBuilder()
-            ant.taskdef(resource: 'cloverjunitlib.xml', classpath: getCloverClasspath().asPath)
+            def resource = getUseClover3() ? 'cloverjunitlib.xml' : 'cloverlib.xml'
+            ant.taskdef(resource: resource, classpath: getCloverClasspath().asPath)
             ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
             ant.property(name: 'clover.initstring', value: "${getBuildDir()}/${getInitString()}")
             List<File> testSrcDirs = CloverSourceSetUtils.getSourceDirs(getTestSourceSets())

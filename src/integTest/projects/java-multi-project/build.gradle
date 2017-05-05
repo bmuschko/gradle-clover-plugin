@@ -10,7 +10,7 @@ apply from: '../deps.gradle'
 
 allprojects {
     repositories {
-        mavenCentral()
+        jcenter()
     }
 
     if (path != ':project4c') {

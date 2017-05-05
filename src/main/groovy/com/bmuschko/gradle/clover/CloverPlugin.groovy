@@ -125,6 +125,7 @@ class CloverPlugin implements Plugin<Project> {
         OptimizeTestSetAction optimizeTestSetAction = createInstance(OptimizeTestSetAction)
         optimizeTestSetAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention, testTask) }
         optimizeTestSetAction.conventionMapping.map('optimizeTests') { cloverPluginConvention.optimizeTests }
+        optimizeTestSetAction.conventionMapping.map('useClover3') { useClover3(project, cloverPluginConvention) }
         optimizeTestSetAction.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, false, testTask) }
         optimizeTestSetAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
         optimizeTestSetAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
@@ -248,6 +249,20 @@ class CloverPlugin implements Plugin<Project> {
      */
     private File getLicenseFile(Project project, CloverPluginConvention cloverPluginConvention) {
         LicenseResolverFactory.instance.getResolver(cloverPluginConvention.licenseLocation).resolve(project.rootDir, cloverPluginConvention.licenseLocation)
+    }
+
+    private boolean useClover3(Project project, CloverPluginConvention cloverPluginConvention) {
+        if (cloverPluginConvention.useClover3 != null) {
+            log.info "Using user supplied preference for useClover3: {}", cloverPluginConvention.useClover3
+            return cloverPluginConvention.useClover3.toBoolean()
+        }
+
+        def artifacts = project.configurations.getByName(CONFIGURATION_NAME).resolvedConfiguration.resolvedArtifacts
+        assert artifacts.size() == 1
+
+        def result = artifacts.iterator().next().moduleVersion.id.version.startsWith('3.')
+        log.info "Using detected version to assign useClover3: {}", result
+        return result
     }
 
     /**
