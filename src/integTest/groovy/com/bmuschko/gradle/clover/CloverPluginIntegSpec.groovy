@@ -264,6 +264,19 @@ class CloverPluginIntegSpec extends Specification {
         'except test'   | 'exclude' | '0'                 | '1'
     }
 
+    def "Aggregate databases without first running instrument task properly configures license"() {
+        given: "a Java project, with a generated report"
+        projectName = 'java-project'
+        runTasks('clean', 'cloverGenerateReport')
+        getReportsDir().createNewFile()
+
+        when: "the Clover aggregate databases task is run"
+        runTasks('cloverAggregateDatabases')
+
+        then: "an exception is not thrown"
+        true
+    }
+
     private File getProjectDir() {
         new File('src/integTest/projects', projectName)
     }

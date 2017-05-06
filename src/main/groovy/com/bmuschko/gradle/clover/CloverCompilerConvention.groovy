@@ -23,4 +23,5 @@ package com.bmuschko.gradle.clover
 class CloverCompilerConvention {
     String encoding = 'UTF-8'
     File executable
+    Boolean debug = false
 }

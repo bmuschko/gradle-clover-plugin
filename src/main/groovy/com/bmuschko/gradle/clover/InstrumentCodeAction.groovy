@@ -51,6 +51,7 @@ class InstrumentCodeAction implements Action<Task> {
     List<String> includes
     List<String> excludes
     List<String> testIncludes
+    Boolean compileWithDebug
     def statementContexts
     def methodContexts
 
@@ -249,7 +250,7 @@ class InstrumentCodeAction implements Action<Task> {
      */
     private void compileJava(AntBuilder ant, Set<File> srcDirs, File destDir, String classpath) {
         ant.javac(destdir: destDir.canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
-                  classpath: classpath, encoding: getEncoding(), executable: getExecutable()) {
+                  classpath: classpath, encoding: getEncoding(), executable: getExecutable(), debug: getCompileWithDebug()) {
             srcDirs.each { srcDir ->
                 src(path: srcDir)
             }
