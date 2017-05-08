@@ -106,7 +106,13 @@ class InstrumentCodeAction implements Action<Task> {
                 }
 
                 getMethodContexts().each {
-                    ant.methodContext(name: it.name, regexp: it.regexp)
+                    ant.methodContext(
+                        name:   it.name,
+                        regexp: it.regexp,
+                        maxComplexity: it.maxComplexity,
+                        maxAggregatedComplexity: it.maxAggregatedComplexity,
+                        maxAggregatedStatements: it.maxAggregatedStatements
+                    )
                 }
             }
 
