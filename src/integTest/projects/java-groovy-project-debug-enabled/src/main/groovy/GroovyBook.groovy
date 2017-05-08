@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bmuschko.gradle.clover
 
-/**
- * Defines Clover compiler convention.
- *
- * @author Brandon Zeeb
- */
-class CloverCompilerConvention {
-    String encoding = 'UTF-8'
-    File executable
-    boolean debug = false
+class GroovyBook {
+
+    // tested
+    boolean open() {
+        throw new Exception("Testing Debug Stacktraces")
+    }
+
+    // untested
+    boolean close() {
+        false
+    }
 }

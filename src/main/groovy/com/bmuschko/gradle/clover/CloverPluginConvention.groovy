@@ -42,6 +42,7 @@ class CloverPluginConvention {
     List<String> includeTasks
     List<String> excludeTasks
     String instrumentLambda
+    boolean debug = false
 
     def clover(Closure closure) {
         ConfigureUtil.configure(closure, this)

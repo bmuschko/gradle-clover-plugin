@@ -50,6 +50,7 @@ class InstrumentCodeAction implements Action<Task> {
     String instrumentLambda
     def statementContexts
     def methodContexts
+    boolean debug
 
     @Override
     void execute(Task task) {
@@ -296,8 +297,7 @@ class InstrumentCodeAction implements Action<Task> {
                 }
  
             ant.javac(source: getSourceCompatibility(), target: getTargetCompatibility(), encoding: getEncoding(),
-                      executable: getExecutable())
-
+                      debug: getDebug())
             }
         }
     }
@@ -313,7 +313,7 @@ class InstrumentCodeAction implements Action<Task> {
     private void compileJava(AntBuilder ant, Set<File> srcDirs, File destDir, String classpath) {
         if(srcDirs.size() > 0) {
             ant.javac(destdir: destDir.canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
-                  classpath: classpath, encoding: getEncoding(), executable: getExecutable()) {
+                  classpath: classpath, encoding: getEncoding(), executable: getExecutable(), debug: getDebug()) {
                 srcDirs.each { srcDir ->
                     src(path: srcDir)
                 }

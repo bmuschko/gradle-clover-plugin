@@ -112,6 +112,34 @@ class CloverPluginIntegSpec extends Specification {
         cloverXmlReport.exists()
     }
 
+    def "Build a Java and Groovy project with debug mode enabled"() {
+        given: "a Java and Groovy project"
+        projectName = 'java-groovy-project-debug-enabled'
+
+        when: "the Clover report generation task is run"
+        runTasks('clean', 'cloverGenerateReport')
+
+        then: "the Clover coverage database is generated"
+        cloverDb.exists()
+
+        and: "the Clover report is generated and is correct"
+        cloverXmlReport.exists()
+    }
+
+    def "Build a Java Spring project with debug mode enabled"() {
+        given: "a Java Spring project"
+        projectName = 'spring-project-with-clover'
+
+        when: "the Clover report generation task is run"
+        runTasks('clean', 'cloverGenerateReport')
+
+        then: "the Clover coverage database is generated"
+        cloverDb.exists()
+
+        and: "the Clover report is generated and is correct"
+        cloverXmlReport.exists()
+    }
+
     def "Build a Java project with disabled instrumentation"() {
         given: "a Java project"
         projectName = 'java-project-disabled-instrumentation'
