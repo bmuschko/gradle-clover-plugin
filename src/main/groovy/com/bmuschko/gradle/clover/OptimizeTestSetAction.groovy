@@ -21,6 +21,7 @@ import org.gradle.api.specs.Spec
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileTreeElement
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
@@ -41,7 +42,7 @@ class OptimizeTestSetAction implements Action<Task>, Spec<FileTreeElement> {
     @InputFile File licenseFile
     @Optional @InputFile File snapshotFile
     @InputDirectory File buildDir
-    Set<File> testSrcDirs
+    @Input Set<CloverSourceSet> testSourceSets
     Set<String> includes
 
     @Override
@@ -57,8 +58,9 @@ class OptimizeTestSetAction implements Action<Task>, Spec<FileTreeElement> {
             ant.taskdef(resource: 'cloverjunitlib.xml', classpath: getCloverClasspath().asPath)
             ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
             ant.property(name: 'clover.initstring', value: "${getBuildDir()}/${getInitString()}")
+            List<File> testSrcDirs = CloverSourceSetUtils.getSourceDirs(getTestSourceSets())
             def testset = ant."clover-optimized-testset"(snapshotFile: getSnapshotFile(), debug: true) {
-                getTestSrcDirs().each { testSrcDir ->
+                testSrcDirs.each { testSrcDir ->
                     ant.fileset(dir: testSrcDir)
                 }
             }
