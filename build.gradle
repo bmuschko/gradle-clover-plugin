@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.6'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
         if (project.hasProperty('selfCheck')) {
             classpath 'com.bmuschko:gradle-clover-plugin:2.0.2'
         }
