@@ -1,5 +1,7 @@
 ### Version 2.0.2 (TBD)
 
+* Fix JUnit4 rules based exception results reporting
+* Allow plugin to be applied in an afterEvaluate listener
 * Added support for the newly released OpenClover 4.2.0 - [Issue 83](https://github.com/bmuschko/gradle-clover-plugin/issues/83).
 * Fix Java project with groovy tests can't find groovyc - [Issue 59](https://github.com/bmuschko/gradle-clover-plugin/issues/37).
 * Fix License issues in multi-project config - [Issue 66](https://github.com/bmuschko/gradle-clover-plugin/issues/66).
