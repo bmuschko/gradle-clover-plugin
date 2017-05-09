@@ -1,4 +1,4 @@
-# Gradle Clover plugin
+# Gradle Clover plugin [![Build Status](https://travis-ci.org/bmuschko/gradle-clover-plugin.svg?branch=master)](https://travis-ci.org/bmuschko/gradle-clover-plugin)
 
 ![Clover Logo](https://www.appfusions.com/download/attachments/13959273/logoClover.png?version=1&modificationDate=1353815596170)
 
