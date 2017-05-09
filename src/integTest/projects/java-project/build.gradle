@@ -22,6 +22,11 @@ dependencies {
 clover {
     licenseLocation = file('../../../../clover.license').absolutePath
 
+    testIncludes = [ '**/*.java' ]
+    // Prove testExcludes works and supports
+    // an all-but these files scheme.
+    testExcludes = [ '**/Mock*.java' ]
+
     report {
         json = true
         html = true

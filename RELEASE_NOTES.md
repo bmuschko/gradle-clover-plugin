@@ -5,6 +5,7 @@
 * Fix Support instrumentLambda Clover property - [Issue 62](https://github.com/bmuschko/gradle-clover-plugin/issues/62).
 * Fix java is not compiled with debug info - [Issue 51](https://github.com/bmuschko/gradle-clover-plugin/issues/51).
 * Fix additionalTestDirs adds sourceSet to test sourceSet - [Issue 11](https://github.com/bmuschko/gradle-clover-plugin/issues/11).
+* Added ability to exclude certain test patterns via testExcludes - [Pull request 74](https://github.com/bmuschko/gradle-clover-plugin/pull/74)
 
 ### Version 2.0.1 (November 15, 2014)
 
