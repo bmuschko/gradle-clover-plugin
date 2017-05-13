@@ -1,11 +1,29 @@
-### Version 2.1.0 (TBD)
+### Version 2.1.0 (May 13, 2017)
 
 Potentially breaking changes in clover convention mapping.
 See the documentation in [README.md](README.md) for the new usage.
 * additionalSourceDirs - was replaced by additionalSourceSets
 * additionalTestDirs - was replaced by additionalTestSourceSets
 
+
+New properties supported in method context filtering.
+See the documentation in [README.md](README.md) for the new usage.
+* `maxComplexity`: Filter by cyclomatic complexity.
+* `maxStatements`: Filter by statements.
+* `maxAggregatedComplexity`: Filter by aggregated complexity.
+* `maxAggregatedStatements`: Filter by aggregated statements.
+
+
+Support rules based exception handling with JUnit4.
+JUnit4 tests using @Rules based exception expectations would appear as not having a result in previous versions. Additional properties in the report closure support the propagation of the test results from the JUnit XML to the Clover report for completeness.
+See the documentation in [README.md](README.md) for the new usage.
+* `testResultsDir`: Specifies the location of the JUnit4 test results XML report.
+* `testResultsInclude`: Ant file Glob pattern to select Junit4 test results (defaults to TEST-*.xml).
+
+
 Fixes and enhancements
+* Upgrade project to use latest Gradle version (3.5) - [Issue 81](https://github.com/bmuschko/gradle-clover-plugin/issues/81)
+* Fix Gradle 3.0 support - [Issue 76](https://github.com/bmuschko/gradle-clover-plugin/issues/76)
 * Fix maxComplexity of methodContext is not supported by plugin - [Issue 42](https://github.com/bmuschko/gradle-clover-plugin/issues/42)
 * Fix JUnit4 rules based exception results reporting
 * Allow plugin to be applied in an afterEvaluate listener
