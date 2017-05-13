@@ -161,6 +161,7 @@ bintray {
     user = project.hasProperty('bintrayUser') ? project.getProperty('bintrayUser') : null
     key =  project.hasProperty('bintrayKey') ? project.getProperty('bintrayKey') : null
     publications = ['mavenJava']
+    publish = true
 
     pkg {
         repo = 'gradle-plugins'
