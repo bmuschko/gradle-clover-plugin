@@ -2,8 +2,8 @@
 
 Potentially breaking changes in clover convention mapping.
 See the documentation in [README.md](README.md) for the new usage.
-* additionalSourceDirs - was replaced by additionalSourceSets
-* additionalTestDirs - was replaced by additionalTestSourceSets
+* `additionalSourceDirs`: was replaced by `additionalSourceSets`
+* `additionalTestDirs`: was replaced by `additionalTestSourceSets`
 
 
 New properties supported in method context filtering.
@@ -24,16 +24,16 @@ See the documentation in [README.md](README.md) for the new usage.
 Fixes and enhancements
 * Upgrade project to use latest Gradle version (3.5) - [Issue 81](https://github.com/bmuschko/gradle-clover-plugin/issues/81)
 * Fix Gradle 3.0 support - [Issue 76](https://github.com/bmuschko/gradle-clover-plugin/issues/76)
-* Fix maxComplexity of methodContext is not supported by plugin - [Issue 42](https://github.com/bmuschko/gradle-clover-plugin/issues/42)
+* Fix `maxComplexity` of methodContext is not supported by plugin - [Issue 42](https://github.com/bmuschko/gradle-clover-plugin/issues/42)
 * Fix JUnit4 rules based exception results reporting
 * Allow plugin to be applied in an afterEvaluate listener
 * Added support for the newly released OpenClover 4.2.0 - [Issue 83](https://github.com/bmuschko/gradle-clover-plugin/issues/83).
 * Fix Java project with groovy tests can't find groovyc - [Issue 59](https://github.com/bmuschko/gradle-clover-plugin/issues/37).
 * Fix License issues in multi-project config - [Issue 66](https://github.com/bmuschko/gradle-clover-plugin/issues/66).
-* Fix Support instrumentLambda Clover property - [Issue 62](https://github.com/bmuschko/gradle-clover-plugin/issues/62).
+* Fix Support `instrumentLambda` Clover property - [Issue 62](https://github.com/bmuschko/gradle-clover-plugin/issues/62).
 * Fix java is not compiled with debug info - [Issue 51](https://github.com/bmuschko/gradle-clover-plugin/issues/51).
-* Fix additionalTestDirs adds sourceSet to test sourceSet - [Issue 11](https://github.com/bmuschko/gradle-clover-plugin/issues/11).
-* Added ability to exclude certain test patterns via testExcludes - [Pull request 74](https://github.com/bmuschko/gradle-clover-plugin/pull/74)
+* Fix `additionalTestDirs` adds sourceSet to test sourceSet - [Issue 11](https://github.com/bmuschko/gradle-clover-plugin/issues/11).
+* Added ability to exclude certain test patterns via `testExcludes` - [Pull request 74](https://github.com/bmuschko/gradle-clover-plugin/pull/74)
 
 ### Version 2.0.1 (November 15, 2014)
 
