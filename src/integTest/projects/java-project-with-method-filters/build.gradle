@@ -1,0 +1,47 @@
+import com.bmuschko.gradle.clover.CloverPlugin
+
+buildscript {
+    dependencies {
+        classpath files('../../../../build/classes/main')
+    }
+}
+
+apply from: '../deps.gradle'
+apply plugin: 'java'
+apply plugin: CloverPlugin
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    testCompile deps.junit
+    clover deps.clover
+}
+
+clover {
+    licenseLocation = file('../../../../clover.license').absolutePath
+    contexts {
+        method {
+            name = 'main'
+            regexp = 'public static void main\\(String args\\[\\]\\).*'
+        }
+        method {
+            name = 'getters'
+            regexp = 'public [^\\s]+ get[A-Z][^\\s]+\\(\\)'
+            maxStatements = 1
+        }
+        method {
+            name = 'setters'
+            regexp = 'public void set[A-Z][^\\s]+\\(.+\\)'
+            maxStatements = 1
+        }
+    }
+
+    report {
+        filter = 'main,getters,setters'
+        json = true
+        html = true
+        pdf = true
+    }
+}

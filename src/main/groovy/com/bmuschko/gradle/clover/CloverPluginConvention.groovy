@@ -64,7 +64,7 @@ class CloverPluginConvention {
 
     def method(Closure closure) {
         closure.resolveStrategy = Closure.DELEGATE_FIRST
-        CloverContextConvention methodContext = new CloverContextConvention()
+        CloverMethodContextConvention methodContext = new CloverMethodContextConvention()
         closure.delegate = methodContext
         contexts.methods << methodContext
         closure()

@@ -6,6 +6,7 @@ See the documentation in [README.md](README.md) for the new usage.
 * additionalTestDirs - was replaced by additionalTestSourceSets
 
 Fixes and enhancements
+* Fix maxComplexity of methodContext is not supported by plugin - [Issue 42](https://github.com/bmuschko/gradle-clover-plugin/issues/42)
 * Fix JUnit4 rules based exception results reporting
 * Allow plugin to be applied in an afterEvaluate listener
 * Added support for the newly released OpenClover 4.2.0 - [Issue 83](https://github.com/bmuschko/gradle-clover-plugin/issues/83).

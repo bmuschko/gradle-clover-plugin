@@ -99,6 +99,16 @@ name as part of report `filter` attribute.
 * `regexp`: The specified structure or pattern that matches a context as part of the instrumented source code. Make sure
 that you correctly escape special characters.
 
+Additionally, method contexts can be provided any of the following attributes to further configure how Clover should apply method coverage filters:
+
+* `maxComplexity`: Match a method to this pattern if its cyclomatic complexity is not greater than maxComplexity. In other words - all methods with complexity <= maxComplexity will be filtered out.
+* `maxStatements`: Match a method to this pattern if its number of statements is not greater than maxComplexity. In other words - all methods with statements <= maxStatements will be filtered out.
+* `maxAggregatedComplexity`: Match a method to this pattern if its aggregated cyclomatic complexity is not greater than maxAggregatedComplexity. In other words - all methods with aggregated complexity <= maxAggregatedComplexity will be filtered out. Aggregated complexity metric is a sum of the method complexity and complexity of all anonymous inline classes declared in the method.
+* `maxAggregatedStatements`: Match a method to this pattern if its number of aggregated statements is not greater than maxAggregatedStatements. In other words - all methods with aggregated statements <= maxAggregatedStaments will be filtered out. Aggregated statements metric is a sum of the method statements and statements of all anonymous inline classes declared in the method.
+
+For more information on method contexts, see the [main Clover documentation](https://confluence.atlassian.com/display/CLOVER/methodContext) for this feature.
+
+
 Within `clover` you can define which report types should be generated in a closure named `report`:
 
 * `xml`: Generates XML report (defaults to `true`).
@@ -141,6 +151,20 @@ The Clover plugin defines the following convention properties in the `clover` cl
             classesDir: sourceSets.integration.output.classesDir
         ]
 
+        // Closure based syntax for additionalSourceSets and
+        // additionalTestSourceSets is also supported
+        additionalSourceSet {
+            srcDirs = sourceSets.generatedJava.allSource.srcDirs
+            classesDir = sourceSets.generated.output.classesDir
+        }
+
+        compiler {
+            encoding = 'UTF-8'
+
+            // if the javac executable used by ant should be the same as the one used elsewhere.
+            executable = file('/usr/local/java/jdk1.8.0_05')
+        }
+
         contexts {
             statement {
                 name = 'log'
@@ -151,19 +175,22 @@ The Clover plugin defines the following convention properties in the `clover` cl
                 name = 'main'
                 regexp = 'public static void main\\(String args\\[\\]\\).*'
             }
-        }
-
-        compiler {
-            encoding = 'UTF-8'
-
-            // if the javac executable used by ant should be the same as the one used elsewhere.
-            executable = file('/usr/local/java/jdk1.8.0_05')
+            method {
+                name = 'getters'
+                regexp = 'public [^\\s]+ get[A-Z][^\\s]+\\(\\)'
+                maxStatements = 1
+            }
+            method {
+                name = 'setters'
+                regexp = 'public void set[A-Z][^\\s]+\\(.+\\)'
+                maxStatements = 1
+            }
         }
 
         report {
             html = true
             pdf = true
-            filter = 'log,if,else'
+            filter = 'log,main,getters,setters'
             testResultsDir = project.tasks.getByName('test').reports.junitXml.destination
             testResultsInclude = 'TEST-*.xml'
         }

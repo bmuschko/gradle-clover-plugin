@@ -6,3 +6,7 @@ out
 .idea
 .clover
 .gradle
+/bin/
+/.classpath
+/.project
+/.settings/

@@ -111,7 +111,17 @@ class InstrumentCodeAction implements Action<Task> {
                 }
 
                 getMethodContexts().each {
-                    ant.methodContext(name: it.name, regexp: it.regexp)
+                    def args = [ name: it.name, regexp: it.regexp ]
+                    // Add optional method metrics if provided
+                    if (it.maxComplexity != null)
+                        args.maxComplexity = it.maxComplexity
+                    if (it.maxStatements != null)
+                        args.maxStatements = it.maxStatements
+                    if (it.maxAggregatedComplexity != null)
+                        args.maxAggregatedComplexity = it.maxAggregatedComplexity
+                    if (it.maxAggregatedStatements != null)
+                        args.maxAggregatedStatements = it.maxAggregatedStatements
+                    ant.methodContext(args)
                 }
             }
 
@@ -128,12 +138,12 @@ class InstrumentCodeAction implements Action<Task> {
             log.info 'Finished instrumenting code using Clover.'
         }
     }
- 
+
     private void moveOriginalClasses(AntBuilder ant) {
         moveClassesDirsToBackupDirs(ant, getSourceSets())
         moveClassesDirsToBackupDirs(ant, getTestSourceSets())
     }
-    
+
     private void moveClassesDirsToBackupDirs(AntBuilder ant, Set<CloverSourceSet> sourceSets) {
         sourceSets.each { sourceSet ->
             if(CloverSourceSetUtils.existsDirectory(sourceSet.classesDir)) {
@@ -150,12 +160,12 @@ class InstrumentCodeAction implements Action<Task> {
     private void createClassesDirs(Set<CloverSourceSet> sourceSets) {
         sourceSets.collect { it.classesDir }.each { it.mkdirs() }
     }
-    
+
     private void copyOriginalResources(AntBuilder ant) {
         copyResourceFilesToBackupDirs(ant, getSourceSets())
         copyResourceFilesToBackupDirs(ant, getTestSourceSets())
     }
-    
+
     private void copyResourceFilesToBackupDirs(AntBuilder ant, Set<CloverSourceSet> sourceSets) {
         sourceSets.each { sourceSet ->
             if(CloverSourceSetUtils.existsDirectory(sourceSet.backupDir)) {
@@ -300,7 +310,7 @@ class InstrumentCodeAction implements Action<Task> {
                 srcDirs.each { srcDir ->
                     src(path: srcDir)
                 }
- 
+
             ant.javac(source: getSourceCompatibility(), target: getTargetCompatibility(), encoding: getEncoding(),
                       debug: getDebug())
             }

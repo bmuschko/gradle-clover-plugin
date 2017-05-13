@@ -40,10 +40,10 @@ check.dependsOn integrationTest
 clover {
     licenseLocation = file('../../../../clover.license').absolutePath
 
-    additionalTestSourceSets << [
-        srcDirs: sourceSets.integTest.allSource.srcDirs,
-        classesDir: sourceSets.integTest.output.classesDir
-    ]
+    additionalTestSourceSet {
+        srcDirs = sourceSets.integTest.allSource.srcDirs
+        classesDir = sourceSets.integTest.output.classesDir
+    }
 
     report {
         json = true
