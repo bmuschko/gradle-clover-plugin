@@ -39,7 +39,7 @@ example on how to retrieve it from Bintray:
         }
 
         dependencies {
-            classpath 'com.bmuschko:gradle-clover-plugin:2.0.1'
+            classpath 'com.bmuschko:gradle-clover-plugin:2.1.0'
         }
     }
 
@@ -47,7 +47,7 @@ To define the Clover dependency please use the `clover` configuration name in yo
 with a multi-module project make sure you apply the plugin and declare the `clover` dependency within the `allprojects` closure.
 
     dependencies {
-        clover 'com.cenqua.clover:clover:3.2.0'
+        clover 'org.openclover:clover:4.2.0'
     }
 
 ## Tasks
@@ -75,8 +75,8 @@ to `'**/*.java'` and `'**/*.groovy'` for Groovy projects).
 * `testExcludes`: A list of String Ant Glob Patterns to exclude from instrumentation for
 [per-test coverage](http://confluence.atlassian.com/display/CLOVER/Unit+Test+Results+and+Per-Test+Coverage) (for example mock classes, defaults to
 empty list - no excludes).
-* `additionalSourceDirs`: Defines custom source sets to be added for instrumentation e.g. `sourceSets.custom.allSource.srcDirs`.
-* `additionalTestDirs`: Defines custom test source sets to be added for instrumentation e.g. `sourceSets.integTest.allSource.srcDirs`.
+* `additionalSourceSets`: Defines custom source sets to be added for instrumentation. See example clover closure for details below.
+* `additionalTestSourceSets`: Defines custom test source sets to be added for instrumentation. See example clover closure for details below.
 * `targetPercentage`: The required target percentage total coverage e.g. "10%". The build fails if that goals is not met.
 If not specified no target percentage will be checked.
 * `optimizeTests`: If `true`, Clover will try to [optimize your tests](https://confluence.atlassian.com/display/CLOVER/About+Test+Optimization);
@@ -129,6 +129,17 @@ The Clover plugin defines the following convention properties in the `clover` cl
         excludes = ['**/SynchronizedMultiValueMap.java']
         testExcludes = ['**/Mock*.java']
         targetPercentage = '85%'
+
+        // Each additional source set is defined by a map
+        // having a srcDirs and classesDir element.
+        additionalSourceSets << [
+            srcDirs: sourceSets.generated.allSource.srcDirs,
+            classesDir: sourceSets.generated.output.classesDir
+        ]
+        additionalTestSourceSets << [
+            srcDirs: sourceSets.integration.allSource.srcDirs,
+            classesDir: sourceSets.integration.output.classesDir
+        ]
 
         contexts {
             statement {

@@ -1,4 +1,9 @@
-### Version 2.0.2 (TBD)
+### Version 2.1.0 (TBD)
+
+Potentially breaking changes in clover convention mapping
+* additionalSourceDirs - was replaced by additionalSourceSets
+* additionalTestDirs - was replaced by additionalTestSourceSets
+See the documentation in [README.md](README.md) for the new usage
 
 * Fix JUnit4 rules based exception results reporting
 * Allow plugin to be applied in an afterEvaluate listener
