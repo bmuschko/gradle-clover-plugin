@@ -6,6 +6,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 
 class AggregateDatabasesTask extends DefaultTask {
@@ -24,6 +25,7 @@ class AggregateDatabasesTask extends DefaultTask {
     /**
      * Mandatory Clover license file.
      */
+    @Optional
     @InputFile
     File licenseFile
 
@@ -41,7 +43,8 @@ class AggregateDatabasesTask extends DefaultTask {
 
         if(existsAtLeastOneCloverDbFile(cloverDbFiles)) {
             ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-            ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
+            if (getLicenseFile() != null)
+                ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
 
             ant.'clover-merge'(initString: aggregationFile.canonicalPath) {
                 cloverDbFiles.each { cloverDbFile ->

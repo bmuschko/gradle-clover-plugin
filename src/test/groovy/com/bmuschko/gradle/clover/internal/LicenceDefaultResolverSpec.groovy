@@ -25,13 +25,18 @@ import spock.lang.Specification
 class LicenceDefaultResolverSpec extends Specification {
     def "Resolve file"() {
         given: "the project root directory and location"
-            def projectRootDir = new File('/home/ben')
+            def existingFile = File.createTempFile('clover', '')
+            existingFile.delete()
+            existingFile.mkdirs()
+            def projectRootDir = existingFile
             def location = 'clover.license'
+            existingFile = new File(projectRootDir, location)
+            existingFile.createNewFile()
 
         when: "getting the license file"
             File file = new LicenceDefaultResolver().resolve(projectRootDir, location)
 
         then: "the file matches the expected path"
-            file.absolutePath == new File('/home/ben/clover.license').absolutePath
+            file.absolutePath == existingFile.absolutePath
     }
 }

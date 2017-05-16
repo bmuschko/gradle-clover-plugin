@@ -20,7 +20,6 @@ dependencies {
 }
 
 clover {
-    licenseLocation = file('../../../../clover.license').absolutePath
     contexts {
         method {
             name = 'main'

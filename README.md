@@ -50,6 +50,12 @@ with a multi-module project make sure you apply the plugin and declare the `clov
         clover 'org.openclover:clover:4.2.0'
     }
 
+With the introduction of the OpenClover support the `licenseLocation` clover convention is
+now completely optional. If specified the plugin will verify it is an existing file or URL
+location. If unspecified the default location `${project.rootDir}/clover.license` will be
+used only if the default is an existing file. Omitting the specification of the `licenseLocation`
+when the Atlassian Clover library is used will cause an error.
+
 ## Tasks
 
 The Clover plugin defines the following tasks:
@@ -65,7 +71,7 @@ define will always be relative to the project's build directory.
 * `enabled`: Controls whether Clover will instrument code during code compilation (defaults to `true`).
 * `classesBackupDir`: The temporary backup directory for classes (defaults to `file("${sourceSets.main.classesDir}-bak")`).
 * `licenseLocation`: The [Clover license](http://confluence.atlassian.com/display/CLOVER/How+to+configure+your+clover.license)
-to be used (defaults to `'clover.license'`). The location can either be a file or URL defined as String.
+to be used (defaults to `'${project.rootDir}/clover.license'`). The location can either be a file or URL defined as String.
 * `includes`: A list of String Ant Glob Patterns to include for instrumentation (defaults to `'**/*.java'` for Java projects, defaults
 to `'**/*.java'` and `'**/*.groovy'` for Groovy projects).
 * `excludes`: A list of String Ant Glob Patterns to exclude for instrumentation. By default no files are excluded.

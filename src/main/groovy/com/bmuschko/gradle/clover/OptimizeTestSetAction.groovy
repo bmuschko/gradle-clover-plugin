@@ -40,7 +40,7 @@ class OptimizeTestSetAction implements Action<Task>, Spec<FileTreeElement> {
     boolean optimizeTests
     boolean useClover3
     FileCollection cloverClasspath
-    @InputFile File licenseFile
+    @Optional @InputFile File licenseFile
     @Optional @InputFile File snapshotFile
     @InputDirectory File buildDir
     @Input Set<CloverSourceSet> testSourceSets
@@ -58,7 +58,8 @@ class OptimizeTestSetAction implements Action<Task>, Spec<FileTreeElement> {
             def ant = new AntBuilder()
             def resource = getUseClover3() ? 'cloverjunitlib.xml' : 'cloverlib.xml'
             ant.taskdef(resource: resource, classpath: getCloverClasspath().asPath)
-            ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
+            if (getLicenseFile() != null)
+                ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
             ant.property(name: 'clover.initstring', value: "${getBuildDir()}/${getInitString()}")
             List<File> testSrcDirs = CloverSourceSetUtils.getSourceDirs(getTestSourceSets())
             def testset = ant."clover-optimized-testset"(snapshotFile: getSnapshotFile(), debug: true) {

@@ -26,8 +26,6 @@ afterEvaluate {
         clover deps.clover
     }
     clover {
-        licenseLocation = file('../../../../clover.license').absolutePath
-
         instrumentLambda = 'none'
     }
 }

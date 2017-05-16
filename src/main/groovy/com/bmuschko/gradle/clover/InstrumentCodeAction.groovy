@@ -22,6 +22,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Optional
 
 /**
  * Clover code instrumentation action.
@@ -38,7 +39,7 @@ class InstrumentCodeAction implements Action<Task> {
     FileCollection groovyClasspath
     @Input Set<CloverSourceSet> sourceSets
     @Input Set<CloverSourceSet> testSourceSets
-    @InputFile File licenseFile
+    @Optional @InputFile File licenseFile
     @InputDirectory File buildDir
     String sourceCompatibility
     String targetCompatibility
@@ -74,7 +75,8 @@ class InstrumentCodeAction implements Action<Task> {
 
             def ant = new AntBuilder()
             ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-            ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
+            if (getLicenseFile() != null)
+                ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
             ant."clover-clean"(initString: "${getBuildDir()}/${getInitString()}")
 
             List<File> srcDirs = CloverSourceSetUtils.getSourceDirs(getSourceSets())

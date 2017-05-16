@@ -23,6 +23,12 @@ package com.bmuschko.gradle.clover.internal
 class LicenceDefaultResolver implements LicenseResolver {
     @Override
     File resolve(File projectRootDir, String location) {
-        new File(projectRootDir, DEFAULT_CLOVER_LICENSE_FILE_NAME)
+        File license = new File(projectRootDir, DEFAULT_CLOVER_LICENSE_FILE_NAME)
+        if (license.file) {
+            return license
+        }
+        // Do not provide a non-existent file by default, will allow using with
+        // OpenClover and retain most of the original behavior.
+        return null
     }
 }

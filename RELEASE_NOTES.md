@@ -1,3 +1,7 @@
+### Version 2.1.1 (TDB)
+
+* Fix `licenseLocation` is enforced even when using OpenClover - [Issue 85](https://github.com/bmuschko/gradle-clover-plugin/issues/85)
+
 ### Version 2.1.0 (May 13, 2017)
 
 Potentially breaking changes in clover convention mapping.

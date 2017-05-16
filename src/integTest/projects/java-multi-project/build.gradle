@@ -21,8 +21,6 @@ allprojects {
         }
 
         clover {
-            licenseLocation = rootProject.file('../../../../clover.license').absolutePath
-
             report {
                 json = true
                 html = true

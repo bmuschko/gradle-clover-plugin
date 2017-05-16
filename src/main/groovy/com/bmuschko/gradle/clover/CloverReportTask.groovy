@@ -47,6 +47,7 @@ abstract class CloverReportTask extends DefaultTask {
     /**
      * Mandatory Clover license file.
      */
+    @Optional
     @InputFile
     File licenseFile
 
@@ -154,7 +155,8 @@ abstract class CloverReportTask extends DefaultTask {
      */
     private void initAntTasks() {
         ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-        ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
+        if (getLicenseFile() != null)
+            ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
     }
 
     @TaskAction

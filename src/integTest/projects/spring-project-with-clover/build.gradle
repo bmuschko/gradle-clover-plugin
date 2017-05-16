@@ -28,8 +28,6 @@ dependencies {
 }
 
 clover {
-    licenseLocation = file('../../../../clover.license').absolutePath
-
     compiler {
         debug = true
     }

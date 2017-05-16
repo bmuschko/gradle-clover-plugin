@@ -20,8 +20,6 @@ dependencies {
 }
 
 clover {
-    licenseLocation = file('../../../../clover.license').absolutePath
-
     report {
         json = true
         html = true

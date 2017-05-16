@@ -38,8 +38,6 @@ task integrationTest(type: Test, dependsOn: test) {
 check.dependsOn integrationTest
 
 clover {
-    licenseLocation = file('../../../../clover.license').absolutePath
-
     additionalTestSourceSet {
         srcDirs = sourceSets.integTest.allSource.srcDirs
         classesDir = sourceSets.integTest.output.classesDir

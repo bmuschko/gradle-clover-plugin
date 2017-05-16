@@ -24,8 +24,6 @@ dependencies {
 }
 
 clover {
-    licenseLocation = file('../../../../clover.license').absolutePath
-
     testIncludes = [ '**/*Test.java', '**/*Spec.groovy' ]
 
     compiler {
