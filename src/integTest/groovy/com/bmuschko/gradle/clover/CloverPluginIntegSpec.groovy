@@ -15,10 +15,15 @@
  */
 package com.bmuschko.gradle.clover
 
+import org.apache.commons.io.IOUtils
 import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import java.util.zip.ZipFile
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 
 /**
  * Some integration tests for the Clover plugin.
@@ -390,6 +395,44 @@ class CloverPluginIntegSpec extends Specification {
         'except test'   | 'exclude' | '0'                 | '1'
     }
 
+    def "Build a Java multi-project with instrumented JARs in an EAR"() {
+        given: "a Java multi-project with EAR"
+            projectName = 'java-multi-project-with-ear'
+
+        when: "the EAR is built with instrumentation"
+            runTasks(["-PcloverInstrumentedJar"], 'clean', 'cloverAggregateReports', 'build')
+
+        then: "the projectDriver JAR file exists"
+            def driverJar = new File(projectDir, 'projectDriver/build/libs/projectDriver.jar')
+            driverJar.exists()
+
+        and: "the projectCar JAR file exists"
+            def carJar = new File(projectDir, 'projectCar/build/libs/projectCar.jar')
+            carJar.exists()
+
+        and: "the EAR exists"
+            def ear = new File(projectDir, 'projectEar/build/libs/projectEar.ear')
+            ear.exists()
+
+        and: "the projectDriver JAR file contains instrumented classes (file marker)"
+            zipContains(driverJar, "clover.instrumented")
+
+        and: "the projectCar JAR file contains instrumented classes (file marker)"
+            zipContains(carJar, "clover.instrumented")
+
+        and: "the EAR contains all the JAR files"
+            zipContains(ear, "projectDriver.jar")
+            zipContains(ear, "lib/projectCar.jar")
+
+        and: "the JAR files in the EAR contain instrumented classes (file marker)"
+            def driverJarInEar = getFromZip(ear, "projectDriver.jar")
+            zipContains(driverJarInEar, "clover.instrumented")
+
+        and: "the JAR files in the EAR contain instrumented classes (file marker)"
+            def carJarInEar = getFromZip(ear, "lib/projectCar.jar")
+            zipContains(carJarInEar, "clover.instrumented")
+    }
+
     private File getProjectDir() {
         new File('src/integTest/projects', projectName)
     }
@@ -444,4 +487,36 @@ class CloverPluginIntegSpec extends Specification {
             conn?.close()
         }
     }
+
+    /**
+     * @returns true if the zip file contains a file with the given name.
+     */
+    private boolean zipContains(File zip, String fileName) {
+        ZipFile zipFile = new ZipFile(zip)
+        try {
+            return zipFile.getEntry(fileName) != null
+        } finally {
+            zipFile.close()
+        }
+    }
+
+    private File getFromZip(File zip, String fileName) {
+        ZipFile zipFile = new ZipFile(zip)
+        try {
+            ZipEntry zipEntry = zipFile.getEntry(fileName)
+            assert zipEntry != null
+
+            File newFile = File.createTempFile(zipEntry.name, null)
+            FileOutputStream outputStream = new FileOutputStream(newFile)
+            try {
+                IOUtils.copy(zipFile.getInputStream(zipEntry), outputStream)
+            } finally {
+                outputStream.close()
+            }
+            return newFile
+        } finally {
+            zipFile.close()
+        }
+    }
+
 }

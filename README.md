@@ -95,6 +95,8 @@ location is `.clover/coverage.db.snapshot`.
 * `excludeTasks`: A list of task names, allows to exclude test tasks from introspection and gathering coverage information - useful if there are more than one `Test` tasks in a project.
 * `instrumentLambda`: Controls which lambda types to instrument. [Expression lambdas may cause instrumentation to crash](https://confluence.atlassian.com/cloverkb/java-8-code-instrumented-by-clover-fails-to-compile-442270815.html).
 * `useClover3`: Controls the selection of the Clover 3 compatible Ant task resource file when the Clover dependency does not have a versioned artifact. Normally the correct value is determined by inspecting the version of the dependency artifact.
+* `flushpolicy`: This String attribute controls how Clover flushes coverage data during a test run. Valid values are directed, interval, or threaded. [clover-setup Parameters](https://confluence.atlassian.com/clover/clover-setup-71600085.html#clover-setup-parametersParameters)
+* `flushinterval`: When the flushpolicy is set to interval or threaded this value is the minimum period between flush operations (in milliseconds). [clover-setup Parameters](https://confluence.atlassian.com/clover/clover-setup-71600085.html#clover-setup-parametersParameters)
 
 Within `clover` you can define [coverage contexts](http://confluence.atlassian.com/display/CLOVER/Using+Coverage+Contexts)
 in a closure named `contexts`. There are two types of coverage contexts: statement contexts and method contexts. You can
@@ -201,6 +203,11 @@ The Clover plugin defines the following convention properties in the `clover` cl
             testResultsInclude = 'TEST-*.xml'
         }
     }
+
+## Project Properties
+
+The Clover plugin uses the following properties:
+* `-PcloverInstrumentedJar`: This property can be used to prepare a JAR or EAR for distributed code coverage. When using this property the instrumented classes are left in the `classes` directory so that the `jar` tasks will bundle them. The property causes the `jar` tasks to execute after the `test` tasks to ensure that the Clover instrumentation has happened. This property should be used with a separate test execution in a Continuous Integration environment because the JAR files will be created with Clover instrumented code which cannot be used in a production environment.
 
 ## FAQ
 
