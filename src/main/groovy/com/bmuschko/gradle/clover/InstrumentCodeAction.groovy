@@ -53,6 +53,8 @@ class InstrumentCodeAction implements Action<Task> {
     def statementContexts
     def methodContexts
     boolean debug
+    int flushinterval
+    String flushpolicy
 
     @Override
     void execute(Task task) {
@@ -189,6 +191,9 @@ class InstrumentCodeAction implements Action<Task> {
             attributes['instrumentLambda'] = getInstrumentLambda()
         }
 
+        attributes.flushinterval = getFlushinterval()
+        attributes.flushpolicy = getFlushpolicy()
+
         attributes
     }
 
@@ -316,6 +321,7 @@ class InstrumentCodeAction implements Action<Task> {
             ant.javac(source: getSourceCompatibility(), target: getTargetCompatibility(), encoding: getEncoding(),
                       debug: getDebug())
             }
+            addMarkerFile(destDir)
         }
     }
 
@@ -335,7 +341,16 @@ class InstrumentCodeAction implements Action<Task> {
                     src(path: srcDir)
                 }
             }
+            addMarkerFile(destDir)
         }
+    }
+
+    /**
+     * Adds a marker file to the destination directory.
+     */
+    private void addMarkerFile(File destDir) {
+        File marker = new File(destDir, "clover.instrumented")
+        marker << "the classes in this directory are instrumented with clover"
     }
 
 }

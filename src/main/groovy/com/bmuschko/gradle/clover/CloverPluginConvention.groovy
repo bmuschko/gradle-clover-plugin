@@ -45,6 +45,8 @@ class CloverPluginConvention {
     List<String> excludeTasks
     String instrumentLambda
     boolean debug = false
+    int flushinterval = 1000
+    FlushPolicy flushpolicy = FlushPolicy.directed
 
     def clover(Closure closure) {
         ConfigureUtil.configure(closure, this)

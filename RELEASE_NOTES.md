@@ -1,5 +1,11 @@
 ### Version 2.1.1 (TDB)
 
+New feature
+* Generate Clover instrumented JAR files
+See the documentation in [README.md](README.md) for the new usage.
+
+
+* Fix Generate JARs with instrumened classes - [Issue 33](https://github.com/bmuschko/gradle-clover-plugin/issues/33)
 * Fix `licenseLocation` is enforced even when using OpenClover - [Issue 85](https://github.com/bmuschko/gradle-clover-plugin/issues/85)
 
 ### Version 2.1.0 (May 13, 2017)
