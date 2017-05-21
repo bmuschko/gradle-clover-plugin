@@ -24,6 +24,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.AsmBackedClassGenerator
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.testing.Test
 
 import java.lang.reflect.Constructor
@@ -87,6 +88,14 @@ class CloverPlugin implements Plugin<Project> {
                     configureActionsForTask(test, project, cloverPluginConvention, aggregateDatabasesTask)
                 }
             }
+            // If we are generating instrumented JAR files make sure the Jar
+            // tasks run after the Test tasks so that the instrumented classes
+            // get packaged in the archives.
+            if (project.hasProperty('cloverInstrumentedJar')) {
+                project.tasks.withType(Jar) { Jar jar ->
+                    jar.mustRunAfter test
+                }
+            }
         }
     }
 
@@ -102,7 +111,11 @@ class CloverPlugin implements Plugin<Project> {
             test.doFirst createInstrumentCodeAction(cloverPluginConvention, project, test) // add second, gets executed first
             test.include optimizeTestSetAction // action is also a file inclusion spec
             test.doLast createCreateSnapshotAction(cloverPluginConvention, project, test)
-            test.doLast createRestoreOriginalClassesAction(cloverPluginConvention, project, test)
+            if (project.hasProperty('cloverInstrumentedJar')) {
+                log.info "Skipping RestoreOriginalClassesAction for {} to generate instrumented JAR", test
+            } else {
+                test.doLast createRestoreOriginalClassesAction(cloverPluginConvention, project, test)
+            }
             aggregateDatabasesTask.aggregate(test)
         }
     }
@@ -163,6 +176,8 @@ class CloverPlugin implements Plugin<Project> {
         instrumentCodeAction.conventionMapping.map('encoding') { cloverPluginConvention.compiler.encoding }
         instrumentCodeAction.conventionMapping.map('instrumentLambda') { cloverPluginConvention.instrumentLambda }
         instrumentCodeAction.conventionMapping.map('debug') { cloverPluginConvention.compiler.debug }
+        instrumentCodeAction.conventionMapping.map('flushinterval') { cloverPluginConvention.flushinterval }
+        instrumentCodeAction.conventionMapping.map('flushpolicy') { cloverPluginConvention.flushpolicy.name() }
         instrumentCodeAction
     }
 
