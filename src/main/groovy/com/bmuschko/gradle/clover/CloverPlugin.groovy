@@ -48,6 +48,7 @@ class CloverPlugin implements Plugin<Project> {
     static final String DEFAULT_GROOVY_TEST_INCLUDES = '**/*Test.groovy'
     static final String DEFAULT_CLOVER_DATABASE = '.clover/clover.db'
     static final String DEFAULT_CLOVER_SNAPSHOT = '.clover/coverage.db.snapshot'
+    static final String DEFAULT_CLOVER_HISTORY_DIR = '.clover/historypoints'
 
     @Override
     void apply(Project project) {
@@ -230,11 +231,24 @@ class CloverPlugin implements Plugin<Project> {
      * @param task Task
      */
     private void setCloverReportConventionMappings(Project project, CloverPluginConvention cloverPluginConvention, Task task) {
-        task.conventionMapping.map('reportsDir') { new File(project.buildDir, 'reports') }
-        task.conventionMapping.map('xml') { cloverPluginConvention.report.xml }
-        task.conventionMapping.map('json') { cloverPluginConvention.report.json }
-        task.conventionMapping.map('html') { cloverPluginConvention.report.html }
-        task.conventionMapping.map('pdf') { cloverPluginConvention.report.pdf }
+        task.conventionMapping.with {
+            map('reportsDir') { new File(project.buildDir, 'reports') }
+            map('xml') { cloverPluginConvention.report.xml }
+            map('json') { cloverPluginConvention.report.json }
+            map('html') { cloverPluginConvention.report.html }
+            map('pdf') { cloverPluginConvention.report.pdf }
+
+            cloverPluginConvention.report.historical.with {
+                map('historical') { enabled }
+                map('historyDir') { getHistoryDir(project, cloverPluginConvention) }
+                map('historyIncludes') { historyIncludes }
+                map('packageFilter') { packageFilter }
+                map('from') { from }
+                map('to') { to }
+                map('added') { added }
+                map('movers') { movers }
+            }
+        }
     }
 
     /**
@@ -304,6 +318,19 @@ class CloverPlugin implements Plugin<Project> {
         return file.exists() || force ? file : null
     }
 
+    /**
+     * Gets the Clover history directory location.
+     *
+     * @param project Project
+     * @param cloverPluginConvention Clover plugin convention
+     * @return the Clover history directory location
+     */
+    private File getHistoryDir(Project project, CloverPluginConvention cloverPluginConvention) {
+        File file = cloverPluginConvention.historyDir != null && cloverPluginConvention.historyDir != '' ?
+            project.file(cloverPluginConvention.historyDir) :
+            project.file(DEFAULT_CLOVER_HISTORY_DIR)
+        return file
+    }
 
     private Set<CloverSourceSet> getSourceSets(Project project, CloverPluginConvention cloverPluginConvention) {
         def sourceSets = []

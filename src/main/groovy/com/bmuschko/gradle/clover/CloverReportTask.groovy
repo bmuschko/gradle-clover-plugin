@@ -45,16 +45,32 @@ abstract class CloverReportTask extends DefaultTask {
     File reportsDir
 
     /**
-     * Mandatory Clover license file.
+     * Optional Clover license file.
      */
     @Optional
     @InputFile
     File licenseFile
 
+    // Enabled report types.
     Boolean xml
     Boolean json
     Boolean html
     Boolean pdf
+    Boolean historical
+
+    /**
+     * Optional Clover history directory.
+     */
+    @OutputDirectory
+    File historyDir
+
+    // Historical report parameters.
+    String historyIncludes
+    String packageFilter
+    String from
+    String to
+    HistoricalAdded added
+    List<HistoricalMover> movers
 
     /**
      * Checks to see if at least on report type is selected.
@@ -109,6 +125,10 @@ abstract class CloverReportTask extends DefaultTask {
     protected void writeReports(String filter, String testResultsDir = null, String testResultsInclude = null) {
         File cloverReportDir = new File("${getReportsDir()}/clover")
 
+        if (getHistorical()) {
+            createHistoryPoint(filter, testResultsDir, testResultsInclude)
+        }
+
         if(getXml()) {
             writeReport(new File(cloverReportDir, 'clover.xml'), ReportType.XML, filter, testResultsDir, testResultsInclude)
         }
@@ -122,9 +142,20 @@ abstract class CloverReportTask extends DefaultTask {
         }
 
         if(getPdf()) {
-            ant."clover-pdf-report"(initString: "${project.buildDir.canonicalPath}/${getInitString()}",
-                    outfile: new File(cloverReportDir, 'clover.pdf'), title: project.name)
+            writeReport(new File(cloverReportDir, 'clover.pdf'), ReportType.PDF, filter, testResultsDir, testResultsInclude)
         }
+    }
+
+    private void createHistoryPoint(String filter, String testResultsDir, String testResultsInclude) {
+        logger.info 'Starting to create a Clover history point in ${getHistoryDir()}.'
+
+        ant."clover-historypoint"(initString: "$project.buildDir/${getInitString()}", historyDir: getHistoryDir(), overwrite: 'true') {
+            if (testResultsDir) {
+                testresults(dir: testResultsDir, includes: testResultsInclude)
+            }
+        }
+
+        logger.info 'Finished creating a Clover history point.'
     }
 
     /**
@@ -136,15 +167,52 @@ abstract class CloverReportTask extends DefaultTask {
      */
     private void writeReport(File outfile, ReportType reportType, String filter, String testResultsDir, String testResultsInclude) {
         ant."clover-report"(initString: "$project.buildDir/${getInitString()}") {
-            current(outfile: outfile, title: project.name) {
-                if(filter) {
-                    format(type: reportType.format, filter: filter)
-                }
-                else {
-                    format(type: reportType.format)
-                }
+            def params = [ outfile: outfile, title: project.name ]
+            if (reportType == ReportType.PDF)
+                params.summary = 'true'
+            def formatParams = [ type: reportType.format ]
+            if (filter) {
+                formatParams.filter = filter
+            }
+            current(params) {
+                format(formatParams)
                 if (testResultsDir) {
                     testresults(dir: testResultsDir, includes: testResultsInclude)
+                }
+            }
+
+            // Historical report is supported only for HTML and PDF reports
+            if (getHistorical() && (reportType == ReportType.HTML || reportType == ReportType.PDF)) {
+                if (reportType == ReportType.PDF) {
+                    outfile = new File(outfile.parentFile, 'historical.pdf')
+                }
+                def historyParams = [ outfile: outfile, title: project.name, historyDir: getHistoryDir(), historyIncludes: getHistoryIncludes() ]
+                if (getPackageFilter()) {
+                    historyParams.packageFilter = getPackageFilter()
+                }
+                if (getFrom()) {
+                    historyParams.from = getFrom()
+                }
+                if (getTo()) {
+                    historyParams.to = getTo()
+                }
+
+                historical(historyParams) {
+                    format(formatParams)
+                    overview()
+                    coverage()
+                    metrics()
+
+                    if (getAdded()) {
+                        getAdded().with {
+                            added(range: range, interval: interval)
+                        }
+                    }
+                    getMovers().each { mover ->
+                        mover.with {
+                            movers(threshold: "${threshold}%", range: range, interval: interval)
+                        }
+                    }
                 }
             }
         }

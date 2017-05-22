@@ -47,4 +47,52 @@ class CloverPluginConventionSpec extends Specification {
         def e = thrown(org.gradle.internal.typeconversion.TypeConversionException)
         e.message =~ /^Cannot convert string value 'bogus' to an enum value/
     }
+
+    def "Historical report convention can be configured"() {
+        given: "A new CloverPluginConvention instance"
+        def convention = new CloverPluginConvention()
+
+        when: "configuration closure with historical report enabled"
+        convention.clover {
+            report {
+                historical {
+                    enabled = true
+                    added {
+                        range = 15
+                        interval = '5 days'
+                    }
+                    mover {
+                        threshold = 5
+                        range = 10
+                        interval = '2 days'
+                    }
+                    mover {
+                        threshold = 5
+                        range = 5
+                        interval = '2 weeks'
+                    }
+                    mover {
+                        threshold = 5
+                        range = 10
+                        interval = '6 months'
+                    }
+                }
+            }
+        }
+
+        then: "all selections are reflected"
+        convention.report.historical.enabled == true
+        convention.report.historical.historyIncludes == 'clover-*.xml.gz'
+        convention.report.historical.packageFilter == null
+        convention.report.historical.from == null
+        convention.report.historical.to == null
+
+        convention.report.historical.added.range == 15
+        convention.report.historical.added.interval == '5 days'
+
+        convention.report.historical.movers.size() == 3
+        convention.report.historical.movers[0].interval == '2 days'
+        convention.report.historical.movers[1].interval == '2 weeks'
+        convention.report.historical.movers[2].interval == '6 months'
+    }
 }
