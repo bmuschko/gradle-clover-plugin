@@ -60,6 +60,8 @@ class CloverPluginIntegSpec extends Specification {
         cloverHtmlReport.exists()
         cloverJsonReport.exists()
         cloverPdfReport.exists()
+        cloverHistoricalHtmlReport.exists()
+        cloverHistoricalPdfReport.exists()
 
         and: "the Clover snapshot is not generated because test optimization is not enabled"
         cloverSnapshot.exists() == false
@@ -459,6 +461,14 @@ class CloverPluginIntegSpec extends Specification {
 
     private File getCloverPdfReport() {
         new File(getReportsDir(), 'clover.pdf')
+    }
+
+    private File getCloverHistoricalHtmlReport() {
+        new File(getReportsDir(), 'html/historical.html')
+    }
+
+    private File getCloverHistoricalPdfReport() {
+        new File(getReportsDir(), 'historical.pdf')
     }
 
     private File getReportsDir() {

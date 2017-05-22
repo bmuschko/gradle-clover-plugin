@@ -7,6 +7,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
 class AggregateDatabasesTask extends DefaultTask {
@@ -23,47 +24,40 @@ class AggregateDatabasesTask extends DefaultTask {
     String initString
 
     /**
-     * Mandatory Clover license file.
+     * Optional Clover license file.
      */
     @Optional
     @InputFile
     File licenseFile
 
-    List<Task> testTasks = new ArrayList<Task>()
+    @InputFiles
+    List<File> cloverDbFiles = new ArrayList<File>()
+
+    @OutputFile
+    File getAggregationFile() {
+        new File(project.buildDir, getInitString())
+    }
 
     void aggregate(Task testTask) {
         dependsOn testTask
-        testTasks << testTask
+        cloverDbFiles << new File("${aggregationFile.canonicalPath}-${testTask.name}")
     }
 
     @TaskAction
     void aggregateDatabases() {
-        File aggregationFile = new File(project.buildDir, getInitString())
-        List<File> cloverDbFiles = getTestTaskCloverDbFiles(aggregationFile)
-
-        if(existsAtLeastOneCloverDbFile(cloverDbFiles)) {
+        if (existsAtLeastOneCloverDbFile(cloverDbFiles)) {
             ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
             if (getLicenseFile() != null)
                 ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
 
             ant.'clover-merge'(initString: aggregationFile.canonicalPath) {
                 cloverDbFiles.each { cloverDbFile ->
-                    if(cloverDbFile.exists()) {
+                    if (cloverDbFile.exists()) {
                         ant.cloverDb(initString: cloverDbFile.canonicalPath)
                     }
                 }
             }
         }
-    }
-
-    /**
-     * Test task Clover database files.
-     *
-     * @param aggregationFile Aggregation file
-     * @return Clover database files
-     */
-    private List<File> getTestTaskCloverDbFiles(File aggregationFile) {
-        testTasks.collect { new File("${aggregationFile.canonicalPath}-${it.name}") }
     }
 
     /**

@@ -29,8 +29,32 @@ clover {
         json = true
         html = true
         pdf = true
+
         // Test support for Clover's JUnit results coverage reporting
         testResultsDir = project.tasks.getByName('test').reports.junitXml.destination
         testResultsInclude = 'TEST-*.xml'
+
+        historical {
+            enabled = true
+            added {
+                range = 10
+                interval = '3 weeks'
+            }
+            mover {
+                threshold = 1
+                range = 10
+                interval = '3 weeks'
+            }
+            mover {
+                threshold = 1
+                range = 10
+                interval = '3 months'
+            }
+            mover {
+                threshold = 1
+                range = 10
+                interval = '1 year'
+            }
+        }
     }
 }

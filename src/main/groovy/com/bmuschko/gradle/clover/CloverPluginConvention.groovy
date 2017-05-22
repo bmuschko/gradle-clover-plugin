@@ -32,6 +32,7 @@ class CloverPluginConvention {
     String targetPercentage
     boolean optimizeTests
     String snapshotFile
+    String historyDir
     List<CloverSourceSet> additionalSourceSets = []
     List<CloverSourceSet> additionalTestSourceSets =[]
     List<String> includes
