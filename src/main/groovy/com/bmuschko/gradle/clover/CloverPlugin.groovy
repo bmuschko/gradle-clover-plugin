@@ -478,13 +478,16 @@ class CloverPlugin implements Plugin<Project> {
     }
 
     /**
-     * Checks to see if Groovy plugin got applied to project.
+     * Checks to see if Groovy or Grails plugins got applied to project.
      *
      * @param project Project
      * @return Flag
      */
     private boolean hasGroovyPlugin(Project project) {
-        project.plugins.hasPlugin(GroovyPlugin)
+        project.plugins.hasPlugin(GroovyPlugin) ||
+		project.plugins.hasPlugin('org.grails.grails-core') ||
+		project.plugins.hasPlugin('org.grails.grails-plugin') ||
+		project.plugins.hasPlugin('org.grails.grails-web')
     }
 
     private FileCollection getTestRuntimeClasspath(Project project, Test testTask) {

@@ -39,7 +39,7 @@ example on how to retrieve it from Bintray:
         }
 
         dependencies {
-            classpath 'com.bmuschko:gradle-clover-plugin:2.1.0'
+            classpath 'com.bmuschko:gradle-clover-plugin:2.1.1'
         }
     }
 
@@ -77,7 +77,7 @@ to `'**/*.java'` and `'**/*.groovy'` for Groovy projects).
 * `excludes`: A list of String Ant Glob Patterns to exclude for instrumentation. By default no files are excluded.
 * `testIncludes`: A list of String Ant Glob Patterns to include for instrumentation for
 [per-test coverage](http://confluence.atlassian.com/display/CLOVER/Unit+Test+Results+and+Per-Test+Coverage) (defaults to
-`'**/*Test.java'` for Java projects, defaults to `'**/*Test.java'` and `'**/*Test.groovy'` for Groovy projects).
+`'**/*Test.java'` for Java projects, defaults to `'**/*Test.java'` and `'**/*Test.groovy'` for Groovy and Grails3 projects).
 * `testExcludes`: A list of String Ant Glob Patterns to exclude from instrumentation for
 [per-test coverage](http://confluence.atlassian.com/display/CLOVER/Unit+Test+Results+and+Per-Test+Coverage) (for example mock classes, defaults to
 empty list - no excludes).
@@ -129,6 +129,18 @@ is applied.
 * `testResultsDir`: Specifies the location of the JUnit4 test results XML report. This is necessary when the test use the new JUnit4 @Rule mechanism to declare expected exceptions. Clover fails to detect coverage for methods when this mechanism is used. This solution uses a feature of Clover that takes the coverage information directly from the JUnit XML report.
 * `testResultsInclude`: If testResultsDir is specified this must be an Ant file name pattern to select the correct XML files within the directory (defaults to TEST-*.xml).
 
+
+Within `report` closure you can define a closure named `historical` to enable Clover historical reports generation:
+
+* `enabled`: Enables generation of historical reports (defaults to `false`)
+* `historyIncludes`: An Ant GLOB to select specific history point files within the historyDir directory (defaults to `clover-*.xml.gz`)
+* `packageFilter`: Restricts the report to a particular package (optional, see `package` attribute of Clover historical element)
+* `from`: Specifies the date before which data points will be ignored (optional, see `from` attribute of Clover historical element)
+* `to`: Specifies the date after which data points will be ignored (optional, see `to` attribute of Clover historical element)
+* `added`: Closure to support nested `added` element from Clover `historical` element. Only the `range` and `interval` attributes are supported (optional, see `added` nested element of Clover historical element)
+* `mover`: Closure that can appear multiple times to support the `movers` element from Clover `historical` element. Only the `threshold`, `range` and `interval` attributes are supported (optional, see `movers` nested element of Clover historical element)
+See [Clover Report Historical Nested Element](https://confluence.atlassian.com/clover/clover-report-71600095.html#clover-report-<historical>)
+
 Furthermore, within `clover` you can define compiler settings which will be passed to java and groovyc upon compilation of instrumented sources.
 This is useful when specific compiler settings have been set on the main Java/Groovy compiler for your buildscript and
 need to be carried over to the compilation of the instrumented sources.  These are held within a closure named  `compiler`.
@@ -143,27 +155,28 @@ The Clover plugin defines the following convention properties in the `clover` cl
 
     clover {
         classesBackupDir = file("${sourceSets.main.classesDir}-backup")
+
+        // Now optional licenseLocation since we support OpenClover
         licenseLocation = 'clover-license.txt'
         excludes = ['**/SynchronizedMultiValueMap.java']
+
+        testIncludes = ['**/*Test.java', '**/*Spec.groovy']
         testExcludes = ['**/Mock*.java']
+
         targetPercentage = '85%'
 
-        // Each additional source set is defined by a map
-        // having a srcDirs and classesDir element.
-        additionalSourceSets << [
-            srcDirs: sourceSets.generated.allSource.srcDirs,
-            classesDir: sourceSets.generated.output.classesDir
-        ]
-        additionalTestSourceSets << [
-            srcDirs: sourceSets.integration.allSource.srcDirs,
-            classesDir: sourceSets.integration.output.classesDir
-        ]
-
         // Closure based syntax for additionalSourceSets and
-        // additionalTestSourceSets is also supported
+        // additionalTestSourceSets is also supported. Both
+        // srcDirs and classesDir properties are required.
+        // The syntax allows the following to occur as many times
+        // as necessary to define each additional sourceSet.
         additionalSourceSet {
             srcDirs = sourceSets.generatedJava.allSource.srcDirs
-            classesDir = sourceSets.generated.output.classesDir
+            classesDir = sourceSets.generatedJava.output.classesDir
+        }
+        additionalTestSourceSet {
+            srcDirs = sourceSets.integrationTest.allSource.srcDirs,
+            classesDir = sourceSets.integrationTest.output.classesDir
         }
 
         compiler {
@@ -199,8 +212,40 @@ The Clover plugin defines the following convention properties in the `clover` cl
             html = true
             pdf = true
             filter = 'log,main,getters,setters'
+
+            // Support capturing test results from JUnix XML report
             testResultsDir = project.tasks.getByName('test').reports.junitXml.destination
             testResultsInclude = 'TEST-*.xml'
+
+            // Clover history generation support
+            // See Clover documentation for details of the values supported
+            historical {
+                enabled = true
+                historyIncludes = 'clover-*.xml.gz'
+                packageFilter = null
+                from = null
+                to = null
+
+                added {
+                    range = 10
+                    interval = '3 weeks'
+                }
+                mover {
+                    threshold = 1
+                    range = 10
+                    interval = '3 weeks'
+                }
+                mover {
+                    threshold = 1
+                    range = 10
+                    interval = '3 months'
+                }
+                mover {
+                    threshold = 1
+                    range = 10
+                    interval = '1 year'
+                }
+            }
         }
     }
 

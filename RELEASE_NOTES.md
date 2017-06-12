@@ -1,11 +1,14 @@
 ### Version 2.1.1 (TDB)
 
-New feature
+New features
 * Generate Clover instrumented JAR files
+* Clover Historical Reports are now supported
+* Grails 3 is now officially supported by this plugin
 See the documentation in [README.md](README.md) for the new usage.
 
-
-* Fix Generate JARs with instrumened classes - [Issue 33](https://github.com/bmuschko/gradle-clover-plugin/issues/33)
+* Fix Grails 3 tests not executed - [Issue 75](https://github.com/bmuschko/gradle-clover-plugin/issues/75)
+* Fix Support for Clover history - [Issue 5](https://github.com/bmuschko/gradle-clover-plugin/issues/5)
+* Fix Generate JARs with instrumented classes - [Issue 33](https://github.com/bmuschko/gradle-clover-plugin/issues/33)
 * Fix `licenseLocation` is enforced even when using OpenClover - [Issue 85](https://github.com/bmuschko/gradle-clover-plugin/issues/85)
 
 ### Version 2.1.0 (May 13, 2017)

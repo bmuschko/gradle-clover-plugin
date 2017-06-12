@@ -435,6 +435,33 @@ class CloverPluginIntegSpec extends Specification {
             zipContains(carJarInEar, "clover.instrumented")
     }
 
+    def "Build a Grails3 project with unit tests and Clover coverage report"() {
+        given: "a Grails3 project with unit tests"
+            projectName = 'grails-project'
+    
+        when: "the Clover report generation task is run"
+            runTasks('clean', 'cloverGenerateReport')
+
+        then: "the Clover coverage database is generated"
+            cloverDb.exists()
+
+        and: "the Clover report is generated and is correct"
+            cloverXmlReport.exists()
+            def coverage = new XmlSlurper().parse(cloverXmlReport)
+            coverage.project.metrics.@classes == '5'
+            coverage.project.metrics.@methods == '6'
+            coverage.project.metrics.@coveredmethods == '3'
+            coverage.testproject.metrics.@classes == '2'
+            coverage.testproject.metrics.@methods == '6'
+            coverage.testproject.metrics.@coveredmethods == '6'
+            cloverHtmlReport.exists()
+            cloverJsonReport.exists()
+            cloverPdfReport.exists()
+    
+        and: "the Clover snapshot is not generated because test optimization is not enabled"
+            cloverSnapshot.exists() == false
+    }
+    
     private File getProjectDir() {
         new File('src/integTest/projects', projectName)
     }
