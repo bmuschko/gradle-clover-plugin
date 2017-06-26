@@ -1,4 +1,4 @@
-### Version 2.1.1 (TDB)
+### Version 2.1.1 (June 26, 2017)
 
 New features
 * Generate Clover instrumented JAR files
