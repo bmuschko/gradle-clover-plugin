@@ -18,7 +18,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'com.bmuschko'
-version = '2.1.1'
+version = '2.1.2'
 defaultTasks 'clean', 'build'
 
 sourceSets {

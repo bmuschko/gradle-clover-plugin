@@ -1,5 +1,6 @@
-### Version 2.1.1 (July 10, 2017)
+### Version 2.1.2 (July 10, 2017)
 
+* Fix Add **/*Spec.groovy to default clover.testIncludes - [Issue 90](https://github.com/bmuschko/gradle-clover-plugin/issues/90)
 * Fix Tests fail due to differences in polish characters - [Issue 92](https://github.com/bmuschko/gradle-clover-plugin/issues/92)
 
 ### Version 2.1.1 (June 26, 2017)

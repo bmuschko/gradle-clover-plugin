@@ -77,7 +77,7 @@ to `'**/*.java'` and `'**/*.groovy'` for Groovy projects).
 * `excludes`: A list of String Ant Glob Patterns to exclude for instrumentation. By default no files are excluded.
 * `testIncludes`: A list of String Ant Glob Patterns to include for instrumentation for
 [per-test coverage](http://confluence.atlassian.com/display/CLOVER/Unit+Test+Results+and+Per-Test+Coverage) (defaults to
-`'**/*Test.java'` for Java projects, defaults to `'**/*Test.java'` and `'**/*Test.groovy'` for Groovy and Grails3 projects).
+`'**/*Test.java'` for Java projects, defaults to `'**/*Test.java,**/*Test.groovy,**/*Spec.groovy'` for Groovy and Grails3 projects).
 * `testExcludes`: A list of String Ant Glob Patterns to exclude from instrumentation for
 [per-test coverage](http://confluence.atlassian.com/display/CLOVER/Unit+Test+Results+and+Per-Test+Coverage) (for example mock classes, defaults to
 empty list - no excludes).

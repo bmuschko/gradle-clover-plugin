@@ -46,6 +46,7 @@ class CloverPlugin implements Plugin<Project> {
     static final String DEFAULT_GROOVY_INCLUDES = '**/*.groovy'
     static final String DEFAULT_JAVA_TEST_INCLUDES = '**/*Test.java'
     static final String DEFAULT_GROOVY_TEST_INCLUDES = '**/*Test.groovy'
+    static final String DEFAULT_SPOCK_TEST_INCLUDES = '**/*Spec.groovy'
     static final String DEFAULT_CLOVER_DATABASE = '.clover/clover.db'
     static final String DEFAULT_CLOVER_SNAPSHOT = '.clover/coverage.db.snapshot'
     static final String DEFAULT_CLOVER_HISTORY_DIR = '.clover/historypoints'
@@ -446,7 +447,7 @@ class CloverPlugin implements Plugin<Project> {
         }
 
         if(hasGroovyPlugin(project)) {
-            return [DEFAULT_JAVA_TEST_INCLUDES, DEFAULT_GROOVY_TEST_INCLUDES]
+            return [DEFAULT_JAVA_TEST_INCLUDES, DEFAULT_GROOVY_TEST_INCLUDES, DEFAULT_SPOCK_TEST_INCLUDES]
         }
 
         [DEFAULT_JAVA_TEST_INCLUDES]

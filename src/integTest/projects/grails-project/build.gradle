@@ -77,9 +77,6 @@ dependencies {
 }
 
 clover {
-    // Override testIncludes to use the Spock test patterns
-    testIncludes = ['**/*Spec.groovy']
-
     targetPercentage = '60%'
 
     compiler {
