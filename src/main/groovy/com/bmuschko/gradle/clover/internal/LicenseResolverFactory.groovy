@@ -15,11 +15,14 @@
  */
 package com.bmuschko.gradle.clover.internal
 
+import groovy.transform.CompileStatic
+
 /**
  * License resolver factory.
  *
  * @author Benjamin Muschko
  */
+@CompileStatic
 @Singleton
 class LicenseResolverFactory {
     LicenseResolver getResolver(String location) {

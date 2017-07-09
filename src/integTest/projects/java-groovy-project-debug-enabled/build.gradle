@@ -23,10 +23,18 @@ dependencies {
     clover deps.clover
 }
 
-clover {
-    testIncludes = [ '**/*Test.java', '**/*Spec.groovy' ]
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
 
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
+clover {
     compiler {
+        encoding = 'UTF-8'
         debug = true
     }
 

@@ -13,6 +13,15 @@ allprojects {
         jcenter()
     }
 
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+    
+    tasks.withType(GroovyCompile) {
+        groovyOptions.encoding = 'UTF-8'
+        options.encoding = 'UTF-8'
+    }
+
     if (path != ':project4c') {
         apply plugin: CloverPlugin
 
@@ -21,6 +30,10 @@ allprojects {
         }
 
         clover {
+            compiler {
+                encoding = 'UTF-8'
+            }
+
             report {
                 json = true
                 html = true

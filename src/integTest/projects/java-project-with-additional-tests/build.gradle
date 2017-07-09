@@ -37,10 +37,23 @@ task integrationTest(type: Test, dependsOn: test) {
 
 check.dependsOn integrationTest
 
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
 clover {
     additionalTestSourceSet {
         srcDirs = sourceSets.integTest.allSource.srcDirs
         classesDir = sourceSets.integTest.output.classesDir
+    }
+
+    compiler {
+        encoding = 'UTF-8'
     }
 
     report {

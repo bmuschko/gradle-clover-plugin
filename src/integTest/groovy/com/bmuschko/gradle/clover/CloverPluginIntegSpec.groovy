@@ -206,8 +206,8 @@ class CloverPluginIntegSpec extends Specification {
         cloverXmlReport.exists()
         def coverage = new XmlSlurper().parse(cloverXmlReport)
         coverage.project.metrics.@classes == '1'
-        coverage.project.metrics.@methods == '1'
-        coverage.project.metrics.@coveredmethods == '1'
+        coverage.project.metrics.@methods == '2'
+        coverage.project.metrics.@coveredmethods == '2'
         cloverHtmlReport.exists()
         cloverJsonReport.exists()
         cloverPdfReport.exists()

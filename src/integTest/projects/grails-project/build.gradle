@@ -60,6 +60,15 @@ assets {
     minifyCss = true
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
 apply from: '../deps.gradle'
 apply plugin: CloverPlugin
 

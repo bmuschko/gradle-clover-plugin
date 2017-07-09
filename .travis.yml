@@ -5,11 +5,11 @@ jdk:
   - oraclejdk8
 
 script:
-  - ./gradlew clean build --stacktrace
+  - GRADLE_OPTS=-Dfile.encoding=windows-1252 ./gradlew clean build --stacktrace --no-daemon
 
 before_cache:
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+  - find $HOME/.gradle/caches -name '*.lock' | rm -f
 
 cache:
   directories:

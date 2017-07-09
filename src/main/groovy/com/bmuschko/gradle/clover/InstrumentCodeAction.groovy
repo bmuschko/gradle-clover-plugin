@@ -194,6 +194,8 @@ class InstrumentCodeAction implements Action<Task> {
         attributes.flushinterval = getFlushinterval()
         attributes.flushpolicy = getFlushpolicy()
 
+        attributes.encoding = getEncoding()
+        
         attributes
     }
 
@@ -313,7 +315,7 @@ class InstrumentCodeAction implements Action<Task> {
      */
     private void compileGroovyAndJava(AntBuilder ant, Set<File> srcDirs, File destDir, String classpath) {
         if(srcDirs.size() > 0) {
-            ant.groovyc(destdir: destDir.canonicalPath, classpath: classpath) {
+            ant.groovyc(destdir: destDir.canonicalPath, classpath: classpath, encoding: getEncoding()) {
                 srcDirs.each { srcDir ->
                     src(path: srcDir)
                 }

@@ -15,11 +15,14 @@
  */
 package com.bmuschko.gradle.clover.internal
 
+import groovy.transform.CompileStatic
+
 /**
  * License resolver interface.
  *
  * @author Benjamin Muschko
  */
+@CompileStatic
 interface LicenseResolver {
     static final String DEFAULT_CLOVER_LICENSE_FILE_NAME = 'clover.license'
 

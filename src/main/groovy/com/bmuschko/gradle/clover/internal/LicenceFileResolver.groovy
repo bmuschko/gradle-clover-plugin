@@ -15,11 +15,14 @@
  */
 package com.bmuschko.gradle.clover.internal
 
+import groovy.transform.CompileStatic
+
 /**
  * License file resolver.
  *
  * @author Benjamin Muschko
  */
+@CompileStatic
 class LicenceFileResolver implements LicenseResolver {
     @Override
     File resolve(File projectRootDir, String location) {

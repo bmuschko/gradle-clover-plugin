@@ -19,11 +19,24 @@ dependencies {
     clover deps.clover
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
 clover {
     testIncludes = [ '**/*.java' ]
     // Prove testExcludes works and supports
     // an all-but these files scheme.
     testExcludes = [ '**/Mock*.java' ]
+
+    compiler {
+        encoding = 'UTF-8'
+    }
 
     report {
         json = true

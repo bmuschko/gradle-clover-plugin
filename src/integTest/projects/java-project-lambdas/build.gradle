@@ -19,6 +19,15 @@ dependencies {
     testCompile deps.junit
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
 // Prove that the plugin works if applied in an afterEvaluate listener
 afterEvaluate {
     apply plugin: CloverPlugin
@@ -26,6 +35,10 @@ afterEvaluate {
         clover deps.clover
     }
     clover {
+        compiler {
+            encoding = 'UTF-8'
+        }
+    
         instrumentLambda = 'none'
     }
 }

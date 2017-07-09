@@ -15,20 +15,23 @@
  */
 package com.bmuschko.gradle.clover.internal
 
+import groovy.transform.CompileStatic
+
 /**
  * License URL resolver.
  *
  * @author Benjamin Muschko
  */
+@CompileStatic
 class LicenseUrlResolver implements LicenseResolver {
     @Override
     File resolve(File projectRootDir, String location) {
         File file = new File(projectRootDir, DEFAULT_CLOVER_LICENSE_FILE_NAME)
 
         if(!file.exists()) {
-            BufferedOutputStream stream = file.newOutputStream()
-            stream << new URL(location).openStream()
-            stream.close()
+            file.withOutputStream { stream ->
+                stream << new URL(location).openStream()
+            }
         }
 
         file

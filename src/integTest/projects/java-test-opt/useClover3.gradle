@@ -19,10 +19,19 @@ dependencies {
     clover 'com.cenqua.clover:clover:3.3.0'
 }
 
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
 // This can only be tested manually. The gradle process will not reload the
 // dependencies as much as I have tried to make it do that. It will reuse the
 // OpenClover dependency when running this test causing it to be invalid.
-// Test this works bu running it by hand.
+// Test this works by running it manually.
 // Stop any gradle daemons first.
 // - ../../../../gradlew --stop
 // Run the test twice using the command line execution
@@ -31,6 +40,10 @@ dependencies {
 clover {
     licenseLocation = file('../../../../clover.license').absolutePath
     useClover3 = true
+
+    compiler {
+        encoding = 'UTF-8'
+    }
 
     report {
         json = true
