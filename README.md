@@ -129,6 +129,13 @@ is applied.
 * `testResultsDir`: Specifies the location of the JUnit4 test results XML report. This is necessary when the test use the new JUnit4 @Rule mechanism to declare expected exceptions. Clover fails to detect coverage for methods when this mechanism is used. This solution uses a feature of Clover that takes the coverage information directly from the JUnit XML report.
 * `testResultsInclude`: If testResultsDir is specified this must be an Ant file name pattern to select the correct XML files within the directory (defaults to TEST-*.xml).
 
+Within `report` closure you can define a closure named `columns` to enable selection of columns for the report output. This feature implements support for the columns defined in Clover documentation [Clover ReportComumns Nested Element](https://confluence.atlassian.com/clover/clover-report-71600095.html#clover-report-Columns). Each line in the closure must begin with the name of the column to add followed by a Groovy map with the 4 optional attributes for the column. We support `format`, `min`, `max` and `scope`. The format and scope values are checked against the documented supported contents and will throw errors if unsupported values are used. We do not implement support for the `expression` column at this time, if you attempt to use it the plugin will throw an error:
+
+* `format`: Determines how the value is rendered. Depending on the column, this may be one of raw, bar, % or longbar.
+* `min`: Sets a minimum threshold on the value of the column. If the value is less than this it will be highlighted.
+* `max`: Sets a maximum threshold on the value of the column. If the value is greater than this it will be highlighted.
+* `scope`: Controls at which level in the report the column will appear. The scope attribute can be one of: "package", "class" or "method". If omitted, the column will be used at every level in the report. Note that only the following columns support the scope attribute: expression, complexity, complexityDensity, coveredXXX, uncoveredXXX and totalXXX.
+
 
 Within `report` closure you can define a closure named `historical` to enable Clover historical reports generation:
 
@@ -216,6 +223,14 @@ The Clover plugin defines the following convention properties in the `clover` cl
             // Support capturing test results from JUnix XML report
             testResultsDir = project.tasks.getByName('test').reports.junitXml.destination
             testResultsInclude = 'TEST-*.xml'
+
+            // Clover report nested columns support
+            columns {
+                coveredMethods format: 'longbar', min: '75'
+                coveredStatements format: '%'
+                coveredBranches format: 'raw'
+                totalPercentageCovered format: '%', scope: 'package'
+            }
 
             // Clover history generation support
             // See Clover documentation for details of the values supported

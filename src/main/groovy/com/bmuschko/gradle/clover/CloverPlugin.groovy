@@ -238,6 +238,8 @@ class CloverPlugin implements Plugin<Project> {
             map('json') { cloverPluginConvention.report.json }
             map('html') { cloverPluginConvention.report.html }
             map('pdf') { cloverPluginConvention.report.pdf }
+            
+            map('additionalColumns') { cloverPluginConvention.report.columns.getColumns() }
 
             cloverPluginConvention.report.historical.with {
                 map('historical') { enabled }

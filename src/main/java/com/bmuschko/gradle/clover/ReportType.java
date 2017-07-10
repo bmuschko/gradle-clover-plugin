@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011, 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bmuschko.gradle.clover
+package com.bmuschko.gradle.clover;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Supported Clover report types.
  *
  * @author Benjamin Muschko
  */
-enum ReportType {
-    XML('xml'), JSON('json'), HTML('html'), PDF('pdf')
+public enum ReportType {
+    XML("xml"), JSON("json"), HTML("html"), PDF("pdf");
 
-    final String format
+    private final String format;
 
+    public String getFormat() {
+        return format;
+    }
+    
     private ReportType(String format) {
-        this.format = format
+        this.format = format;
     }
 
-    static List getAllFormats() {
-        values().collect { it.format }
+    public static Collection<String> getAllFormats() {
+        ArrayList<String> formats = new ArrayList<String>(4);
+        for (ReportType value : values()) {
+            formats.add(value.format);
+        }
+        return formats;
     }
 }

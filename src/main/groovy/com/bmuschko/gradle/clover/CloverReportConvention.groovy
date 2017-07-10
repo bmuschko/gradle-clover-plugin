@@ -36,4 +36,10 @@ class CloverReportConvention {
     def historical(Closure closure) {
         ConfigureUtil.configure(closure, historical)
     }
+    
+    CloverReportColumnsConvention columns = new CloverReportColumnsConvention()
+    
+    def columns(Closure closure) {
+        ConfigureUtil.configure(closure, columns)
+    }
 }

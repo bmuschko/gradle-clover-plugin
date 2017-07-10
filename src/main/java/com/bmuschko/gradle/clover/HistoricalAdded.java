@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bmuschko.gradle.clover
+package com.bmuschko.gradle.clover;
 
-/**
- * Supported Clover flushpolicy types
- *
- * @author Alex Volanis
- */
-public enum FlushPolicy {
-    directed,
-    interval,
-    threaded
+public class HistoricalAdded {
+    private int range = 5;
+    private String interval = null;
 
-    static List getAllPolicies() {
-        values().collect { it.name }
+    public HistoricalAdded() {
+    }
+    
+    public int getRange() {
+        return range;
+    }
+
+    public void setRange(int range) {
+        this.range = range;
+    }
+
+    public String getInterval() {
+        return interval;
+    }
+
+    public void setInterval(String interval) {
+        this.interval = interval;
     }
 }

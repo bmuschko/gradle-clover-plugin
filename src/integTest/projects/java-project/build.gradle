@@ -47,6 +47,13 @@ clover {
         testResultsDir = project.tasks.getByName('test').reports.junitXml.destination
         testResultsInclude = 'TEST-*.xml'
 
+        columns {
+            coveredMethods format: 'longbar', min: '75'
+            coveredStatements format: '%'
+            coveredBranches format: 'raw'
+            totalPercentageCovered format: '%', scope: 'package'
+        }
+
         historical {
             enabled = true
             added {

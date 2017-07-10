@@ -58,6 +58,8 @@ abstract class CloverReportTask extends DefaultTask {
     Boolean pdf
     Boolean historical
 
+    Collection<CloverReportColumn> additionalColumns
+    
     /**
      * Optional Clover history directory.
      */
@@ -178,6 +180,14 @@ abstract class CloverReportTask extends DefaultTask {
                 format(formatParams)
                 if (testResultsDir) {
                     testresults(dir: testResultsDir, includes: testResultsInclude)
+                }
+                if (getAdditionalColumns()) {
+                    columns {
+                        for (CloverReportColumn col in getAdditionalColumns()) {
+                            String name = col.getColumn()
+                            "$name"(col.getAttributes())
+                        }
+                    }
                 }
             }
 
