@@ -1,4 +1,4 @@
-### Version 2.1.2 (July 10, 2017)
+### Version 2.1.2 (July 11, 2017)
 
 New features
 * Support columns detail for Clover reports - [Issue 93](https://github.com/bmuschko/gradle-clover-plugin/issues/93)

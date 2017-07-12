@@ -39,7 +39,7 @@ example on how to retrieve it from Bintray:
         }
 
         dependencies {
-            classpath 'com.bmuschko:gradle-clover-plugin:2.1.1'
+            classpath 'com.bmuschko:gradle-clover-plugin:2.1.2'
         }
     }
 
