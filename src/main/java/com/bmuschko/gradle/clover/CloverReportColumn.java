@@ -24,6 +24,10 @@ import org.gradle.api.InvalidUserDataException;
 
 public class CloverReportColumn {
     public CloverReportColumn(String column, Map<String, String> attributes) {
+        if (!validColumn(column)) {
+            throw new InvalidUserDataException("Column '" + column + "' is not supported");
+        }
+        
         this.column = column;
         this.attributes = new HashMap<>(attributes.size());
         for (Map.Entry<String, String> entry : attributes.entrySet()) {
@@ -31,11 +35,12 @@ public class CloverReportColumn {
             if (key.equals("format")) {
                 assertValidFormat(column, entry.getValue());
             } else if (key.equals("min") || key.equals("max")) {
-                assertValidNumber(entry.getValue());
+                assertValidNumber(column, entry.getValue());
             } else if (key.equals("scope")) {
-                assertValidScope(entry.getValue());
+                assertValidScope(column, entry.getValue());
             } else {
-                throw new InvalidUserDataException("Invalid column attribute name: " + key);
+                String msg = String.format("Invalid column attribute '%s' for column %s", key, column);
+                throw new InvalidUserDataException(msg);
             }
             this.attributes.put(key, entry.getValue());
         }
@@ -50,22 +55,29 @@ public class CloverReportColumn {
     public Map<String, String> getAttributes() {
         return Collections.unmodifiableMap(attributes);
     }
-    
+
     private void assertValidFormat(String name, String format) {
         FormatValidator validator = validColumns.get(name);
         if (!validator.valid(format)) {
-            throw new InvalidUserDataException("Invalid column format specification: " + format);
+            String msg = String.format("Invalid column format specification '%s' for column %s", format, name);
+            throw new InvalidUserDataException(msg);
         }        
     }
     
-    private void assertValidNumber(String value) {
-        Integer.parseInt(value, 10);
+    private void assertValidNumber(String name, String value) {
+        try {
+            Integer.parseInt(value, 10);
+        } catch (NumberFormatException e) {
+            String msg = String.format("Invalid column min/max specification '%s' for column %s", value, name);
+            throw new InvalidUserDataException(msg, e);
+        }
     }
     
     private static final Pattern scopeValidator = Pattern.compile("(package|class|method)");
-    private void assertValidScope(String scope) {
+    private void assertValidScope(String name, String scope) {
         if (!scopeValidator.matcher(scope).matches()) {
-            throw new InvalidUserDataException("Invalid column scope specification: " + scope);
+            String msg = String.format("Invalid column scope specification '%s' for column %s", scope, name);
+            throw new InvalidUserDataException(msg);
         }
     }
     

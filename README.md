@@ -268,25 +268,3 @@ The Clover plugin defines the following convention properties in the `clover` cl
 
 The Clover plugin uses the following properties:
 * `-PcloverInstrumentedJar`: This property can be used to prepare a JAR or EAR for distributed code coverage. When using this property the instrumented classes are left in the `classes` directory so that the `jar` tasks will bundle them. The property causes the `jar` tasks to execute after the `test` tasks to ensure that the Clover instrumentation has happened. This property should be used with a separate test execution in a Continuous Integration environment because the JAR files will be created with Clover instrumented code which cannot be used in a production environment.
-
-## FAQ
-
-**How do I use the code coverage results produced by this plugin with the Gradle Sonar plugin?**
-
-You will have to configure the [Gradle Sonar plugin](http://www.gradle.org/docs/current/userguide/sonar_plugin.html)
-to parse the Clover coverage result file. The convention property [cloverReportPath](http://gradle.org/docs/current/groovydoc/org/gradle/api/plugins/sonar/model/SonarProject.html#cloverReportPath)
-defines the path to the code coverage XML file. This path is only used if the property [dynamicAnalysis](http://gradle.org/docs/current/groovydoc/org/gradle/api/plugins/sonar/model/SonarProject.html#dynamicAnalysis)
-has the value of `reuseReports`. The following code snippet shows an example.
-
-    sonar {
-        project {
-            cloverReportPath = file("$reportsDir/clover/clover.xml")
-        }
-    }
-
-In Sonar you will need to install the [Clover plugin](http://docs.codehaus.org/display/SONAR/Clover+Plugin). In order to
-make Sonar use the Clover code coverage engine, the property `sonar.core.codeCoveragePlugin` must be set to `clover` under
-Configuration | General Settings | Code Coverage. If you run `gradle sonarAnalyze -i` you will see that the Gradle Sonar plugin parses your file.
-It should look something like this:
-
-    Parsing /Users/ben/dev/projects/testproject/build/reports/clover/clover.xml

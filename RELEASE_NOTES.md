@@ -1,3 +1,7 @@
+### Version 2.1.3 (TBD)
+
+* Fix Plugin version 2.1.2 does not work with Gradle 2.x - [Issue 94](https://github.com/bmuschko/gradle-clover-plugin/issues/94)
+
 ### Version 2.1.2 (July 11, 2017)
 
 New features

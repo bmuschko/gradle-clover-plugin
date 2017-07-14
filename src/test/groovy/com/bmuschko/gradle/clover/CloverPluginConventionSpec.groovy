@@ -15,8 +15,9 @@
  */
 package com.bmuschko.gradle.clover
 
+import org.gradle.api.InvalidUserDataException
+
 import spock.lang.Specification
-import spock.lang.Unroll
 
 class CloverPluginConventionSpec extends Specification {
     def "FlushPolicy assignment conversion works"() {
@@ -94,5 +95,61 @@ class CloverPluginConventionSpec extends Specification {
         convention.report.historical.movers[0].interval == '2 days'
         convention.report.historical.movers[1].interval == '2 weeks'
         convention.report.historical.movers[2].interval == '6 months'
+    }
+    
+    def "Additional columns for clover report can be specified"() {
+        given: "A new CloverPluginConvention instance"
+        def convention = new CloverPluginConvention()
+
+        when: "configuration closure with report columns is added"
+        convention.clover {
+            report {
+                columns {
+                    coveredMethods format: 'longbar', min: '75'
+                    coveredStatements format: '%'
+                    coveredBranches format: 'raw'
+                    totalPercentageCovered format: '%', scope: 'package'
+                }
+            }
+        }
+        
+        then: "all columns are reflected in the collection"
+        convention.report.columns.columns.size() == 4
+        with(convention.report.columns.columns.find { it.column == 'coveredMethods' }) {
+            attributes.size() == 2
+            attributes.format == 'longbar'
+            attributes.min == '75'
+        }
+        with(convention.report.columns.columns.find { it.column == 'coveredStatements' }) {
+            attributes.size() == 1
+            attributes.format == '%'
+        }
+        with(convention.report.columns.columns.find { it.column == 'coveredBranches' }) {
+            attributes.size() == 1
+            attributes.format == 'raw'
+        }
+        with(convention.report.columns.columns.find { it.column == 'totalPercentageCovered' }) {
+            attributes.size() == 2
+            attributes.format == '%'
+            attributes.scope == 'package'
+        }
+    }
+    
+    def "Invalid columns added to report are rejected with useful message"() {
+        given: "A new CloverPluginConvention instance"
+        def convention = new CloverPluginConvention()
+
+        when: "configuration closure with report columns is added"
+        convention.clover {
+            report {
+                columns {
+                    expression format: 'raw'
+                }
+            }
+        }
+        
+        then: "A proper exception is thrown"
+        def e = thrown(InvalidUserDataException)
+        e.message == "Unsupported column name 'expression' for Clover report"
     }
 }
