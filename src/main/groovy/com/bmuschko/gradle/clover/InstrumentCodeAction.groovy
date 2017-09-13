@@ -55,6 +55,7 @@ class InstrumentCodeAction implements Action<Task> {
     boolean debug
     int flushinterval
     String flushpolicy
+    String additionalArgs
 
     @Override
     void execute(Task task) {
@@ -314,14 +315,19 @@ class InstrumentCodeAction implements Action<Task> {
      * @param classpath Classpath
      */
     private void compileGroovyAndJava(AntBuilder ant, Set<File> srcDirs, File destDir, String classpath) {
-        if(srcDirs.size() > 0) {
+        String args = getAdditionalArgs()
+        if (srcDirs.size() > 0) {
             ant.groovyc(destdir: destDir.canonicalPath, classpath: classpath, encoding: getEncoding()) {
                 srcDirs.each { srcDir ->
                     src(path: srcDir)
                 }
 
-            ant.javac(source: getSourceCompatibility(), target: getTargetCompatibility(), encoding: getEncoding(),
-                      debug: getDebug())
+                ant.javac(source: getSourceCompatibility(), target: getTargetCompatibility(), encoding: getEncoding(),
+                          debug: getDebug()) {
+                    if (args != null && args.length() > 0) {
+                        compilerarg(line: args)
+                    }
+                }
             }
             addMarkerFile(destDir)
         }
@@ -336,11 +342,15 @@ class InstrumentCodeAction implements Action<Task> {
      * @param classpath Classpath
      */
     private void compileJava(AntBuilder ant, Set<File> srcDirs, File destDir, String classpath) {
-        if(srcDirs.size() > 0) {
+        String args = getAdditionalArgs()
+        if (srcDirs.size() > 0) {
             ant.javac(destdir: destDir.canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
                   classpath: classpath, encoding: getEncoding(), executable: getExecutable(), debug: getDebug()) {
                 srcDirs.each { srcDir ->
                     src(path: srcDir)
+                }
+                if (args != null && args.length() > 0) {
+                    compilerarg(line: args)
                 }
             }
             addMarkerFile(destDir)

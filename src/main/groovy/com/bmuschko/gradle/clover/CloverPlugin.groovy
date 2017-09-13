@@ -180,6 +180,7 @@ class CloverPlugin implements Plugin<Project> {
         instrumentCodeAction.conventionMapping.map('debug') { cloverPluginConvention.compiler.debug }
         instrumentCodeAction.conventionMapping.map('flushinterval') { cloverPluginConvention.flushinterval }
         instrumentCodeAction.conventionMapping.map('flushpolicy') { cloverPluginConvention.flushpolicy.name() }
+        instrumentCodeAction.conventionMapping.map('additionalArgs') { cloverPluginConvention.compiler.additionalArgs }
         instrumentCodeAction
     }
 

@@ -154,7 +154,8 @@ need to be carried over to the compilation of the instrumented sources.  These a
 
 * `encoding`: The (optional) encoding name.  If not provided, the platform default according to the JVM will be used. See [java.nio.charset.StandardCharsets](http://docs.oracle.com/javase/8/docs/api/java/nio/charset/StandardCharsets.html) for a full list of charsets.
 * `executable`: The (optional) javac executable to use, should be an absolute file.
-* `debug`: Controls whether to invoke javac with the -g flag. This is useful for Spring MVC code that uses debugging symbols for parameter mapping. (defaults to `false`).
+* `debug`: Controls whether to invoke javac with the -g flag. This is useful for Spring MVC code that uses reflection for parameter mapping. (defaults to `false`).
+* `additionalArgs`: The (optional) additional command line arguments for the compiler. This is useful for Spring MVC code that uses reflection for parameter mapping. This should be valid command line arguments as a spaces separated string. No attempt is made to validate this line, it is passed verbatim to the <compilerarg> nested element for the Ant `javac` task.
 
 The Clover plugin defines the following convention properties in the `clover` closure:
 
@@ -191,6 +192,9 @@ The Clover plugin defines the following convention properties in the `clover` cl
 
             // if the javac executable used by ant should be the same as the one used elsewhere.
             executable = file('/usr/local/java/jdk1.8.0_05')
+            // used to add debug information for Spring applications
+            debug = true
+            additionalArgs = '-parameters'
         }
 
         contexts {

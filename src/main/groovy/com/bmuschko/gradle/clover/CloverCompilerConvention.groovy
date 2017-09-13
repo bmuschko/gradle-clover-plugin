@@ -24,4 +24,5 @@ class CloverCompilerConvention {
     String encoding = 'UTF-8'
     File executable
     boolean debug = false
+    String additionalArgs = null
 }

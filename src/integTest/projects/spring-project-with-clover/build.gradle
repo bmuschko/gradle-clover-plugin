@@ -1,30 +1,35 @@
 import com.bmuschko.gradle.clover.CloverPlugin
 
 buildscript {
+    repositories {
+        jcenter()
+    }
     dependencies {
         classpath files('../../../../build/classes/main')
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.5.6.RELEASE")
     }
 }
 
 apply from: '../deps.gradle'
 apply plugin: 'java'
+apply plugin: 'org.springframework.boot'
 apply plugin: CloverPlugin
 
-sourceCompatibility = 1.7
 version = '1.0'
+sourceCompatibility = 1.8
 
 repositories {
     jcenter()
 }
 
 dependencies {
+	compile('org.springframework.boot:spring-boot-starter-security')
+	compile('org.springframework.boot:spring-boot-starter-web')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	testCompile('org.springframework.security:spring-security-test')
+
     testCompile deps.junit
     clover deps.clover
-
-    compile 'org.springframework:spring-core:3.2.11.RELEASE'
-    compile 'org.springframework:spring-context:3.2.11.RELEASE'
-
-    testCompile 'org.springframework:spring-test:3.2.11.RELEASE'
 }
 
 tasks.withType(JavaCompile) {
@@ -40,11 +45,16 @@ clover {
     compiler {
         encoding = 'UTF-8'
         debug = true
+        additionalArgs = '-parameters'
     }
 
     report {
         json = true
         html = true
         pdf = true
+        xml = true
+        
+        testResultsDir = project.tasks.getByName('test').reports.junitXml.destination
+        testResultsInclude = 'TEST-*.xml'
     }
 }
