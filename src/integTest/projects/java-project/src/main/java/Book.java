@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import org.apache.commons.lang3.JavaVersion;
+
 public class Book {
 
     // tested
@@ -23,6 +25,10 @@ public class Book {
 
     public void throwsRuntimeException() {
         throw new RuntimeException("Testing");
+    }
+    
+    public boolean isAtLeastJavaVersion() {
+        return JavaVersion.JAVA_1_8.atLeast(JavaVersion.JAVA_1_7);
     }
 
     // untested

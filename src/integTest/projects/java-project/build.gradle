@@ -17,6 +17,8 @@ repositories {
 dependencies {
     testCompile deps.junit
     clover deps.clover
+    compileOnly group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
+    testRuntime group: 'org.apache.commons', name: 'commons-lang3', version: '3.6'
 }
 
 tasks.withType(JavaCompile) {

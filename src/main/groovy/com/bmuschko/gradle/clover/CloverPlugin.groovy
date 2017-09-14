@@ -28,6 +28,7 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.testing.Test
 
 import java.lang.reflect.Constructor
+import java.util.concurrent.Callable
 
 /**
  * <p>A {@link org.gradle.api.Plugin} that provides a task for creating a code coverage report using Clover.</p>
@@ -339,12 +340,19 @@ class CloverPlugin implements Plugin<Project> {
     private Set<CloverSourceSet> getSourceSets(Project project, CloverPluginConvention cloverPluginConvention) {
         def sourceSets = []
 
+        Callable<FileCollection> classpathProvider = new Callable<FileCollection>() {
+            FileCollection call() {
+                project.sourceSets.main.getCompileClasspath() + project.configurations.getByName(CONFIGURATION_NAME)
+            }
+        }
+
          if(hasGroovyPlugin(project)) {
             CloverSourceSet cloverSourceSet = new CloverSourceSet()
             cloverSourceSet.srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.main.java.srcDirs))
             cloverSourceSet.srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.main.groovy.srcDirs))
             cloverSourceSet.classesDir = project.sourceSets.main.output.classesDir
             cloverSourceSet.backupDir = cloverPluginConvention.classesBackupDir ?: new File("${project.sourceSets.main.output.classesDir}-bak")
+            cloverSourceSet.classpathProvider = classpathProvider
             sourceSets << cloverSourceSet
          }
         else if(hasJavaPlugin(project)) {
@@ -352,12 +360,14 @@ class CloverPlugin implements Plugin<Project> {
             cloverSourceSet.srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.main.java.srcDirs))
             cloverSourceSet.classesDir = project.sourceSets.main.output.classesDir
             cloverSourceSet.backupDir = cloverPluginConvention.classesBackupDir ?: new File("${project.sourceSets.main.output.classesDir}-bak")
+            cloverSourceSet.classpathProvider = classpathProvider
             sourceSets << cloverSourceSet
          }
 
         if(cloverPluginConvention.additionalSourceSets) {
             cloverPluginConvention.additionalSourceSets.each { additionalSourceSet ->
                 additionalSourceSet.backupDir = cloverPluginConvention.classesBackupDir ?: new File("${additionalSourceSet.classesDir}-bak")
+                additionalSourceSet.classpathProvider = classpathProvider
                 sourceSets << additionalSourceSet
             }
          }
@@ -368,12 +378,19 @@ class CloverPlugin implements Plugin<Project> {
     private Set<CloverSourceSet> getTestSourceSets(Project project, CloverPluginConvention cloverPluginConvention) {
         def testSourceSets = []
 
+        Callable<FileCollection> classpathProvider = new Callable<FileCollection>() {
+            FileCollection call() {
+                project.sourceSets.test.getCompileClasspath() + project.configurations.getByName(CONFIGURATION_NAME)
+            }
+        }
+
          if(hasGroovyPlugin(project)) {
             CloverSourceSet cloverSourceSet = new CloverSourceSet()
             cloverSourceSet.srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.test.java.srcDirs))
             cloverSourceSet.srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.test.groovy.srcDirs))
             cloverSourceSet.classesDir = project.sourceSets.test.output.classesDir
             cloverSourceSet.backupDir = cloverPluginConvention.testClassesBackupDir ?: new File("${project.sourceSets.test.output.classesDir}-bak")
+            cloverSourceSet.classpathProvider = classpathProvider
             testSourceSets << cloverSourceSet
          }
          else if(hasJavaPlugin(project)) {
@@ -381,12 +398,14 @@ class CloverPlugin implements Plugin<Project> {
             cloverSourceSet.srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.test.java.srcDirs))
             cloverSourceSet.classesDir = project.sourceSets.test.output.classesDir
             cloverSourceSet.backupDir = cloverPluginConvention.testClassesBackupDir ?: new File("${project.sourceSets.test.output.classesDir}-bak")
+            cloverSourceSet.classpathProvider = classpathProvider
             testSourceSets << cloverSourceSet
          }
 
         if(cloverPluginConvention.additionalTestSourceSets) {
             cloverPluginConvention.additionalTestSourceSets.each { additionalTestSourceSet ->
                 additionalTestSourceSet.backupDir = cloverPluginConvention.classesBackupDir ?: new File("${additionalTestSourceSet.classesDir}-bak")
+                additionalTestSourceSet.classpathProvider = classpathProvider
                 testSourceSets << additionalTestSourceSet
             }
          }
@@ -499,6 +518,17 @@ class CloverPlugin implements Plugin<Project> {
     }
 
     private FileCollection getGroovyClasspath(Project project) {
-        project.configurations.compile.asFileTree
+        // We use the test sourceSet to derive the GroovyCompile built-in task name
+        // and from there extract the correct GroovyClasspath. This is more closely
+        // matched to the built-in Groovy compiler and still supports a build dependency.
+        def taskName = project.sourceSets.test.getCompileTaskName('groovy')
+        def task = project.tasks.findByName(taskName)
+        if (task == null) {
+            // Fall back to main source set to get this. We should have this
+            // or the test source set using Groovy if this method is called.
+            taskName = project.sourceSets.main.getCompileTaskName('groovy')
+            task = project.tasks.getByName(taskName)
+        }
+        task.getGroovyClasspath() + project.configurations.getByName(CONFIGURATION_NAME)
     }
 }

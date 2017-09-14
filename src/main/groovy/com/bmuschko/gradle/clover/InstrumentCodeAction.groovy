@@ -224,8 +224,7 @@ class InstrumentCodeAction implements Action<Task> {
     }
 
     /**
-     * Gets Groovyc classpath. Make sure the Groovy version defined in project is used on classpath first to avoid using the
-     * default version bundled with Gradle.
+     * Gets Groovyc classpath.
      *
      * @return Classpath
      */
@@ -234,12 +233,14 @@ class InstrumentCodeAction implements Action<Task> {
     }
 
     /**
-     * Gets Javac classpath.
+     * Gets the compile classpath for the given sourceSet.
+     * 
+     * @param sourceSet the CloverSourceSet to extract the classpath
      *
      * @return Classpath
      */
-    private String getJavacClasspath() {
-        getTestRuntimeClasspath().asPath
+    private String getCompileClasspath(CloverSourceSet sourceSet) {
+        sourceSet.getCompileClasspath().asPath
     }
 
     /**
@@ -249,7 +250,7 @@ class InstrumentCodeAction implements Action<Task> {
      */
     private void compileGroovyAndJavaSrcFiles(AntBuilder ant) {
         for(CloverSourceSet sourceSet : getSourceSets()) {
-            compileGroovyAndJava(ant, sourceSet.srcDirs, sourceSet.classesDir, getGroovycClasspath())
+            compileGroovyAndJava(ant, sourceSet.srcDirs, sourceSet.classesDir, getCompileClasspath(sourceSet))
         }
     }
 
@@ -260,7 +261,7 @@ class InstrumentCodeAction implements Action<Task> {
      */
     private void compileJavaSrcFiles(AntBuilder ant) {
         for(CloverSourceSet sourceSet : getSourceSets()) {
-            compileJava(ant, sourceSet.srcDirs, sourceSet.classesDir, getJavacClasspath())
+            compileJava(ant, sourceSet.srcDirs, sourceSet.classesDir, getCompileClasspath(sourceSet))
         }
     }
 
@@ -271,7 +272,7 @@ class InstrumentCodeAction implements Action<Task> {
      */
     private void compileGroovyAndJavaTestSrcFiles(AntBuilder ant) {
         for(CloverSourceSet sourceSet : getTestSourceSets()) {
-            String classpath = addClassesDirToClasspath(getGroovycClasspath(), getSourceSets().collect { it.classesDir })
+            String classpath = addClassesDirToClasspath(getCompileClasspath(sourceSet), getSourceSets().collect { it.classesDir })
             compileGroovyAndJava(ant, sourceSet.srcDirs, sourceSet.classesDir, classpath)
         }
     }
@@ -283,7 +284,7 @@ class InstrumentCodeAction implements Action<Task> {
      */
     private void compileJavaTestSrcFiles(AntBuilder ant) {
         for(CloverSourceSet sourceSet : getTestSourceSets()) {
-            String classpath = addClassesDirToClasspath(getJavacClasspath(), getSourceSets().collect { it.classesDir })
+            String classpath = addClassesDirToClasspath(getCompileClasspath(sourceSet), getSourceSets().collect { it.classesDir })
             compileJava(ant, sourceSet.srcDirs, sourceSet.classesDir, classpath)
         }
     }

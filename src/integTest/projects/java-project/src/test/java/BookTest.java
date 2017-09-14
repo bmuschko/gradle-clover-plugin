@@ -34,4 +34,8 @@ public class BookTest {
         new Book().throwsRuntimeException();
     }
 
+    @Test
+    public void testIsAtLeastJavaVersion() {
+        new Book().isAtLeastJavaVersion();
+    }
 }

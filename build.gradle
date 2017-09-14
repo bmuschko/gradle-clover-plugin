@@ -7,7 +7,7 @@ buildscript {
     dependencies {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
         if (project.hasProperty('selfCheck')) {
-            classpath 'com.bmuschko:gradle-clover-plugin:2.1.0'
+            classpath 'com.bmuschko:gradle-clover-plugin:2.1.3'
         }
     }
 }
@@ -18,7 +18,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'com.bmuschko'
-version = '2.1.3-SNAPSHOT'
+version = '2.1.3'
 defaultTasks 'clean', 'build'
 
 sourceSets {

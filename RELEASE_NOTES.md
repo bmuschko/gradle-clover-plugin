@@ -1,5 +1,7 @@
 ### Version 2.1.3 (TBD)
 
+* Fix compileOnly dependencies aren't properly added to classpath - [Issue 99](https://github.com/bmuschko/gradle-clover-plugin/issues/99)
+* Fix Grails 3 project fails to find Groovyc class - [Issue 89](https://github.com/bmuschko/gradle-clover-plugin/issues/89)
 * Fix Make compilerArgs configurable - [Issue 98](https://github.com/bmuschko/gradle-clover-plugin/issues/98)
 * Fix Plugin version 2.1.2 does not work with Gradle 2.x - [Issue 94](https://github.com/bmuschko/gradle-clover-plugin/issues/94)
 
