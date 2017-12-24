@@ -1,0 +1,51 @@
+plugins {
+    id 'com.bmuschko.clover'
+    id 'java'
+    id 'org.springframework.boot' version '1.5.6.RELEASE'
+}
+
+apply from: '../deps.gradle'
+
+version = '1.0'
+sourceCompatibility = 1.8
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter-security')
+	compile('org.springframework.boot:spring-boot-starter-web')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	testCompile('org.springframework.security:spring-security-test')
+
+    testCompile deps.junit
+    clover deps.clover
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
+clover {
+    compiler {
+        encoding = 'UTF-8'
+        debug = true
+        additionalArgs = '-parameters'
+    }
+
+    report {
+        json = true
+        html = true
+        pdf = true
+        xml = true
+        
+        testResultsDir = project.tasks.getByName('test').reports.junitXml.destination
+        testResultsInclude = 'TEST-*.xml'
+    }
+}

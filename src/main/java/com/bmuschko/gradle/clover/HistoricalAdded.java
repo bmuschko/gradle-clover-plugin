@@ -15,7 +15,10 @@
  */
 package com.bmuschko.gradle.clover;
 
-public class HistoricalAdded {
+import java.io.Serializable;
+
+public class HistoricalAdded implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int range = 5;
     private String interval = null;
 

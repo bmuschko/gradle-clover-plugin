@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+}
+
+apply from: '../deps.gradle'
+
+sourceCompatibility = 1.8
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    testCompile deps.junit
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
+// Prove that the plugin works if applied in an afterEvaluate listener
+afterEvaluate {
+    apply plugin: 'com.bmuschko.clover'
+    dependencies {
+        clover deps.clover
+    }
+    clover {
+        compiler {
+            encoding = 'UTF-8'
+        }
+    
+        instrumentLambda = 'none'
+    }
+}

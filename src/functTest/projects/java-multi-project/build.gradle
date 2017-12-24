@@ -1,0 +1,46 @@
+
+apply from: '../deps.gradle'
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+    
+    tasks.withType(GroovyCompile) {
+        groovyOptions.encoding = 'UTF-8'
+        options.encoding = 'UTF-8'
+    }
+
+    if (path != ':project4c') {
+        apply plugin: 'com.bmuschko.clover'
+
+        dependencies {
+            clover deps.clover
+        }
+
+        clover {
+            compiler {
+                encoding = 'UTF-8'
+            }
+
+            report {
+                json = true
+                html = true
+                pdf = true
+            }
+        }
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    dependencies {
+        testCompile deps.junit
+    }
+    buildDir = new File(rootProject.buildDir, name)
+}

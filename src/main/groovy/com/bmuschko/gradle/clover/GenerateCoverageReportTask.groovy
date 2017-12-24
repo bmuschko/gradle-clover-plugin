@@ -15,15 +15,26 @@
  */
 package com.bmuschko.gradle.clover
 
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
+
 /**
  * Task for generating Clover code coverage report.
  *
  * @author Benjamin Muschko
  */
 class GenerateCoverageReportTask extends CloverReportTask {
+    @Optional
+    @Input
     String filter
+    @Optional
+    @Input
     String targetPercentage
+    @Optional
+    @Input
     String testResultsDir
+    @Optional
+    @Input
     String testResultsInclude
 
     @Override

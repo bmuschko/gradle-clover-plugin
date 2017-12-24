@@ -1,3 +1,30 @@
+### Version 2.2.0 (December 29, 2017)
+
+Gradle 4.x compatibility release
+
+* Add support for Gradle 4.x - [Issue 91](https://github.com/bmuschko/gradle-clover-plugin/issues/91)
+
+  Migrated all code to work on Gradle 4.4.1. Solved the issues with the new language specific classes directories by completing the work to solve the joint Groovy/Java compile.
+
+* Avoid Joint Compilation of Java Sources by Groovy Compiler- [Issue 55](https://github.com/bmuschko/gradle-clover-plugin/issues/55)
+
+  From now on the expectation is that code in groovy directories will be compiled using the Groovy compiler for both Java and Groovy code colocated. Java code in a java directory will be compiled using the Java compiler. Previously when Groovy was installed all code was compiled with Groovy without care.
+
+* Use TestKit for defining and executing functional tests- [Issue 80](https://github.com/bmuschko/gradle-clover-plugin/issues/80)
+
+  Enabled the use of Gradle TestKit for functional testing. This eliminated the dependency on arcane logic in the build.gradle files that set plugin classpaths in weird ways.
+
+* Automate release process following gradle-docker-plugin scheme- [Issue 96](https://github.com/bmuschko/gradle-clover-plugin/issues/96)
+
+  The changes to include the refined Gradle build logic from the Docker plugin were integrated.  We should have a semi-automatic release process now based on tag pushing.
+
+Other changes:
+
+Removed the support for Clover license. Only support OpenClover.
+
+Cleaned up the Java test code in all functional test data
+projects to use Junit 4 annotations instead of Junit 3.
+
 ### Version 2.1.3 (September 19, 2017)
 
 * Fix compileOnly dependencies aren't properly added to classpath - [Issue 99](https://github.com/bmuschko/gradle-clover-plugin/issues/99)
@@ -9,7 +36,8 @@
 
 New features
 * Support columns detail for Clover reports - [Issue 93](https://github.com/bmuschko/gradle-clover-plugin/issues/93)
-See the documentation in [README.md](README.md) for the new usage.
+
+  See the documentation in [README.md](README.md) for the new usage.
 
 * Fix Add **/*Spec.groovy to default clover.testIncludes - [Issue 90](https://github.com/bmuschko/gradle-clover-plugin/issues/90)
 * Fix Tests fail due to differences in polish characters - [Issue 92](https://github.com/bmuschko/gradle-clover-plugin/issues/92)
@@ -20,7 +48,8 @@ New features
 * Generate Clover instrumented JAR files
 * Clover Historical Reports are now supported
 * Grails 3 is now officially supported by this plugin
-See the documentation in [README.md](README.md) for the new usage.
+
+  See the documentation in [README.md](README.md) for the new usage.
 
 * Fix Grails 3 tests not executed - [Issue 75](https://github.com/bmuschko/gradle-clover-plugin/issues/75)
 * Fix Support for Clover history - [Issue 5](https://github.com/bmuschko/gradle-clover-plugin/issues/5)
@@ -36,6 +65,7 @@ See the documentation in [README.md](README.md) for the new usage.
 
 
 New properties supported in method context filtering.
+
 See the documentation in [README.md](README.md) for the new usage.
 * `maxComplexity`: Filter by cyclomatic complexity.
 * `maxStatements`: Filter by statements.

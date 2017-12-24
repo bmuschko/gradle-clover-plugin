@@ -15,6 +15,7 @@
  */
 package com.bmuschko.gradle.clover;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +23,8 @@ import java.util.regex.Pattern;
 
 import org.gradle.api.InvalidUserDataException;
 
-public class CloverReportColumn {
+public class CloverReportColumn implements Serializable {
+    private static final long serialVersionUID = 1L;
     public CloverReportColumn(String column, Map<String, String> attributes) {
         if (!validColumn(column)) {
             throw new InvalidUserDataException("Column '" + column + "' is not supported");

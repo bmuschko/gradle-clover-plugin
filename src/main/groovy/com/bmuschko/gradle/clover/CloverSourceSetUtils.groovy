@@ -17,15 +17,18 @@ package com.bmuschko.gradle.clover
 
 import com.bmuschko.gradle.clover.CloverSourceSet
 
+import groovy.transform.CompileStatic
+
 /**
  * Clover source set utilities.
  *
  * @author Benjamin Muschko
  */
+@CompileStatic
 final class CloverSourceSetUtils {
     private CloverSourceSetUtils() {}
 
-    static List<File> getSourceDirs(Set<CloverSourceSet> sourceSets) {
+    static List<File> getSourceDirs(Collection<CloverSourceSet> sourceSets) {
         def srcDirs = []
 
         sourceSets.each { sourceSet ->

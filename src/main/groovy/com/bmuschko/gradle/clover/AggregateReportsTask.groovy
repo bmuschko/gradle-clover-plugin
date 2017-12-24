@@ -15,15 +15,25 @@
  */
 package com.bmuschko.gradle.clover
 
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
+
 /**
  * Task for aggregrating Clover code coverage reports.
  *
  * @author Benjamin Muschko
  */
 class AggregateReportsTask extends CloverReportTask {
+    @Input
     List<File> subprojectBuildDirs
+    @Optional
+    @Input
     String filter
+    @Optional
+    @Input
     String testResultsDir
+    @Optional
+    @Input
     String testResultsInclude
 
     @Override

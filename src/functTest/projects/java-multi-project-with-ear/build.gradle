@@ -1,0 +1,66 @@
+
+apply from: '../deps.gradle'
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = 'UTF-8'
+    }
+    
+    tasks.withType(GroovyCompile) {
+        groovyOptions.encoding = 'UTF-8'
+        options.encoding = 'UTF-8'
+    }
+    
+    apply plugin: 'com.bmuschko.clover'
+
+    dependencies {
+        clover deps.clover
+    }
+
+    clover {
+        // Set the flush policy parameters for testing with a deployed application
+        flushinterval = 100
+        flushpolicy = 'threaded'
+
+        compiler {
+            encoding = 'UTF-8'
+        }
+
+        report {
+            json = true
+            html = true
+            pdf = true
+        }
+    }
+}
+
+project(':projectCar') {
+    apply plugin: 'java'
+    dependencies {
+        testCompile deps.junit
+    }
+    buildDir = new File(rootProject.buildDir, name)
+}
+
+project(':projectDriver') {
+    apply plugin: 'java'
+    dependencies {
+        compile project(':projectCar')
+        testCompile deps.junit
+    }
+    buildDir = new File(rootProject.buildDir, name)
+}
+
+project(':projectEar') {
+    apply plugin: 'ear'
+
+    dependencies {
+        deploy project(':projectDriver')
+        earlib project(':projectCar')
+    }
+    buildDir = new File(rootProject.buildDir, name)
+}

@@ -1,0 +1,37 @@
+plugins {
+    id 'com.bmuschko.clover'
+    id 'groovy'
+}
+
+apply from: '../deps.gradle'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile localGroovy()
+    testCompile deps.junit
+    clover deps.clover
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
+clover {
+    compiler {
+        encoding = 'UTF-8'
+    }
+
+    report {
+        json = true
+        html = true
+        pdf = true
+    }
+}

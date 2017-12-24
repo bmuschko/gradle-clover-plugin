@@ -1,0 +1,41 @@
+plugins {
+    id 'com.bmuschko.clover'
+    id 'groovy'
+}
+
+apply from: '../deps.gradle'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compile localGroovy()
+    testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+        exclude group: 'org.codehaus.groovy'
+    }
+    testCompile deps.junit
+    clover deps.clover
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
+clover {
+    compiler {
+        encoding = 'UTF-8'
+        debug = true
+    }
+
+    report {
+        json = true
+        html = true
+        pdf = true
+    }
+}

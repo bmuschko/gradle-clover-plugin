@@ -1,0 +1,54 @@
+plugins {
+    id 'com.bmuschko.clover'
+    id 'java'
+}
+
+apply from: '../deps.gradle'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    testCompile deps.junit
+    clover deps.clover
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
+clover {
+    contexts {
+        method {
+            name = 'main'
+            regexp = 'public static void main\\(String args\\[\\]\\).*'
+        }
+        method {
+            name = 'getters'
+            regexp = 'public [^\\s]+ get[A-Z][^\\s]+\\(\\)'
+            maxStatements = 1
+        }
+        method {
+            name = 'setters'
+            regexp = 'public void set[A-Z][^\\s]+\\(.+\\)'
+            maxStatements = 1
+        }
+    }
+
+    compiler {
+        encoding = 'UTF-8'
+    }
+
+    report {
+        filter = 'main,getters,setters'
+        json = true
+        html = true
+        pdf = true
+    }
+}

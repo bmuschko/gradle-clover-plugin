@@ -15,7 +15,10 @@
  */
 package com.bmuschko.gradle.clover;
 
-public class HistoricalMover {
+import java.io.Serializable;
+
+public class HistoricalMover implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int threshold = 1;
     private int range = 5;
     private String interval = null;

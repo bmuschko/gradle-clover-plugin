@@ -20,7 +20,7 @@
     </tr>
 </table>
 
-The plugin provides generation of code coverage reports using [Clover](http://www.atlassian.com/software/clover/).
+The plugin provides generation of code coverage reports using [OpenClover](http://openclover.org/).
 
 ## Usage
 
@@ -39,7 +39,7 @@ example on how to retrieve it from Bintray:
         }
 
         dependencies {
-            classpath 'com.bmuschko:gradle-clover-plugin:2.1.3'
+            classpath 'com.bmuschko:gradle-clover-plugin:2.2.0'
         }
     }
 
@@ -51,10 +51,7 @@ with a multi-module project make sure you apply the plugin and declare the `clov
     }
 
 With the introduction of the OpenClover support the `licenseLocation` clover convention is
-now completely optional. If specified the plugin will verify it is an existing file or URL
-location. If unspecified the default location `${project.rootDir}/clover.license` will be
-used only if the default is an existing file. Omitting the specification of the `licenseLocation`
-when the Atlassian Clover library is used will cause an error.
+now unused. For compatibility with existing clover Gradle configurations the plugin will accept a value set but will do nothing with it.
 
 ## Tasks
 
@@ -69,9 +66,8 @@ run from the root directory of your project and requires at least one submodule.
 * `initString`: The location to write the Clover coverage database (defaults to `.clover/clover.db`). The location you
 define will always be relative to the project's build directory.
 * `enabled`: Controls whether Clover will instrument code during code compilation (defaults to `true`).
-* `classesBackupDir`: The temporary backup directory for classes (defaults to `file("${sourceSets.main.classesDir}-bak")`).
-* `licenseLocation`: The [Clover license](http://confluence.atlassian.com/display/CLOVER/How+to+configure+your+clover.license)
-to be used (defaults to `'${project.rootDir}/clover.license'`). The location can either be a file or URL defined as String.
+* `classesBackupDir`: *Deprecated - this is not used anymore*
+* `licenseLocation`: *Deprecated - this is not used anymore*
 * `includes`: A list of String Ant Glob Patterns to include for instrumentation (defaults to `'**/*.java'` for Java projects, defaults
 to `'**/*.java'` and `'**/*.groovy'` for Groovy projects).
 * `excludes`: A list of String Ant Glob Patterns to exclude for instrumentation. By default no files are excluded.
@@ -94,7 +90,7 @@ location is `.clover/coverage.db.snapshot`.
 * `includeTasks`: A list of task names, allows to explicitly specify which test tasks should be introspected and used to gather coverage information - useful if there are more than one `Test` tasks in a project.
 * `excludeTasks`: A list of task names, allows to exclude test tasks from introspection and gathering coverage information - useful if there are more than one `Test` tasks in a project.
 * `instrumentLambda`: Controls which lambda types to instrument. [Expression lambdas may cause instrumentation to crash](https://confluence.atlassian.com/cloverkb/java-8-code-instrumented-by-clover-fails-to-compile-442270815.html).
-* `useClover3`: Controls the selection of the Clover 3 compatible Ant task resource file when the Clover dependency does not have a versioned artifact. Normally the correct value is determined by inspecting the version of the dependency artifact.
+* `useClover3`: *Deprecated - this is not used anymore*
 * `flushpolicy`: This String attribute controls how Clover flushes coverage data during a test run. Valid values are directed, interval, or threaded. [clover-setup Parameters](https://confluence.atlassian.com/clover/clover-setup-71600085.html#clover-setup-parametersParameters)
 * `flushinterval`: When the flushpolicy is set to interval or threaded this value is the minimum period between flush operations (in milliseconds). [clover-setup Parameters](https://confluence.atlassian.com/clover/clover-setup-71600085.html#clover-setup-parametersParameters)
 
@@ -162,12 +158,9 @@ The Clover plugin defines the following convention properties in the `clover` cl
 ### Example
 
     clover {
-        classesBackupDir = file("${sourceSets.main.classesDir}-backup")
-
-        // Now optional licenseLocation since we support OpenClover
-        licenseLocation = 'clover-license.txt'
         excludes = ['**/SynchronizedMultiValueMap.java']
 
+        // This is the default testIncludes configuration
         testIncludes = ['**/*Test.java', '**/*Spec.groovy']
         testExcludes = ['**/Mock*.java']
 
@@ -178,13 +171,26 @@ The Clover plugin defines the following convention properties in the `clover` cl
         // srcDirs and classesDir properties are required.
         // The syntax allows the following to occur as many times
         // as necessary to define each additional sourceSet.
+        // From version 3.0.0 and later the configuration is
+        // requiring the Gradle 4.0 outputDir for each language
+        // in the sourceSet. If you have Java and Groovy sourceSets
+        // you may need to specify each language in the sourceSet
+        // separately.
         additionalSourceSet {
-            srcDirs = sourceSets.generatedJava.allSource.srcDirs
-            classesDir = sourceSets.generatedJava.output.classesDir
+            srcDirs = sourceSets.generatedCode.java.srcDirs
+            classesDir = sourceSets.generatedCode.java.outputDir
+        }
+        additionalSourceSet {
+            srcDirs = sourceSets.generatedCode.groovy.srcDirs
+            classesDir = sourceSets.generatedCode.groovy.outputDir
         }
         additionalTestSourceSet {
-            srcDirs = sourceSets.integrationTest.allSource.srcDirs,
-            classesDir = sourceSets.integrationTest.output.classesDir
+            srcDirs = sourceSets.integrationTest.java.srcDirs,
+            classesDir = sourceSets.integrationTest.java.outputDir
+        }
+        additionalTestSourceSet {
+            srcDirs = sourceSets.integrationTest.groovy.srcDirs,
+            classesDir = sourceSets.integrationTest.groovy.outputDir
         }
 
         compiler {

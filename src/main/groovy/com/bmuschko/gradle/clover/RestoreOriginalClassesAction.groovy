@@ -3,11 +3,13 @@ package com.bmuschko.gradle.clover
 import org.gradle.api.Action
 import org.gradle.api.Task
 
+import groovy.transform.CompileStatic
+
 class RestoreOriginalClassesAction implements Action<Task> {
-    Set<CloverSourceSet> sourceSets
-    Set<CloverSourceSet> testSourceSets
+    List<CloverSourceSet> sourceSets
+    List<CloverSourceSet> testSourceSets
 
-
+    @CompileStatic
     @Override
     void execute(Task t) {
         def ant = new AntBuilder()
@@ -18,9 +20,12 @@ class RestoreOriginalClassesAction implements Action<Task> {
         moveAllBackupDirsToClassesDirs(ant, getTestSourceSets())
     }
 
-    private void deleteAllClassesDirectories(AntBuilder ant, Set<CloverSourceSet> sourceSets) {
+    @CompileStatic
+    private void deleteAllClassesDirectories(AntBuilder ant, List<CloverSourceSet> sourceSets) {
         for(CloverSourceSet sourceSet : sourceSets) {
-            deleteClassesDirectory(ant, sourceSet.classesDir)
+            if (CloverSourceSetUtils.existsDirectory(sourceSet.classesDir)) {
+                deleteClassesDirectory(ant, sourceSet.classesDir)
+            }
          }
     }
 
@@ -30,14 +35,15 @@ class RestoreOriginalClassesAction implements Action<Task> {
         }
     }
 
-    private void moveAllBackupDirsToClassesDirs(AntBuilder ant, Set<CloverSourceSet> sourceSets) {
+    @CompileStatic
+    private void moveAllBackupDirsToClassesDirs(AntBuilder ant, List<CloverSourceSet> sourceSets) {
         for(CloverSourceSet sourceSet : sourceSets) {
             moveBackupToClassesDir(ant, sourceSet.backupDir, sourceSet.classesDir)
         }
     }
 
     private void moveBackupToClassesDir(AntBuilder ant, File backupDir, File classesDir) {
-        if(CloverSourceSetUtils.existsDirectory(backupDir)) {
+        if (CloverSourceSetUtils.existsDirectory(backupDir)) {
             ant.move(file: backupDir.canonicalPath, tofile: classesDir.canonicalPath, failonerror: true)
          }
     }

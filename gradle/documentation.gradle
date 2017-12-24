@@ -1,0 +1,27 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath "org.ajoberstar:gradle-git-publish:0.3.2"
+    }
+}
+
+apply plugin: org.ajoberstar.gradle.git.publish.GitPublishPlugin
+
+gitPublish {
+    repoUri = 'https://github.com/bmuschko/gradle-clover-plugin.git'
+    branch = 'gh-pages'
+    
+    contents {
+        from(javadoc.outputs.files) {
+            into 'docs/javadoc'
+        }
+        from(groovydoc.outputs.files) {
+            into 'docs/groovydoc'
+        }
+    }
+}
+
+gitPublishPush.dependsOn javadoc, groovydoc

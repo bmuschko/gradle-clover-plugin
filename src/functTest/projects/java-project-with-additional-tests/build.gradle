@@ -1,0 +1,65 @@
+plugins {
+    id 'com.bmuschko.clover'
+    id 'java'
+}
+
+apply from: '../deps.gradle'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    testCompile deps.junit
+    clover deps.clover
+}
+
+sourceSets {
+    integTest {
+        java.srcDir file('src/integTest/java')
+        resources.srcDir file('src/integTest/resources')
+        compileClasspath = sourceSets.main.output + configurations.testRuntime
+        runtimeClasspath = output + compileClasspath
+    }
+}
+
+task integrationTest(type: Test, dependsOn: test) {
+    description = 'Runs the integration tests.'
+    group = 'verification'
+    if (gradle.gradleVersion.split('\\.')[0].toInteger() < 4)
+        testClassesDir = sourceSets.integTest.output.classesDir
+    else
+        testClassesDirs = sourceSets.integTest.output.classesDirs
+    classpath = sourceSets.integTest.runtimeClasspath
+}
+
+check.dependsOn integrationTest
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
+clover {
+    additionalTestSourceSet {
+        srcDirs = sourceSets.integTest.java.srcDirs
+        if (gradle.gradleVersion.split('\\.')[0].toInteger() < 4)
+            classesDir = sourceSets.integTest.output.classesDir
+        else
+            classesDir = sourceSets.integTest.java.outputDir
+    }
+
+    compiler {
+        encoding = 'UTF-8'
+    }
+
+    report {
+        json = true
+        html = true
+        pdf = true
+    }
+}

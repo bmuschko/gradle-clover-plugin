@@ -44,20 +44,19 @@ abstract class CloverReportTask extends DefaultTask {
     @OutputDirectory
     File reportsDir
 
-    /**
-     * Optional Clover license file.
-     */
-    @Optional
-    @InputFile
-    File licenseFile
-
     // Enabled report types.
+    @Input
     Boolean xml
+    @Input
     Boolean json
+    @Input
     Boolean html
+    @Input
     Boolean pdf
+    @Input
     Boolean historical
 
+    @Input
     Collection<CloverReportColumn> additionalColumns
     
     /**
@@ -67,12 +66,24 @@ abstract class CloverReportTask extends DefaultTask {
     File historyDir
 
     // Historical report parameters.
+    @Optional
+    @Input
     String historyIncludes
+    @Optional
+    @Input
     String packageFilter
+    @Optional
+    @Input
     String from
+    @Optional
+    @Input
     String to
+    @Optional
+    @Input
     HistoricalAdded added
-    List<HistoricalMover> movers
+    @Optional
+    @Input
+    Collection<HistoricalMover> movers
 
     /**
      * Checks to see if at least on report type is selected.
@@ -233,8 +244,6 @@ abstract class CloverReportTask extends DefaultTask {
      */
     private void initAntTasks() {
         ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-        if (getLicenseFile() != null)
-            ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
     }
 
     @TaskAction

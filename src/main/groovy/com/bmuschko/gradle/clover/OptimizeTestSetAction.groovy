@@ -38,12 +38,10 @@ import org.gradle.api.tasks.Optional
 class OptimizeTestSetAction implements Action<Task>, Spec<FileTreeElement> {
     String initString
     boolean optimizeTests
-    boolean useClover3
     FileCollection cloverClasspath
-    @Optional @InputFile File licenseFile
     @Optional @InputFile File snapshotFile
     @InputDirectory File buildDir
-    @Input Set<CloverSourceSet> testSourceSets
+    @Input List<CloverSourceSet> testSourceSets
     Set<String> includes
 
     @Override
@@ -56,10 +54,8 @@ class OptimizeTestSetAction implements Action<Task>, Spec<FileTreeElement> {
             log.info 'Optimizing test set.'
 
             def ant = new AntBuilder()
-            def resource = getUseClover3() ? 'cloverjunitlib.xml' : 'cloverlib.xml'
+            def resource = 'cloverlib.xml'
             ant.taskdef(resource: resource, classpath: getCloverClasspath().asPath)
-            if (getLicenseFile() != null)
-                ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
             ant.property(name: 'clover.initstring', value: "${getBuildDir()}/${getInitString()}")
             List<File> testSrcDirs = CloverSourceSetUtils.getSourceDirs(getTestSourceSets())
             def testset = ant."clover-optimized-testset"(snapshotFile: getSnapshotFile(), debug: true) {
@@ -79,7 +75,7 @@ class OptimizeTestSetAction implements Action<Task>, Spec<FileTreeElement> {
 
     @Override
     boolean isSatisfiedBy(FileTreeElement element) {
-        if(includes != null && !element.directory) {
+        if (includes != null && !element.directory) {
             def match = includes.find {
                 element.file.path.endsWith(it)
             }

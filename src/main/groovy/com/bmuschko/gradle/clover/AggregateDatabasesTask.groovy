@@ -23,13 +23,6 @@ class AggregateDatabasesTask extends DefaultTask {
     @Input
     String initString
 
-    /**
-     * Optional Clover license file.
-     */
-    @Optional
-    @InputFile
-    File licenseFile
-
     @InputFiles
     List<File> cloverDbFiles = new ArrayList<File>()
 
@@ -47,8 +40,6 @@ class AggregateDatabasesTask extends DefaultTask {
     void aggregateDatabases() {
         if (existsAtLeastOneCloverDbFile(cloverDbFiles)) {
             ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-            if (getLicenseFile() != null)
-                ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
 
             ant.'clover-merge'(initString: aggregationFile.canonicalPath) {
                 cloverDbFiles.each { cloverDbFile ->

@@ -1,0 +1,96 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+    }
+}
+
+apply plugin: 'maven-publish'
+apply plugin: com.jfrog.bintray.gradle.BintrayPlugin
+//apply plugin: 'com.jfrog.bintray'
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+            artifact groovydocJar
+            artifact javadocJar
+
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('name', 'Gradle Clover plugin')
+                root.appendNode('description', 'Gradle plugin for generating a code coverage report using Clover.')
+                root.appendNode('url', 'https://github.com/bmuschko/gradle-clover-plugin')
+                root.appendNode('inceptionYear', '2012')
+
+                def scm = root.appendNode('scm')
+                scm.appendNode('url', 'https://github.com/bmuschko/gradle-clover-plugin')
+                scm.appendNode('connection', 'scm:https://bmuschko@github.com/bmuschko/gradle-clover-plugin.git')
+                scm.appendNode('developerConnection', 'scm:git://github.com/bmuschko/gradle-clover-plugin.git')
+
+                def license = root.appendNode('licenses').appendNode('license')
+                license.appendNode('name', 'The Apache Software License, Version 2.0')
+                license.appendNode('url', 'http://www.apache.org/licenses/LICENSE-2.0.txt')
+                license.appendNode('distribution', 'repo')
+
+                def developers = root.appendNode('developers')
+                def bmuschko = developers.appendNode('developer')
+                bmuschko.appendNode('id', 'bmuschko')
+                bmuschko.appendNode('name', 'Benjamin Muschko')
+                bmuschko.appendNode('email', 'benjamin.muschko@gmail.com')
+            }
+        }
+    }
+}
+
+bintray {
+    user = resolveProperty('BINTRAY_USER', 'bintrayUser')
+    key = resolveProperty('BINTRAY_KEY', 'bintrayKey')
+    publications = ['mavenJava']
+    publish = true
+
+    pkg {
+        repo = 'gradle-plugins'
+        name = 'com.bmuschko:gradle-clover-plugin'
+        desc = 'Gradle plugin for generating a code coverage report using Clover.'
+        websiteUrl = "https://github.com/bmuschko/${project.name}"
+        issueTrackerUrl = "https://github.com/bmuschko/${project.name}/issues"
+        vcsUrl = "https://github.com/bmuschko/${project.name}.git"
+        licenses = ['Apache-2.0']
+        labels = ['gradle', 'code', 'coverage', 'metrics', 'test', 'report', 'clover']
+        publicDownloadNumbers = true
+        githubRepo = "bmuschko/${project.name}"
+        githubReleaseNotesFile = 'RELEASE_NOTES.md'
+
+        version {
+            released  = new Date()
+            vcsTag = "v$project.version"
+            attributes = ['gradle-plugin': "com.bmuschko.clover:${project.group}:${project.name}"]
+
+            gpg {
+                sign = true
+                passphrase = resolveProperty('GPG_PASSPHRASE', 'gpgPassphrase')
+            }
+            mavenCentralSync {
+                sync = true 
+                user = resolveProperty('MAVEN_CENTRAL_USER_TOKEN', 'mavenCentralUserToken')
+                password = resolveProperty('MAVEN_CENTRAL_PASSWORD', 'mavenCentralPassword')
+                close = '1' 
+            } 
+        }
+    }
+}
+
+String resolveProperty(String envVarKey, String projectPropKey) {
+    String propValue = System.getenv()[envVarKey]
+
+    if(propValue) {
+        return propValue
+    }
+
+    hasProperty(projectPropKey) ? getProperty(projectPropKey) : null
+}

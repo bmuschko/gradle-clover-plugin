@@ -4,12 +4,21 @@ install: true
 jdk:
   - oraclejdk8
 
-script:
-  - GRADLE_OPTS=-Dfile.encoding=windows-1252 ./gradlew clean build --stacktrace --no-daemon
+jobs:
+  include:
+    - stage: all tests
+      script: GRADLE_OPTS=-Dfile.encoding=windows-1252 ./gradlew clean build --stacktrace --no-daemon
+    - stage: release
+      script: skip
+      deploy:
+        provider: script
+        script: ./gradlew --stacktrace clean assemble bintrayUpload gitPublishPush -Dorg.ajoberstar.grgit.auth.username=bmuschko -Dorg.ajoberstar.grgit.auth.password=$GH_TOKEN
+        on:
+          tags: true
 
 before_cache:
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-  - find $HOME/.gradle/caches -name '*.lock' | rm -f
+  - find $HOME/.gradle/caches -name '*.lock' | xargs rm -f
 
 cache:
   directories:

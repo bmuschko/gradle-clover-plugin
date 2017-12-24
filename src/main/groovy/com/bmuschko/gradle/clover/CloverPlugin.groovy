@@ -15,7 +15,8 @@
  */
 package com.bmuschko.gradle.clover
 
-import com.bmuschko.gradle.clover.internal.LicenseResolverFactory
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -52,6 +53,7 @@ class CloverPlugin implements Plugin<Project> {
     static final String DEFAULT_CLOVER_SNAPSHOT = '.clover/coverage.db.snapshot'
     static final String DEFAULT_CLOVER_HISTORY_DIR = '.clover/historypoints'
 
+    @CompileStatic
     @Override
     void apply(Project project) {
         project.configurations.create(CONFIGURATION_NAME).setVisible(false).setTransitive(true)
@@ -70,7 +72,6 @@ class CloverPlugin implements Plugin<Project> {
         project.tasks.withType(AggregateDatabasesTask) {
             conventionMapping.with {
                 map('initString') { getInitString(cloverPluginConvention) }
-                map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
                 map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
             }
         }
@@ -81,14 +82,17 @@ class CloverPlugin implements Plugin<Project> {
         aggregateDatabasesTask
     }
 
+    @CompileStatic
     private void configureActions(Project project, CloverPluginConvention cloverPluginConvention, AggregateDatabasesTask aggregateDatabasesTask) {
+        SourceSetsResolver resolver = new SourceSetsResolver(project, cloverPluginConvention)
+
         project.tasks.withType(Test) { Test test ->
             // If it is too late for afterEvaluate configure now
             if (project.state.executed) {
-                configureActionsForTask(test, project, cloverPluginConvention, aggregateDatabasesTask)
+                configureActionsForTask(test, project, cloverPluginConvention, resolver, aggregateDatabasesTask)
             } else {
                 project.afterEvaluate {
-                    configureActionsForTask(test, project, cloverPluginConvention, aggregateDatabasesTask)
+                    configureActionsForTask(test, project, cloverPluginConvention, resolver, aggregateDatabasesTask)
                 }
             }
             // If we are generating instrumented JAR files make sure the Jar
@@ -102,99 +106,105 @@ class CloverPlugin implements Plugin<Project> {
         }
     }
 
+    @CompileStatic
     private boolean testTaskEnabled(Test test, CloverPluginConvention cloverPluginConvention) {
         !((cloverPluginConvention.includeTasks && !(test.name in cloverPluginConvention.includeTasks)) || test.name in cloverPluginConvention.excludeTasks)
     }
 
-    private void configureActionsForTask(Test test, Project project, CloverPluginConvention cloverPluginConvention, AggregateDatabasesTask aggregateDatabasesTask) {
+    @CompileStatic
+    private void configureActionsForTask(Test test, Project project, CloverPluginConvention cloverPluginConvention, SourceSetsResolver resolver, AggregateDatabasesTask aggregateDatabasesTask) {
         if (testTaskEnabled(test, cloverPluginConvention)) {
             test.classpath += project.configurations.getByName(CONFIGURATION_NAME).asFileTree
-            OptimizeTestSetAction optimizeTestSetAction = createOptimizeTestSetAction(cloverPluginConvention, project, test)
+            OptimizeTestSetAction optimizeTestSetAction = createOptimizeTestSetAction(cloverPluginConvention, project, resolver, test)
             test.doFirst optimizeTestSetAction // add first, gets executed second
-            test.doFirst createInstrumentCodeAction(cloverPluginConvention, project, test) // add second, gets executed first
+            test.doFirst createInstrumentCodeAction(cloverPluginConvention, project, resolver, test) // add second, gets executed first
             test.include optimizeTestSetAction // action is also a file inclusion spec
             test.doLast createCreateSnapshotAction(cloverPluginConvention, project, test)
             if (project.hasProperty('cloverInstrumentedJar')) {
                 log.info "Skipping RestoreOriginalClassesAction for {} to generate instrumented JAR", test
             } else {
-                test.doLast createRestoreOriginalClassesAction(cloverPluginConvention, project, test)
+                test.doLast createRestoreOriginalClassesAction(resolver, test)
             }
             aggregateDatabasesTask.aggregate(test)
         }
     }
 
-    private RestoreOriginalClassesAction createRestoreOriginalClassesAction(CloverPluginConvention cloverPluginConvention, Project project, Test testTask) {
+    private RestoreOriginalClassesAction createRestoreOriginalClassesAction(SourceSetsResolver resolver, Test testTask) {
         RestoreOriginalClassesAction restoreOriginalClassesAction = createInstance(RestoreOriginalClassesAction)
-        restoreOriginalClassesAction.conventionMapping.map('sourceSets') { getSourceSets(project, cloverPluginConvention) }
-        restoreOriginalClassesAction.conventionMapping.map('testSourceSets') { getTestSourceSets(project, cloverPluginConvention) }
-
+        restoreOriginalClassesAction.conventionMapping.with {
+            map('sourceSets') { resolver.getSourceSets() }
+            map('testSourceSets') { resolver.getTestSourceSets() }
+        }
         restoreOriginalClassesAction
     }
 
     private CreateSnapshotAction createCreateSnapshotAction(CloverPluginConvention cloverPluginConvention, Project project, Test testTask) {
         CreateSnapshotAction createSnapshotAction = createInstance(CreateSnapshotAction)
-        createSnapshotAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention, testTask) }
-        createSnapshotAction.conventionMapping.map('optimizeTests') { cloverPluginConvention.optimizeTests }
-        createSnapshotAction.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, true, testTask) }
-        createSnapshotAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
-        createSnapshotAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
-        createSnapshotAction.conventionMapping.map('buildDir') { project.buildDir }
+        createSnapshotAction.conventionMapping.with {
+            map('initString') { getInitString(cloverPluginConvention, testTask) }
+            map('optimizeTests') { cloverPluginConvention.optimizeTests }
+            map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, true, testTask) }
+            map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
+            map('buildDir') { project.buildDir }
+        }
         createSnapshotAction
     }
 
-    private OptimizeTestSetAction createOptimizeTestSetAction(CloverPluginConvention cloverPluginConvention, Project project, Test testTask) {
+    private OptimizeTestSetAction createOptimizeTestSetAction(CloverPluginConvention cloverPluginConvention, Project project, SourceSetsResolver resolver, Test testTask) {
         OptimizeTestSetAction optimizeTestSetAction = createInstance(OptimizeTestSetAction)
-        optimizeTestSetAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention, testTask) }
-        optimizeTestSetAction.conventionMapping.map('optimizeTests') { cloverPluginConvention.optimizeTests }
-        optimizeTestSetAction.conventionMapping.map('useClover3') { useClover3(project, cloverPluginConvention) }
-        optimizeTestSetAction.conventionMapping.map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, false, testTask) }
-        optimizeTestSetAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
-        optimizeTestSetAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
-        optimizeTestSetAction.conventionMapping.map('testSourceSets') { getTestSourceSets(project, cloverPluginConvention) }
-        optimizeTestSetAction.conventionMapping.map('buildDir') { project.buildDir }
+        optimizeTestSetAction.conventionMapping.with {
+            map('initString') { getInitString(cloverPluginConvention, testTask) }
+            map('optimizeTests') { cloverPluginConvention.optimizeTests }
+            map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, false, testTask) }
+            map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
+            map('testSourceSets') { resolver.getTestSourceSets() }
+            map('buildDir') { project.buildDir }
+        }
         optimizeTestSetAction
     }
 
-    private InstrumentCodeAction createInstrumentCodeAction(CloverPluginConvention cloverPluginConvention, Project project, Test testTask) {
+    private InstrumentCodeAction createInstrumentCodeAction(CloverPluginConvention cloverPluginConvention, Project project, SourceSetsResolver resolver, Test testTask) {
         InstrumentCodeAction instrumentCodeAction = createInstance(InstrumentCodeAction)
-        instrumentCodeAction.conventionMapping.map('initString') { getInitString(cloverPluginConvention, testTask) }
-        instrumentCodeAction.conventionMapping.map('enabled') { cloverPluginConvention.enabled }
-        instrumentCodeAction.conventionMapping.map('compileGroovy') { hasGroovyPlugin(project) }
-        instrumentCodeAction.conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
-        instrumentCodeAction.conventionMapping.map('testRuntimeClasspath') { getTestRuntimeClasspath(project, testTask).asFileTree }
-        instrumentCodeAction.conventionMapping.map('groovyClasspath') { getGroovyClasspath(project) }
-        instrumentCodeAction.conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
-        instrumentCodeAction.conventionMapping.map('buildDir') { project.buildDir }
-        instrumentCodeAction.conventionMapping.map('sourceSets') { getSourceSets(project, cloverPluginConvention) }
-        instrumentCodeAction.conventionMapping.map('testSourceSets') { getTestSourceSets(project, cloverPluginConvention) }
-        instrumentCodeAction.conventionMapping.map('sourceCompatibility') { project.sourceCompatibility?.toString() }
-        instrumentCodeAction.conventionMapping.map('targetCompatibility') { project.targetCompatibility?.toString() }
-        instrumentCodeAction.conventionMapping.map('includes') { getIncludes(project, cloverPluginConvention) }
-        instrumentCodeAction.conventionMapping.map('excludes') { cloverPluginConvention.excludes }
-        instrumentCodeAction.conventionMapping.map('testIncludes') { getTestIncludes(project, cloverPluginConvention) }
-        instrumentCodeAction.conventionMapping.map('testExcludes') { getTestExcludes(project, cloverPluginConvention) }
-        instrumentCodeAction.conventionMapping.map('statementContexts') { cloverPluginConvention.contexts.statements }
-        instrumentCodeAction.conventionMapping.map('methodContexts') { cloverPluginConvention.contexts.methods }
-        instrumentCodeAction.conventionMapping.map('executable') { cloverPluginConvention.compiler.executable?.absolutePath }
-        instrumentCodeAction.conventionMapping.map('encoding') { cloverPluginConvention.compiler.encoding }
-        instrumentCodeAction.conventionMapping.map('instrumentLambda') { cloverPluginConvention.instrumentLambda }
-        instrumentCodeAction.conventionMapping.map('debug') { cloverPluginConvention.compiler.debug }
-        instrumentCodeAction.conventionMapping.map('flushinterval') { cloverPluginConvention.flushinterval }
-        instrumentCodeAction.conventionMapping.map('flushpolicy') { cloverPluginConvention.flushpolicy.name() }
-        instrumentCodeAction.conventionMapping.map('additionalArgs') { cloverPluginConvention.compiler.additionalArgs }
+        instrumentCodeAction.conventionMapping.with {
+            map('initString') { getInitString(cloverPluginConvention, testTask) }
+            map('enabled') { cloverPluginConvention.enabled }
+            map('compileGroovy') { hasGroovyPlugin(project) }
+            map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
+            map('testRuntimeClasspath') { getTestRuntimeClasspath(project, testTask).asFileTree }
+            map('groovyClasspath') { getGroovyClasspath(project) }
+            map('buildDir') { project.buildDir }
+            map('sourceSets') { resolver.getSourceSets() }
+            map('testSourceSets') { resolver.getTestSourceSets() }
+            map('sourceCompatibility') { project.sourceCompatibility?.toString() }
+            map('targetCompatibility') { project.targetCompatibility?.toString() }
+            map('includes') { getIncludes(project, cloverPluginConvention) }
+            map('excludes') { cloverPluginConvention.excludes }
+            map('testIncludes') { getTestIncludes(project, cloverPluginConvention) }
+            map('testExcludes') { getTestExcludes(project, cloverPluginConvention) }
+            map('statementContexts') { cloverPluginConvention.contexts.statements }
+            map('methodContexts') { cloverPluginConvention.contexts.methods }
+            map('executable') { cloverPluginConvention.compiler.executable?.absolutePath }
+            map('encoding') { cloverPluginConvention.compiler.encoding }
+            map('instrumentLambda') { cloverPluginConvention.instrumentLambda }
+            map('debug') { cloverPluginConvention.compiler.debug }
+            map('flushinterval') { cloverPluginConvention.flushinterval }
+            map('flushpolicy') { cloverPluginConvention.flushpolicy.name() }
+            map('additionalArgs') { cloverPluginConvention.compiler.additionalArgs }
+        }
         instrumentCodeAction
     }
 
     private void configureGenerateCoverageReportTask(Project project, CloverPluginConvention cloverPluginConvention, AggregateDatabasesTask aggregateDatabasesTask) {
         project.tasks.withType(GenerateCoverageReportTask) { GenerateCoverageReportTask generateCoverageReportTask ->
             dependsOn aggregateDatabasesTask
-            conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
-            conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
-            conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
-            conventionMapping.map('targetPercentage') { cloverPluginConvention.targetPercentage }
-            conventionMapping.map('filter') { cloverPluginConvention.report.filter }
-            conventionMapping.map('testResultsDir') { cloverPluginConvention.report.testResultsDir }
-            conventionMapping.map('testResultsInclude') { cloverPluginConvention.report.testResultsInclude }
+            conventionMapping.with {
+                map('initString') { getInitString(cloverPluginConvention) }
+                map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
+                map('targetPercentage') { cloverPluginConvention.targetPercentage }
+                map('filter') { cloverPluginConvention.report.filter }
+                map('testResultsDir') { cloverPluginConvention.report.testResultsDir }
+                map('testResultsInclude') { cloverPluginConvention.report.testResultsInclude }
+            }
             setCloverReportConventionMappings(project, cloverPluginConvention, generateCoverageReportTask)
         }
 
@@ -205,13 +215,14 @@ class CloverPlugin implements Plugin<Project> {
 
     private void configureAggregateReportsTask(Project project, CloverPluginConvention cloverPluginConvention) {
         project.tasks.withType(AggregateReportsTask) { AggregateReportsTask aggregateReportsTask ->
-            conventionMapping.map('initString') { getInitString(cloverPluginConvention) }
-            conventionMapping.map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
-            conventionMapping.map('licenseFile') { getLicenseFile(project, cloverPluginConvention) }
-            conventionMapping.map('subprojectBuildDirs') { project.subprojects.collect { it.buildDir } }
-            conventionMapping.map('filter') { cloverPluginConvention.report.filter }
-            conventionMapping.map('testResultsDir') { cloverPluginConvention.report.testResultsDir }
-            conventionMapping.map('testResultsInclude') { cloverPluginConvention.report.testResultsInclude }
+            conventionMapping.with {
+                map('initString') { getInitString(cloverPluginConvention) }
+                map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
+                map('subprojectBuildDirs') { project.subprojects.collect { it.buildDir } }
+                map('filter') { cloverPluginConvention.report.filter }
+                map('testResultsDir') { cloverPluginConvention.report.testResultsDir }
+                map('testResultsInclude') { cloverPluginConvention.report.testResultsInclude }
+            }
             setCloverReportConventionMappings(project, cloverPluginConvention, aggregateReportsTask)
         }
 
@@ -262,6 +273,7 @@ class CloverPlugin implements Plugin<Project> {
      * @param clazz the type of object to create
      * @return an instance of the specified type
      */
+    @CompileStatic
     private createInstance(Class clazz) {
         AsmBackedClassGenerator generator = new AsmBackedClassGenerator()
         Class instrumentClass = generator.generate(clazz)
@@ -275,37 +287,14 @@ class CloverPlugin implements Plugin<Project> {
      * @param cloverPluginConvention Clover plugin convention
      * @return Init String
      */
+    @CompileStatic
     private String getInitString(CloverPluginConvention cloverPluginConvention) {
         cloverPluginConvention.initString ?: DEFAULT_CLOVER_DATABASE
     }
 
+    @CompileStatic
     private String getInitString(CloverPluginConvention cloverPluginConvention, Test testTask) {
         "${getInitString(cloverPluginConvention)}-${testTask.name}"
-    }
-
-    /**
-     * Gets Clover license file.
-     *
-     * @param project Project
-     * @param cloverPluginConvention Clover plugin convention
-     * @return License file
-     */
-    private File getLicenseFile(Project project, CloverPluginConvention cloverPluginConvention) {
-        LicenseResolverFactory.instance.getResolver(cloverPluginConvention.licenseLocation).resolve(project.rootDir, cloverPluginConvention.licenseLocation)
-    }
-
-    private boolean useClover3(Project project, CloverPluginConvention cloverPluginConvention) {
-        if (cloverPluginConvention.useClover3 != null) {
-            log.info "Using user supplied preference for useClover3: {}", cloverPluginConvention.useClover3
-            return cloverPluginConvention.useClover3.toBoolean()
-        }
-
-        def artifacts = project.configurations.getByName(CONFIGURATION_NAME).resolvedConfiguration.resolvedArtifacts
-        assert artifacts.size() == 1
-
-        def result = artifacts.iterator().next().moduleVersion.id.version.startsWith('3.')
-        log.info "Using detected version to assign useClover3: {}", result
-        return result
     }
 
     /**
@@ -316,6 +305,7 @@ class CloverPlugin implements Plugin<Project> {
      * @param force if true, return the snapshot file even if it doesn't exist; if false, don't return the snapshot file if it doesn't exist
      * @return the Clover snapshot file location
      */
+    @CompileStatic
     private File getSnapshotFile(Project project, CloverPluginConvention cloverPluginConvention, boolean force, Test testTask) {
         File file = cloverPluginConvention.snapshotFile != null && cloverPluginConvention.snapshotFile != '' ?
             project.file("${cloverPluginConvention.snapshotFile}-${testTask.name}") :
@@ -330,6 +320,7 @@ class CloverPlugin implements Plugin<Project> {
      * @param cloverPluginConvention Clover plugin convention
      * @return the Clover history directory location
      */
+    @CompileStatic
     private File getHistoryDir(Project project, CloverPluginConvention cloverPluginConvention) {
         File file = cloverPluginConvention.historyDir != null && cloverPluginConvention.historyDir != '' ?
             project.file(cloverPluginConvention.historyDir) :
@@ -337,101 +328,142 @@ class CloverPlugin implements Plugin<Project> {
         return file
     }
 
-    private Set<CloverSourceSet> getSourceSets(Project project, CloverPluginConvention cloverPluginConvention) {
-        def sourceSets = []
-
-        Callable<FileCollection> classpathProvider = new Callable<FileCollection>() {
-            FileCollection call() {
-                project.sourceSets.main.getCompileClasspath() + project.configurations.getByName(CONFIGURATION_NAME)
-            }
-        }
-
-         if(hasGroovyPlugin(project)) {
-            CloverSourceSet cloverSourceSet = new CloverSourceSet()
-            cloverSourceSet.srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.main.java.srcDirs))
-            cloverSourceSet.srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.main.groovy.srcDirs))
-            cloverSourceSet.classesDir = project.sourceSets.main.output.classesDir
-            cloverSourceSet.backupDir = cloverPluginConvention.classesBackupDir ?: new File("${project.sourceSets.main.output.classesDir}-bak")
-            cloverSourceSet.classpathProvider = classpathProvider
-            sourceSets << cloverSourceSet
-         }
-        else if(hasJavaPlugin(project)) {
-            CloverSourceSet cloverSourceSet = new CloverSourceSet()
-            cloverSourceSet.srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.main.java.srcDirs))
-            cloverSourceSet.classesDir = project.sourceSets.main.output.classesDir
-            cloverSourceSet.backupDir = cloverPluginConvention.classesBackupDir ?: new File("${project.sourceSets.main.output.classesDir}-bak")
-            cloverSourceSet.classpathProvider = classpathProvider
-            sourceSets << cloverSourceSet
-         }
-
-        if(cloverPluginConvention.additionalSourceSets) {
-            cloverPluginConvention.additionalSourceSets.each { additionalSourceSet ->
-                additionalSourceSet.backupDir = cloverPluginConvention.classesBackupDir ?: new File("${additionalSourceSet.classesDir}-bak")
-                additionalSourceSet.classpathProvider = classpathProvider
-                sourceSets << additionalSourceSet
-            }
-         }
-
-        sourceSets
-     }
-
-    private Set<CloverSourceSet> getTestSourceSets(Project project, CloverPluginConvention cloverPluginConvention) {
-        def testSourceSets = []
-
-        Callable<FileCollection> classpathProvider = new Callable<FileCollection>() {
-            FileCollection call() {
-                project.sourceSets.test.getCompileClasspath() + project.configurations.getByName(CONFIGURATION_NAME)
-            }
-        }
-
-         if(hasGroovyPlugin(project)) {
-            CloverSourceSet cloverSourceSet = new CloverSourceSet()
-            cloverSourceSet.srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.test.java.srcDirs))
-            cloverSourceSet.srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.test.groovy.srcDirs))
-            cloverSourceSet.classesDir = project.sourceSets.test.output.classesDir
-            cloverSourceSet.backupDir = cloverPluginConvention.testClassesBackupDir ?: new File("${project.sourceSets.test.output.classesDir}-bak")
-            cloverSourceSet.classpathProvider = classpathProvider
-            testSourceSets << cloverSourceSet
-         }
-         else if(hasJavaPlugin(project)) {
-            CloverSourceSet cloverSourceSet = new CloverSourceSet()
-            cloverSourceSet.srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.test.java.srcDirs))
-            cloverSourceSet.classesDir = project.sourceSets.test.output.classesDir
-            cloverSourceSet.backupDir = cloverPluginConvention.testClassesBackupDir ?: new File("${project.sourceSets.test.output.classesDir}-bak")
-            cloverSourceSet.classpathProvider = classpathProvider
-            testSourceSets << cloverSourceSet
-         }
-
-        if(cloverPluginConvention.additionalTestSourceSets) {
-            cloverPluginConvention.additionalTestSourceSets.each { additionalTestSourceSet ->
-                additionalTestSourceSet.backupDir = cloverPluginConvention.classesBackupDir ?: new File("${additionalTestSourceSet.classesDir}-bak")
-                additionalTestSourceSet.classpathProvider = classpathProvider
-                testSourceSets << additionalTestSourceSet
-            }
-         }
-
-        testSourceSets
-     }
-
-    private Set<File> filterNonExistentDirectories(Set<File> dirs) {
-        dirs.findAll { it.exists() }
-    }
-
-
     /**
-     * Adds source directories to target Set only if they actually exist.
-     *
-     * @param target Target
-     * @param source Source
+     * This construct avoids multiple evaluations of the source sets collections.
+     * Without this each convention call to get the source sets will repeat the
+     * computation giving back the same results.
      */
-    private void addExistingSourceDirectories(Set<File> target, Set<File> source) {
-        source.each {
-            if(it.exists()) {
-                target << it
+    @CompileStatic
+    private class SourceSetsResolver {
+        private final Project project
+        private final CloverPluginConvention cloverPluginConvention
+        private final boolean gradleLessThan4
+
+        SourceSetsResolver(Project project, CloverPluginConvention cloverPluginConvention) {
+            this.project = project
+            this.cloverPluginConvention = cloverPluginConvention
+            gradleLessThan4 = project.gradle.gradleVersion.split('\\.')[0].toInteger() < 4
+        }
+
+        List<CloverSourceSet> sourceSets = null
+        @CompileDynamic
+        synchronized List<CloverSourceSet> getSourceSets() {
+            if (sourceSets != null) {
+                return sourceSets
             }
-            else {
-                log.info "The specified source directory '$it.canonicalPath' does not exist. It won't be included in Clover instrumentation."
+
+            sourceSets = new ArrayList<CloverSourceSet>()
+            Callable<FileCollection> classpathCallable = new Callable<FileCollection>() {
+                FileCollection call() {
+                    project.sourceSets.main.getCompileClasspath() + project.configurations.getByName(CONFIGURATION_NAME)
+                }
             }
+
+            if (hasJavaPlugin(project)) {
+                CloverSourceSet cloverSourceSet = new CloverSourceSet(false)
+                cloverSourceSet.with {
+                    srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.main.java.srcDirs))
+                    if (gradleLessThan4) {
+                        classesDir = project.sourceSets.main.output.classesDir
+                    } else {
+                        classesDir = project.sourceSets.main.java.outputDir
+                    }
+                    classpathProvider = classpathCallable
+                }
+                sourceSets << cloverSourceSet
+            }
+
+            if (hasGroovyPlugin(project)) {
+                CloverSourceSet cloverSourceSet = new CloverSourceSet(true)
+                cloverSourceSet.with {
+                    srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.main.groovy.srcDirs))
+                    if (gradleLessThan4) {
+                        classesDir = project.sourceSets.main.output.classesDir
+                    } else {
+                        classesDir = project.sourceSets.main.groovy.outputDir
+                    }
+                    classpathProvider = classpathCallable
+                }
+                sourceSets << cloverSourceSet
+            }
+
+            if (cloverPluginConvention.additionalSourceSets) {
+                cloverPluginConvention.additionalSourceSets.each { additionalSourceSet ->
+                    additionalSourceSet.groovy = hasGroovySource(project, additionalSourceSet.srcDirs)
+                    additionalSourceSet.classpathProvider = classpathCallable
+                    sourceSets << additionalSourceSet
+                }
+            }
+
+            sourceSets
+        }
+
+        List<CloverSourceSet> testSourceSets = null
+        @CompileDynamic
+        synchronized List<CloverSourceSet> getTestSourceSets() {
+            if (testSourceSets != null) {
+                return testSourceSets
+            }
+
+            testSourceSets = new ArrayList<CloverSourceSet>()
+            Callable<FileCollection> classpathCallable = new Callable<FileCollection>() {
+                FileCollection call() {
+                    project.sourceSets.test.getCompileClasspath() + project.configurations.getByName(CONFIGURATION_NAME)
+                }
+            }
+
+            if (hasJavaPlugin(project)) {
+                CloverSourceSet cloverSourceSet = new CloverSourceSet(false)
+                cloverSourceSet.with {
+                    srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.test.java.srcDirs))
+                    if (gradleLessThan4) {
+                        classesDir = project.sourceSets.test.output.classesDir
+                    } else {
+                        classesDir = project.sourceSets.test.java.outputDir
+                    }
+                    classpathProvider = classpathCallable
+                }
+                testSourceSets << cloverSourceSet
+            }
+
+            if (hasGroovyPlugin(project)) {
+                CloverSourceSet cloverSourceSet = new CloverSourceSet(true)
+                cloverSourceSet.with {
+                    srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.test.groovy.srcDirs))
+                    if (gradleLessThan4) {
+                        classesDir = project.sourceSets.test.output.classesDir
+                    } else {
+                        classesDir = project.sourceSets.test.groovy.outputDir
+                    }
+                    classpathProvider = classpathCallable
+                }
+                testSourceSets << cloverSourceSet
+            }
+
+            if (cloverPluginConvention.additionalTestSourceSets) {
+                cloverPluginConvention.additionalTestSourceSets.each { additionalTestSourceSet ->
+                    additionalTestSourceSet.groovy = hasGroovySource(project, additionalTestSourceSet.srcDirs)
+                    additionalTestSourceSet.classpathProvider = classpathCallable
+                    testSourceSets << additionalTestSourceSet
+                }
+            }
+
+            testSourceSets
+        }
+
+        @CompileStatic
+        private boolean hasGroovySource(Project project, Collection<File> dirs) {
+            for (File dir : dirs) {
+                if (!project.fileTree(dir: dir, includes: ['**/*.groovy']).getFiles().isEmpty()) {
+                    return true
+                }
+            }
+            return false
+        }
+
+        @CompileStatic
+        private Set<File> filterNonExistentDirectories(Set<File> dirs) {
+            dirs.findAll { it.exists() }
         }
     }
 
@@ -443,6 +475,7 @@ class CloverPlugin implements Plugin<Project> {
      * @param cloverPluginConvention Clover plugin convention
      * @return Includes
      */
+    @CompileStatic
     private List getIncludes(Project project, CloverPluginConvention cloverPluginConvention) {
         if(cloverPluginConvention.includes) {
             return cloverPluginConvention.includes
@@ -463,6 +496,7 @@ class CloverPlugin implements Plugin<Project> {
      * @param cloverPluginConvention Clover plugin convention
      * @return Test includes
      */
+    @CompileStatic
     private List getTestIncludes(Project project, CloverPluginConvention cloverPluginConvention) {
         if(cloverPluginConvention.testIncludes) {
             return cloverPluginConvention.testIncludes
@@ -482,8 +516,9 @@ class CloverPlugin implements Plugin<Project> {
      * @param cloverPluginConvention Clover plugin convention
      * @return Test excludes
      */
+    @CompileStatic
     private List getTestExcludes(Project project, CloverPluginConvention cloverPluginConvention) {
-        if(cloverPluginConvention.testExcludes) {
+        if (cloverPluginConvention.testExcludes) {
             return cloverPluginConvention.testExcludes
         }
 
@@ -496,6 +531,7 @@ class CloverPlugin implements Plugin<Project> {
      * @param project Project
      * @return Flag
      */
+    @CompileStatic
     private boolean hasJavaPlugin(Project project) {
         project.plugins.hasPlugin(JavaPlugin)
     }
@@ -506,6 +542,7 @@ class CloverPlugin implements Plugin<Project> {
      * @param project Project
      * @return Flag
      */
+    @CompileStatic
     private boolean hasGroovyPlugin(Project project) {
         project.plugins.hasPlugin(GroovyPlugin) ||
 		project.plugins.hasPlugin('org.grails.grails-core') ||
@@ -513,8 +550,9 @@ class CloverPlugin implements Plugin<Project> {
 		project.plugins.hasPlugin('org.grails.grails-web')
     }
 
+    @CompileStatic
     private FileCollection getTestRuntimeClasspath(Project project, Test testTask) {
-        testTask.classpath.filter { !it.directory } + project.configurations.getByName(CONFIGURATION_NAME)
+        testTask.classpath.filter { File file -> !file.directory } + project.configurations.getByName(CONFIGURATION_NAME)
     }
 
     private FileCollection getGroovyClasspath(Project project) {

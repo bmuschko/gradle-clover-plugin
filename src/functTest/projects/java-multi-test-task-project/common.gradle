@@ -1,0 +1,53 @@
+
+apply from: '../deps.gradle'
+apply plugin: 'java'
+apply plugin: 'com.bmuschko.clover'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    testCompile deps.junit
+    clover deps.clover
+}
+
+configurations {
+    customTestCompile.extendsFrom testCompile
+    customTestRuntime.extendsFrom testRuntime
+}
+
+sourceSets {
+    customTest {
+        compileClasspath += main.output
+        runtimeClasspath += main.output
+    }
+}
+
+task customTest(type: Test) {
+    testClassesDirs = sourceSets.customTest.output.classesDirs
+    classpath = sourceSets.customTest.runtimeClasspath
+}
+
+check.dependsOn customTest
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
+clover {
+    compiler {
+        encoding = 'UTF-8'
+    }
+
+    report {
+        json = true
+        html = true
+        pdf = true
+    }
+}

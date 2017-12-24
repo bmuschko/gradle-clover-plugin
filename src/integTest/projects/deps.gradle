@@ -1,2 +1,0 @@
-ext.deps = [junit: 'junit:junit:4.12',
-            clover: 'org.openclover:clover:4.2.0']

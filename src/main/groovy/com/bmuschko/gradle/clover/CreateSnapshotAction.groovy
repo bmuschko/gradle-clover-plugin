@@ -37,7 +37,6 @@ class CreateSnapshotAction implements Action<Task> {
     String initString
     boolean optimizeTests
     FileCollection cloverClasspath
-    @Optional @InputFile File licenseFile
     @InputDirectory File buildDir
     @OutputFile File snapshotFile
 
@@ -52,8 +51,6 @@ class CreateSnapshotAction implements Action<Task> {
 
             def ant = new AntBuilder()
             ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-            if (getLicenseFile() != null)
-                ant.property(name: 'clover.license.path', value: getLicenseFile().canonicalPath)
             ant."clover-snapshot"(initString: "${getBuildDir()}/${getInitString()}", file: getSnapshotFile())
 
             log.info 'Finished creating Clover snapshot.'
