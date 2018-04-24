@@ -1,3 +1,7 @@
+### Version 2.2.1 (April 24, 2017)
+
+* Fix NPE with Android Plugin - [Issue 111](https://github.com/bmuschko/gradle-clover-plugin/issues/111)
+
 ### Version 2.2.0 (December 29, 2017)
 
 Gradle 4.x compatibility release

@@ -22,6 +22,17 @@
 
 The plugin provides generation of code coverage reports using [OpenClover](http://openclover.org/).
 
+# Gradle Compatibility Tested
+
+Built for Oracle JDK7
+Tested with Oracle JDK8
+
+| Gradle Version | Works |
+| :------------: | :---: |
+| 2.14.1         | yes   |
+| 3.5.1          | yes   |
+| 4.4.1          | yes   |
+
 ## Usage
 
 To use the Clover plugin, include in your build script:
@@ -39,7 +50,7 @@ example on how to retrieve it from Bintray:
         }
 
         dependencies {
-            classpath 'com.bmuschko:gradle-clover-plugin:2.2.0'
+            classpath 'com.bmuschko:gradle-clover-plugin:2.2.1'
         }
     }
 

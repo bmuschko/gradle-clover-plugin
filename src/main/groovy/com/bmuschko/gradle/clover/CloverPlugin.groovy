@@ -114,7 +114,11 @@ class CloverPlugin implements Plugin<Project> {
     @CompileStatic
     private void configureActionsForTask(Test test, Project project, CloverPluginConvention cloverPluginConvention, SourceSetsResolver resolver, AggregateDatabasesTask aggregateDatabasesTask) {
         if (testTaskEnabled(test, cloverPluginConvention)) {
-            test.classpath += project.configurations.getByName(CONFIGURATION_NAME).asFileTree
+            // NB: I believe this is a bug in one of the Android plugins used in the
+            // user's build who reported this in Issue #111, adding some defensive
+            // logic here to avoid adding to a null pointer. In Gradle 4.7 this
+            // might change even further and perhaps will disallow assigning a null.
+            test.classpath = (test.classpath ?: project.files()).plus(project.configurations.getByName(CONFIGURATION_NAME))
             OptimizeTestSetAction optimizeTestSetAction = createOptimizeTestSetAction(cloverPluginConvention, project, resolver, test)
             test.doFirst optimizeTestSetAction // add first, gets executed second
             test.doFirst createInstrumentCodeAction(cloverPluginConvention, project, resolver, test) // add second, gets executed first

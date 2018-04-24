@@ -64,6 +64,6 @@ class JavaProjectSpec extends AbstractFunctionalTestBase {
         cloverPdfReport.exists()
         
         where:
-        gradle << [ '2.14.1', '3.5.1', CURRENT_GRADLE ]
+        gradle << GRADLE_TEST_VERSIONS
     }
 }
