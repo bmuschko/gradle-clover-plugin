@@ -19,7 +19,7 @@ import spock.lang.Unroll
 
 class JavaMultiProjectSpec extends AbstractFunctionalTestBase {
 
-    @Unroll def"Build a Java multi-project (with Gradle Version #gradle)"()
+    @Unroll def "Build a Java multi-project (with Gradle Version #gradle)"()
     {
         given: "a Java multi-project"
         projectName = 'java-multi-project'

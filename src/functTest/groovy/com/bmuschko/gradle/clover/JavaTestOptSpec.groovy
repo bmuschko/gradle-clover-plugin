@@ -19,7 +19,7 @@ import spock.lang.Unroll
 
 class JavaTestOptSpec extends AbstractFunctionalTestBase {
 
-    @Unroll def"Build a Java project with test optimization enabled (with Gradle Version #gradle)"()
+    @Unroll def "Build a Java project with test optimization enabled (with Gradle Version #gradle)"()
     {
         given: "a Java project with test optimization enabled"
         projectName = 'java-test-opt'

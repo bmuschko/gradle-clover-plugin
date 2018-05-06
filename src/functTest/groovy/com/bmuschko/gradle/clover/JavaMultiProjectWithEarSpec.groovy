@@ -24,7 +24,7 @@ import spock.lang.Unroll
 
 class JavaMultiProjectWithEarSpec extends AbstractFunctionalTestBase {
 
-    @Unroll def"Build a Java multi-project with instrumented JARs in an EAR (with Gradle Version #gradle)"()
+    @Unroll def "Build a Java multi-project with instrumented JARs in an EAR (with Gradle Version #gradle)"()
     {
         given: "a Java multi-project with EAR"
         projectName = 'java-multi-project-with-ear'

@@ -19,7 +19,7 @@ import spock.lang.Unroll
 
 class JavaProjectGroovyTestsSpec extends AbstractFunctionalTestBase {
 
-    @Unroll def"Build a Java project with Groovy Tests (with Gradle Version #gradle)"()
+    @Unroll def "Build a Java project with Groovy Tests (with Gradle Version #gradle)"()
     {
         given: "a Java plus Groovy project"
         projectName = 'java-project-groovy-tests'

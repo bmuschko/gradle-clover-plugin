@@ -19,7 +19,7 @@ import spock.lang.Unroll
 
 class JavaMultiTestTaskProjectSpec extends AbstractFunctionalTestBase {
 
-    @Unroll def"Build a Java multi-test-task project #scenario"()
+    @Unroll def "Build a Java multi-test-task project #scenario"()
     {
         given: "a Java multi-test-task project"
         projectName = 'java-multi-test-task-project'

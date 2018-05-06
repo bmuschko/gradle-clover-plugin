@@ -17,35 +17,26 @@ package com.bmuschko.gradle.clover
 
 import spock.lang.Unroll
 
-class JavaProjectWithMethodFiltersSpec extends AbstractFunctionalTestBase {
+class JavaProjectWithJUnit5Spec extends AbstractFunctionalTestBase {
 
-    @Unroll def "Build a Java project with method filters (with Gradle Version #gradle)"()
+    @Unroll def "Build a Java project with JUnit5 tests (with Gradle Version #gradle)"()
     {
-        given: "a Java project with method filters"
-        projectName = 'java-project-with-method-filters'
+        given: "a Java project with JUnit5 tests"
+        projectName = 'java-project-with-junit5'
         gradleVersion = gradle
 
         when: "the Clover report generation task is run"
-        build('clean', 'cloverGenerateReport')
+        build('--init-script', "$initScript", 'clean', 'cloverGenerateReport')
 
         then: "the Clover coverage database is generated"
         cloverDb.exists()
 
         and: "the Clover report is generated and is correct"
         cloverXmlReport.exists()
-        def coverage = new XmlSlurper().parse(cloverXmlReport)
-        coverage.project.metrics.@classes == '1'
-        coverage.project.metrics.@methods == '2'
-        coverage.project.metrics.@coveredmethods == '1'
-        coverage.testproject.metrics.@files == '1'
-        coverage.testproject.metrics.@classes == '1'
-        coverage.testproject.metrics.@methods == '1'
-        coverage.testproject.metrics.@coveredmethods == '1'
-        cloverHtmlReport.exists()
-        cloverJsonReport.exists()
-        cloverPdfReport.exists()
 
         where:
-        gradle << GRADLE_TEST_VERSIONS
+        // We can only run this test with the latest versions since
+        // JUnit5 support exists since Gradle 4.6 and later.
+        gradle << [ CURRENT_GRADLE ]
     }
 }

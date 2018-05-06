@@ -1,0 +1,74 @@
+plugins {
+    id 'com.bmuschko.clover' version '2.2.1'
+    id 'java'
+}
+
+apply from: '../deps.gradle'
+
+repositories {
+    jcenter()
+}
+
+ext.junit4Version        = '4.12'
+ext.junitVintageVersion  = '5.1.1'
+ext.junitPlatformVersion = '1.1.1'
+ext.junitJupiterVersion  = '5.1.1'
+
+dependencies {
+    // JUnit Jupiter API and TestEngine implementation
+    testCompile("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
+    testRuntime("org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}")
+
+    testCompile("junit:junit:${junit4Version}")
+    testRuntime("org.junit.vintage:junit-vintage-engine:${junitVintageVersion}") {
+        because 'allows JUnit 3 and JUnit 4 tests to run'
+    }
+
+    testRuntime("org.junit.platform:junit-platform-launcher:${junitPlatformVersion}") {
+        because 'allows tests to run from IDEs that bundle older version of launcher'
+    }
+    clover deps.clover
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+    options.encoding = 'UTF-8'
+}
+
+test {
+    useJUnitPlatform {
+        // includeEngines 'junit-jupiter', 'junit-vintage'
+        // excludeEngines 'custom-engine'
+
+        // includeTags 'fast'
+        excludeTags 'slow'
+    }
+
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+    }
+
+    reports {
+        html.enabled = true
+    }
+}
+
+clover {
+    compiler {
+        encoding = 'UTF-8'
+    }
+
+    report {
+        json = true
+        html = true
+        pdf = true
+
+        // Test support for Clover's JUnit results coverage reporting
+        testResultsDir = project.tasks.getByName('test').reports.junitXml.destination
+        testResultsInclude = 'TEST-*.xml'
+    }
+}

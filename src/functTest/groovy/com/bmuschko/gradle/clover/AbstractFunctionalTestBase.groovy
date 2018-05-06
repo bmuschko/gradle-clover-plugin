@@ -25,10 +25,15 @@ import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 protected abstract class AbstractFunctionalTestBase extends Specification {
-    // Change this as the current version is updated for each release
-    protected static final CURRENT_GRADLE = '4.4.1'
-    // Add new versions as needed when making a new release
-    protected static GRADLE_TEST_VERSIONS = ['2.14.1', '3.5.1', CURRENT_GRADLE]
+    protected static final CURRENT_GRADLE
+    protected static final GRADLE_TEST_VERSIONS
+
+    static {
+        // We pull these from gradle.properties and inject them in functional-test.gradle
+        // If needed change the default when the gradle.properties value changes
+        CURRENT_GRADLE = System.getProperty('gradleCurrentVersion', '4.6')
+        GRADLE_TEST_VERSIONS = System.getProperty('gradleTestingVersions', CURRENT_GRADLE).split(',').collect { it.trim() }
+    }
 
     @Rule
     TemporaryFolder testBuildDir = new TemporaryFolder()

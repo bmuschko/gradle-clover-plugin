@@ -19,7 +19,7 @@ import spock.lang.Unroll
 
 class GrailsProjectSpec extends AbstractFunctionalTestBase {
 
-    @Unroll def"Build a Grails3 project with unit tests and Clover coverage report (with Gradle Version #gradle)"()
+    @Unroll def "Build a Grails3 project with unit tests and Clover coverage report (with Gradle Version #gradle)"()
     {
         given: "a Grails3 project with unit tests"
         projectName = 'grails-project'

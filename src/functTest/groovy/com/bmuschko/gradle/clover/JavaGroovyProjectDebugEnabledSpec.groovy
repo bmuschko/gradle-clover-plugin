@@ -19,7 +19,7 @@ import spock.lang.Unroll
 
 class JavaGroovyProjectDebugEnabledSpec extends AbstractFunctionalTestBase {
 
-    @Unroll def"Build a Java and Groovy project with debug mode enabled (with Gradle Version #gradle)"()
+    @Unroll def "Build a Java and Groovy project with debug mode enabled (with Gradle Version #gradle)"()
     {
         given: "a Java and Groovy project"
         projectName = 'java-groovy-project-debug-enabled'

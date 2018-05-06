@@ -19,7 +19,7 @@ import spock.lang.Unroll
 
 class GroovyProjectCompileConfigSpec extends AbstractFunctionalTestBase {
 
-    @Unroll def"Build a Groovy project using compile configuration (with Gradle Version #gradle)"()
+    @Unroll def "Build a Groovy project using compile configuration (with Gradle Version #gradle)"()
     {
         given: "a Groovy project"
         projectName = 'groovy-project-compile-config'

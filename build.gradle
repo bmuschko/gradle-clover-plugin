@@ -9,8 +9,10 @@ buildscript {
 }
 
 plugins {
+    id 'java-gradle-plugin'
     id 'groovy'
     id 'idea'
+    id 'eclipse'
 }
 
 group = 'com.bmuschko'
@@ -25,7 +27,7 @@ apply from: "gradle/publishing.gradle"
 apply from: "gradle/documentation.gradle"
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '4.4.1'
+    gradleVersion = gradleCurrentVersion
 }
 
 tasks.withType(JavaCompile) {

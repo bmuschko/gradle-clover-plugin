@@ -19,7 +19,7 @@ import spock.lang.Unroll
 
 class JavaProjectDisabledInstrumentationSpec extends AbstractFunctionalTestBase {
 
-    @Unroll def"Build a Java project with disabled instrumentation (with Gradle Version #gradle)"()
+    @Unroll def "Build a Java project with disabled instrumentation (with Gradle Version #gradle)"()
     {
         given: "a Java project with disabled instrumentation"
         projectName = 'java-project-disabled-instrumentation'
