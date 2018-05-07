@@ -95,20 +95,12 @@ class CloverPlugin implements Plugin<Project> {
                     configureActionsForTask(test, project, cloverPluginConvention, resolver, aggregateDatabasesTask)
                 }
             }
-            // If we are generating instrumented JAR files make sure the Jar
-            // tasks run after the Test tasks so that the instrumented classes
-            // get packaged in the archives.
-            if (project.hasProperty('cloverInstrumentedJar')) {
-                project.tasks.withType(Jar) { Jar jar ->
-                    jar.mustRunAfter test
-                }
-            }
         }
     }
 
     @CompileStatic
     private boolean testTaskEnabled(Test test, CloverPluginConvention cloverPluginConvention) {
-        !((cloverPluginConvention.includeTasks && !(test.name in cloverPluginConvention.includeTasks)) || test.name in cloverPluginConvention.excludeTasks)
+        cloverPluginConvention.enabled && !((cloverPluginConvention.includeTasks && !(test.name in cloverPluginConvention.includeTasks)) || test.name in cloverPluginConvention.excludeTasks)
     }
 
     @CompileStatic
@@ -126,6 +118,12 @@ class CloverPlugin implements Plugin<Project> {
             test.doLast createCreateSnapshotAction(cloverPluginConvention, project, test)
             if (project.hasProperty('cloverInstrumentedJar')) {
                 log.info "Skipping RestoreOriginalClassesAction for {} to generate instrumented JAR", test
+                // If we are generating instrumented JAR files make sure the Jar
+                // tasks run after the Test tasks so that the instrumented classes
+                // get packaged in the archives.
+                project.tasks.withType(Jar) { Jar jar ->
+                    jar.mustRunAfter test
+                }
             } else {
                 test.doLast createRestoreOriginalClassesAction(resolver, test)
             }
