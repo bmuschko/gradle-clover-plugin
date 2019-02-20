@@ -25,4 +25,5 @@ class CloverCompilerConvention {
     File executable
     boolean debug = false
     String additionalArgs = null
+    Map additionalGroovycOpts = null
 }

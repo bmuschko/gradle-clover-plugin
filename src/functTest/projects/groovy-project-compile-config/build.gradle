@@ -27,6 +27,7 @@ tasks.withType(GroovyCompile) {
 clover {
     compiler {
         encoding = 'UTF-8'
+        additionalGroovycOpts = [listfiles: 'yes']
     }
 
     report {

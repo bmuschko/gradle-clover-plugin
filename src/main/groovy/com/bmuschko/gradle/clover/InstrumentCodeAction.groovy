@@ -55,7 +55,7 @@ class InstrumentCodeAction implements Action<Task> {
     int flushinterval
     String flushpolicy
     String additionalArgs
-
+    Map additionalGroovycOpts
     @Override
     void execute(Task task) {
         instrumentCode(task)
@@ -310,7 +310,8 @@ class InstrumentCodeAction implements Action<Task> {
     private void compileGroovyAndJava(AntBuilder ant, Collection<File> srcDirs, File destDir, String classpath) {
         if (srcDirs.size() > 0) {
             String args = getAdditionalArgs()
-            ant.groovyc(destdir: destDir.canonicalPath, classpath: classpath, encoding: getEncoding()) {
+            Map groovycAttrs = [destdir: destDir.canonicalPath, classpath: classpath, encoding: getEncoding()] + (getAdditionalGroovycOpts() ?: [:])
+            ant.groovyc(groovycAttrs) {
                 srcDirs.each { srcDir ->
                     src(path: srcDir)
                 }

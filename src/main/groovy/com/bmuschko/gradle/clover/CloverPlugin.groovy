@@ -193,6 +193,7 @@ class CloverPlugin implements Plugin<Project> {
             map('flushinterval') { cloverPluginConvention.flushinterval }
             map('flushpolicy') { cloverPluginConvention.flushpolicy.name() }
             map('additionalArgs') { cloverPluginConvention.compiler.additionalArgs }
+            map('additionalGroovycOpts') { cloverPluginConvention.compiler.additionalGroovycOpts }
         }
         instrumentCodeAction
     }
