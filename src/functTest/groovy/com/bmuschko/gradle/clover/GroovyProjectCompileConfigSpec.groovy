@@ -15,6 +15,7 @@
  */
 package com.bmuschko.gradle.clover
 
+import org.gradle.testkit.runner.BuildResult
 import spock.lang.Unroll
 
 class GroovyProjectCompileConfigSpec extends AbstractFunctionalTestBase {
@@ -26,7 +27,7 @@ class GroovyProjectCompileConfigSpec extends AbstractFunctionalTestBase {
         gradleVersion = gradle
 
         when: "the Clover report generation task is run"
-        build('clean', 'cloverGenerateReport')
+        BuildResult result = build('clean', 'cloverGenerateReport', '--info')
 
         then: "the Clover coverage database is generated"
         cloverDb.exists()
@@ -46,6 +47,12 @@ class GroovyProjectCompileConfigSpec extends AbstractFunctionalTestBase {
 
         and: "the Clover snapshot is not generated because test optimization is not enabled"
         cloverSnapshot.exists() == false
+
+        and: "that the gradle output contains the two files compiled by groovyc"
+        with(result.output) {
+            contains('Book.groovy')
+            contains('BookGroovyTest.groovy')
+        }
 
         where:
         gradle << GRADLE_TEST_VERSIONS
