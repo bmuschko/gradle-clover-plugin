@@ -163,6 +163,7 @@ need to be carried over to the compilation of the instrumented sources.  These a
 * `executable`: The (optional) javac executable to use, should be an absolute file.
 * `debug`: Controls whether to invoke javac with the -g flag. This is useful for Spring MVC code that uses reflection for parameter mapping. (defaults to `false`).
 * `additionalArgs`: The (optional) additional command line arguments for the compiler. This is useful for Spring MVC code that uses reflection for parameter mapping. This should be valid command line arguments as a spaces separated string. No attempt is made to validate this line, it is passed verbatim to the <compilerarg> nested element for the Ant `javac` task.
+* `additionalGroovycOpts`: The (optional) additional options for the `groovyc` compiler. See [http://groovy-lang.org/groovyc.html#_ant_task]
 
 The Clover plugin defines the following convention properties in the `clover` closure:
 
@@ -212,6 +213,7 @@ The Clover plugin defines the following convention properties in the `clover` cl
             // used to add debug information for Spring applications
             debug = true
             additionalArgs = '-parameters'
+            additionalGroovycOpts = [configscript: 'myConfigScript.groovy']
         }
 
         contexts {
