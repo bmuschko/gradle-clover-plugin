@@ -45,7 +45,7 @@ class CloverPluginConventionSpec extends Specification {
         }
 
         then: "then right exception is thrown"
-        def e = thrown(org.gradle.internal.typeconversion.TypeConversionException)
+        def e = thrown(Exception)
         e.message =~ /^Cannot convert string value 'bogus' to an enum value/
     }
 

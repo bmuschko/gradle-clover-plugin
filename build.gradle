@@ -17,6 +17,15 @@ plugins {
 
 group = 'com.bmuschko'
 
+gradlePlugin {
+    plugins {
+        abiCompliance {
+            id = 'com.bmuschko.clover'
+            implementationClass = 'com.bmuschko.gradle.clover.CloverPlugin'
+        }
+    }
+}
+
 defaultTasks 'clean', 'build'
 
 apply from: "gradle/release.gradle"
@@ -25,10 +34,6 @@ apply from: "gradle/functional-test.gradle"
 apply from: "gradle/additional-artifacts.gradle"
 apply from: "gradle/publishing.gradle"
 apply from: "gradle/documentation.gradle"
-
-task wrapper(type: Wrapper) {
-    gradleVersion = gradleCurrentVersion
-}
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
@@ -60,7 +65,7 @@ dependencies {
     testCompile gradleTestKit()
     testCompile 'junit:junit:4.12'
     testCompile 'commons-io:commons-io:2.5'
-    testCompile('org.spockframework:spock-core:1.0-groovy-2.4') {
+    testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude group: 'org.codehaus.groovy'
     }
 }

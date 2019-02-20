@@ -31,7 +31,7 @@ protected abstract class AbstractFunctionalTestBase extends Specification {
     static {
         // We pull these from gradle.properties and inject them in functional-test.gradle
         // If needed change the default when the gradle.properties value changes
-        CURRENT_GRADLE = System.getProperty('gradleCurrentVersion', '4.6')
+        CURRENT_GRADLE = System.getProperty('gradleCurrentVersion', '4.10.1')
         GRADLE_TEST_VERSIONS = System.getProperty('gradleTestingVersions', CURRENT_GRADLE).split(',').collect { it.trim() }
     }
 
@@ -100,7 +100,7 @@ protected abstract class AbstractFunctionalTestBase extends Specification {
 
     private GradleRunner createAndConfigureGradleRunner(String... arguments) {
         // Provide the buildDir as a property to process in deps.gradle
-        def args = ['--stacktrace', "-PtestBuildDir=$buildDir".toString()]
+        def args = ['--stacktrace', "-PtestBuildDir=$buildDir".toString(), '--init-script', "$initScript".toString()]
         if (arguments) {
             args.addAll(arguments)
         }

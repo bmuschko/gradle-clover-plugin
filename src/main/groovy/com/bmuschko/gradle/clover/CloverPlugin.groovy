@@ -53,6 +53,7 @@ class CloverPlugin implements Plugin<Project> {
     static final String DEFAULT_CLOVER_SNAPSHOT = '.clover/coverage.db.snapshot'
     static final String DEFAULT_CLOVER_HISTORY_DIR = '.clover/historypoints'
 
+    
     @CompileStatic
     @Override
     void apply(Project project) {
@@ -547,9 +548,9 @@ class CloverPlugin implements Plugin<Project> {
     @CompileStatic
     private boolean hasGroovyPlugin(Project project) {
         project.plugins.hasPlugin(GroovyPlugin) ||
-		project.plugins.hasPlugin('org.grails.grails-core') ||
-		project.plugins.hasPlugin('org.grails.grails-plugin') ||
-		project.plugins.hasPlugin('org.grails.grails-web')
+        project.plugins.hasPlugin('org.grails.grails-core') ||
+        project.plugins.hasPlugin('org.grails.grails-plugin') ||
+        project.plugins.hasPlugin('org.grails.grails-web')
     }
 
     @CompileStatic
@@ -567,7 +568,10 @@ class CloverPlugin implements Plugin<Project> {
             // Fall back to main source set to get this. We should have this
             // or the test source set using Groovy if this method is called.
             taskName = project.sourceSets.main.getCompileTaskName('groovy')
-            task = project.tasks.getByName(taskName)
+            task = project.tasks.findByName(taskName)
+        }
+        if (task == null) {
+            return project.configurations.getByName(CONFIGURATION_NAME)
         }
         task.getGroovyClasspath() + project.configurations.getByName(CONFIGURATION_NAME)
     }

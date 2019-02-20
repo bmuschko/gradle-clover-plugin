@@ -58,7 +58,7 @@ class InstrumentCodeAction implements Action<Task> {
 
     @Override
     void execute(Task task) {
-        instrumentCode()
+        instrumentCode(task)
     }
 
     private boolean existsAllClassesDir() {
@@ -71,11 +71,20 @@ class InstrumentCodeAction implements Action<Task> {
         true
     }
 
-    void instrumentCode() {
+    void instrumentCode(Task task) {
         if (existsAllClassesDir()) {
             log.info 'Starting to instrument code using Clover.'
 
-            def ant = new AntBuilder()
+            def ant = task.project.ant
+
+            // Inject the Clover JAR into the Ant classloader to effectively
+            // enable it for the CloverCompilerAdapter issue #125
+            ClassLoader antClassLoader = org.apache.tools.ant.Project.class.classLoader
+            getCloverClasspath().each { File file ->
+                def url = file.toURI().toURL()
+                antClassLoader.addURL(url)
+            }
+
             ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
             ant."clover-clean"(initString: "${getBuildDir()}/${getInitString()}")
 
@@ -221,7 +230,7 @@ class InstrumentCodeAction implements Action<Task> {
      */
     @CompileStatic
     private String getGroovycClasspath() {
-        getGroovyClasspath().asPath + System.getProperty('path.separator') + getTestRuntimeClasspath().asPath
+        getCloverClasspath().asPath + System.getProperty('path.separator') + getGroovyClasspath().asPath + System.getProperty('path.separator') + getTestRuntimeClasspath().asPath
     }
 
     /**

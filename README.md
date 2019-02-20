@@ -31,7 +31,7 @@ Tested with Oracle JDK8
 | :------------: | :---: |
 | 2.14.1         | yes   |
 | 3.5.1          | yes   |
-| 4.6            | yes   |
+| 4.10.1         | yes   |
 
 ## Usage
 
