@@ -50,7 +50,7 @@ example on how to retrieve it from Bintray:
         }
 
         dependencies {
-            classpath 'com.bmuschko:gradle-clover-plugin:2.2.1'
+            classpath 'com.bmuschko:gradle-clover-plugin:2.2.2'
         }
     }
 
@@ -58,7 +58,7 @@ To define the Clover dependency please use the `clover` configuration name in yo
 with a multi-module project make sure you apply the plugin and declare the `clover` dependency within the `allprojects` closure.
 
     dependencies {
-        clover 'org.openclover:clover:4.2.0'
+        clover 'org.openclover:clover:4.3.1'
     }
 
 With the introduction of the OpenClover support the `licenseLocation` clover convention is
@@ -213,7 +213,7 @@ The Clover plugin defines the following convention properties in the `clover` cl
             // used to add debug information for Spring applications
             debug = true
             additionalArgs = '-parameters'
-            additionalGroovycOpts = [configscript: 'myConfigScript.groovy']
+            additionalGroovycOpts = [configscript: project.file('myConfigScript.groovy').absolutePath]
         }
 
         contexts {
@@ -286,6 +286,30 @@ The Clover plugin defines the following convention properties in the `clover` cl
             }
         }
     }
+
+## Groovy Compiler Configuration Scripts
+
+Thanks to a contribution by community member  we now have more power over the
+Groovy compilation process. The specific problem this feature solved is the
+inability to process correctly with OpenClover the `@CompileStatic` and
+`@TypeChecked` annotations in the code.
+
+The solution involves installing a small Groovy Compiler configuration script
+that can perform an AST transformation of the code when it is compiled by the
+tools. The following example can be used as a basis for such a solution. All
+you need to do is place a groovy file with this content in your project directory
+and reference the file name using the new `additionalGroovycOpts` configuration.
+
+```
+withConfig(configuration) {
+    inline(phase: 'CONVERSION') { source, context, classNode ->
+        source.ast.unit.classes.each { clazz ->
+            println "Fixing $clazz.name"
+            clazz.annotations.removeAll { annotation -> annotation.classNode.name in ['CompileStatic', 'TypeChecked'] }
+        }
+    }
+}
+```
 
 ## Project Properties
 
