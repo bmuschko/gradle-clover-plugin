@@ -339,7 +339,7 @@ class InstrumentCodeAction implements Action<Task> {
         if (srcDirs.size() > 0) {
             String args = getAdditionalArgs()
             ant.javac(destdir: destDir.canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),
-                  classpath: classpath, encoding: getEncoding(), executable: getExecutable(), debug: getDebug()) {
+                  includeantruntime: false, classpath: classpath, encoding: getEncoding(), executable: getExecutable(), debug: getDebug()) {
                 srcDirs.each { srcDir ->
                     src(path: srcDir)
                 }
