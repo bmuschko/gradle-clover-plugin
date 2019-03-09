@@ -24,7 +24,7 @@ The plugin provides generation of code coverage reports using [OpenClover](http:
 
 # Gradle Compatibility Tested
 
-Built for Oracle JDK7
+Built for Oracle JDK8
 Tested with Oracle JDK8
 
 | Gradle Version | Works |
@@ -32,6 +32,7 @@ Tested with Oracle JDK8
 | 2.14.1         | yes   |
 | 3.5.1          | yes   |
 | 4.10.1         | yes   |
+| 5.2.1          | yes   |
 
 ## Usage
 
@@ -289,7 +290,7 @@ The Clover plugin defines the following convention properties in the `clover` cl
 
 ## Groovy Compiler Configuration Scripts
 
-Thanks to a contribution by community member  we now have more power over the
+Thanks to a contribution by community member we now have more power over the
 Groovy compilation process. The specific problem this feature solved is the
 inability to process correctly with OpenClover the `@CompileStatic` and
 `@TypeChecked` annotations in the code.

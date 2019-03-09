@@ -1,5 +1,5 @@
 plugins {
-    id 'com.bmuschko.clover' version '2.2.1'
+    id 'com.bmuschko.clover'
     id 'java'
 }
 

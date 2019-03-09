@@ -25,7 +25,10 @@ sourceSets {
 }
 
 task customTest(type: Test) {
-    testClassesDirs = sourceSets.customTest.output.classesDirs
+    if (gradle.gradleVersion.split('\\.')[0].toInteger() < 4)
+        testClassesDir = sourceSets.customTest.output.classesDir
+    else
+        testClassesDirs = sourceSets.customTest.output.classesDirs
     classpath = sourceSets.customTest.runtimeClasspath
 }
 

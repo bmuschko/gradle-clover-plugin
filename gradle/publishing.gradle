@@ -1,16 +1,3 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
-    }
-}
-
-apply plugin: 'maven-publish'
-apply plugin: com.jfrog.bintray.gradle.BintrayPlugin
-//apply plugin: 'com.jfrog.bintray'
 
 publishing {
     publications {
@@ -68,7 +55,7 @@ bintray {
 
         version {
             released  = new Date()
-            vcsTag = "v$project.version"
+            vcsTag = "v${project.version}"
             attributes = ['gradle-plugin': "com.bmuschko.clover:${project.group}:${project.name}"]
 
             gpg {
@@ -76,11 +63,11 @@ bintray {
                 passphrase = resolveProperty('GPG_PASSPHRASE', 'gpgPassphrase')
             }
             mavenCentralSync {
-                sync = true 
+                sync = true
                 user = resolveProperty('MAVEN_CENTRAL_USER_TOKEN', 'mavenCentralUserToken')
                 password = resolveProperty('MAVEN_CENTRAL_PASSWORD', 'mavenCentralPassword')
-                close = '1' 
-            } 
+                close = '1'
+            }
         }
     }
 }

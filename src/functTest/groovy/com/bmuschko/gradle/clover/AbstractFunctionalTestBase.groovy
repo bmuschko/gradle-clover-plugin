@@ -15,8 +15,6 @@
  */
 package com.bmuschko.gradle.clover
 
-import java.io.File
-
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Rule
@@ -31,7 +29,7 @@ protected abstract class AbstractFunctionalTestBase extends Specification {
     static {
         // We pull these from gradle.properties and inject them in functional-test.gradle
         // If needed change the default when the gradle.properties value changes
-        CURRENT_GRADLE = System.getProperty('gradleCurrentVersion', '4.10.1')
+        CURRENT_GRADLE = System.getProperty('gradleCurrentVersion', '5.2.1')
         GRADLE_TEST_VERSIONS = System.getProperty('gradleTestingVersions', CURRENT_GRADLE).split(',').collect { it.trim() }
     }
 
@@ -104,6 +102,7 @@ protected abstract class AbstractFunctionalTestBase extends Specification {
         if (arguments) {
             args.addAll(arguments)
         }
+
         def runner = GradleRunner.create().withGradleVersion(gradleVersion).withProjectDir(projectDir).withArguments(args).withPluginClasspath()
         createClasspathInjectionScript(runner)
         runner

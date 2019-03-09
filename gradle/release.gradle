@@ -1,22 +1,7 @@
-import org.ajoberstar.gradle.git.release.opinion.Strategies
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath "org.ajoberstar:gradle-git:1.7.2"
-    }
+reckon {
+  scopeFromProp()
+  stageFromProp('milestone', 'rc', 'final')
 }
 
-apply plugin: 'org.ajoberstar.grgit'
-apply plugin: 'org.ajoberstar.release-opinion'
-
-release {
-    versionStrategy Strategies.FINAL
-    defaultVersionStrategy = Strategies.SNAPSHOT
-    tagStrategy {
-        generateMessage = { version -> "Version ${project.version}" }
-    }
-}
+reckonTagCreate.dependsOn check

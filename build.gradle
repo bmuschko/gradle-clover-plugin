@@ -1,30 +1,24 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-
-    dependencies {
-        classpath "org.ajoberstar:gradle-git:1.7.2"
-    }
-}
-
 plugins {
     id 'java-gradle-plugin'
     id 'groovy'
+    id 'maven-publish'
     id 'idea'
     id 'eclipse'
+    id "com.jfrog.bintray" version "1.8.4"
+    id 'org.ajoberstar.reckon' version '0.9.0'
+    id 'org.ajoberstar.git-publish' version '2.0.0'
 }
-
-group = 'com.bmuschko'
 
 gradlePlugin {
     plugins {
-        abiCompliance {
+        gradleCloverPlugin {
             id = 'com.bmuschko.clover'
             implementationClass = 'com.bmuschko.gradle.clover.CloverPlugin'
         }
     }
 }
+
+group = 'com.bmuschko'
 
 defaultTasks 'clean', 'build'
 
@@ -70,7 +64,7 @@ dependencies {
     }
 }
 
-ext.compatibilityVersion = '1.7'
+ext.compatibilityVersion = '1.8'
 sourceCompatibility = compatibilityVersion
 targetCompatibility = compatibilityVersion
 

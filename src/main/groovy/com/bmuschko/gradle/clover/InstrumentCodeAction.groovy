@@ -21,6 +21,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 
@@ -267,7 +268,7 @@ class InstrumentCodeAction implements Action<Task> {
      *
      * @param ant Ant builder
      */
-    @CompileStatic
+    @CompileDynamic
     private void compileTestSrcFiles(AntBuilder ant) {
         def nonTestClasses = getSourceSets().collect { it.classesDir }
         for(CloverSourceSet sourceSet : getTestSourceSets()) {

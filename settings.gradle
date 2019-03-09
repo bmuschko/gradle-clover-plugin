@@ -2,11 +2,9 @@
 pluginManagement {
     repositories {
         mavenLocal()
+        gradlePluginPortal()
         jcenter()
     }
 }
 
 rootProject.name = 'gradle-clover-plugin'
-
-enableFeaturePreview('STABLE_PUBLISHING')
-

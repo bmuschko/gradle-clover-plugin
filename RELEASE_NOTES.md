@@ -1,10 +1,11 @@
-### Version 2.2.2 (March 8, 2019)
+### Version 2.2.2 (March 9, 2019)
 
 * Fix Does this plugin work with JUnit5? - [Issue 79](https://github.com/bmuschko/gradle-clover-plugin/issues/79)
 * Fix When Clover is disabled eliminate recompilation of sources during test task execution - [Issue 112](https://github.com/bmuschko/gradle-clover-plugin/issues/112)
 * Fix Support for JDK 9 & 10 - [Issue 119](https://github.com/bmuschko/gradle-clover-plugin/issues/119)
 * Fix ClassNotFoundException for CloverCompilerAdapter when using OpenClover 4.3.1 on a Java project - [Issue 125](https://github.com/bmuschko/gradle-clover-plugin/issues/125)
 * Fix @CompileStatic and safe navigation operator fails cloverGenerateReport task - [Issue 127](https://github.com/bmuschko/gradle-clover-plugin/issues/127)
+* Fix Running on Gradle 5.2 throws a NoClassDefFoundError - [Issue 126](https://github.com/bmuschko/gradle-clover-plugin/issues/126)
 
 Thanks to contribution from community member Søren Berg Glasius we have the fix to [Issue 127](https://github.com/bmuschko/gradle-clover-plugin/issues/127)
 

@@ -15,21 +15,22 @@
  */
 package com.bmuschko.gradle.clover
 
-import groovy.transform.CompileDynamic
-import groovy.transform.CompileStatic
-import groovy.util.logging.Slf4j
+import java.util.concurrent.Callable
+
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
-import org.gradle.api.internal.AsmBackedClassGenerator
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.testing.Test
+import org.gradle.util.GradleVersion
 
-import java.lang.reflect.Constructor
-import java.util.concurrent.Callable
+import groovy.transform.CompileDynamic
+import groovy.transform.CompileStatic
+import groovy.util.logging.Slf4j
+
 
 /**
  * <p>A {@link org.gradle.api.Plugin} that provides a task for creating a code coverage report using Clover.</p>
@@ -126,14 +127,14 @@ class CloverPlugin implements Plugin<Project> {
                     jar.mustRunAfter test
                 }
             } else {
-                test.doLast createRestoreOriginalClassesAction(resolver, test)
+                test.doLast createRestoreOriginalClassesAction(project, resolver, test)
             }
             aggregateDatabasesTask.aggregate(test)
         }
     }
 
-    private RestoreOriginalClassesAction createRestoreOriginalClassesAction(SourceSetsResolver resolver, Test testTask) {
-        RestoreOriginalClassesAction restoreOriginalClassesAction = createInstance(RestoreOriginalClassesAction)
+    private RestoreOriginalClassesAction createRestoreOriginalClassesAction(Project project, SourceSetsResolver resolver, Test testTask) {
+        RestoreOriginalClassesAction restoreOriginalClassesAction = createInstance(project, RestoreOriginalClassesAction)
         restoreOriginalClassesAction.conventionMapping.with {
             map('sourceSets') { resolver.getSourceSets() }
             map('testSourceSets') { resolver.getTestSourceSets() }
@@ -142,7 +143,7 @@ class CloverPlugin implements Plugin<Project> {
     }
 
     private CreateSnapshotAction createCreateSnapshotAction(CloverPluginConvention cloverPluginConvention, Project project, Test testTask) {
-        CreateSnapshotAction createSnapshotAction = createInstance(CreateSnapshotAction)
+        CreateSnapshotAction createSnapshotAction = createInstance(project, CreateSnapshotAction)
         createSnapshotAction.conventionMapping.with {
             map('initString') { getInitString(cloverPluginConvention, testTask) }
             map('optimizeTests') { cloverPluginConvention.optimizeTests }
@@ -154,7 +155,7 @@ class CloverPlugin implements Plugin<Project> {
     }
 
     private OptimizeTestSetAction createOptimizeTestSetAction(CloverPluginConvention cloverPluginConvention, Project project, SourceSetsResolver resolver, Test testTask) {
-        OptimizeTestSetAction optimizeTestSetAction = createInstance(OptimizeTestSetAction)
+        OptimizeTestSetAction optimizeTestSetAction = createInstance(project, OptimizeTestSetAction)
         optimizeTestSetAction.conventionMapping.with {
             map('initString') { getInitString(cloverPluginConvention, testTask) }
             map('optimizeTests') { cloverPluginConvention.optimizeTests }
@@ -167,7 +168,7 @@ class CloverPlugin implements Plugin<Project> {
     }
 
     private InstrumentCodeAction createInstrumentCodeAction(CloverPluginConvention cloverPluginConvention, Project project, SourceSetsResolver resolver, Test testTask) {
-        InstrumentCodeAction instrumentCodeAction = createInstance(InstrumentCodeAction)
+        InstrumentCodeAction instrumentCodeAction = createInstance(project, InstrumentCodeAction)
         instrumentCodeAction.conventionMapping.with {
             map('initString') { getInitString(cloverPluginConvention, testTask) }
             map('enabled') { cloverPluginConvention.enabled }
@@ -277,12 +278,14 @@ class CloverPlugin implements Plugin<Project> {
      * @param clazz the type of object to create
      * @return an instance of the specified type
      */
-    @CompileStatic
-    private createInstance(Class clazz) {
-        AsmBackedClassGenerator generator = new AsmBackedClassGenerator()
-        Class instrumentClass = generator.generate(clazz)
-        Constructor constructor = instrumentClass.getConstructor()
-        return constructor.newInstance()
+    @CompileDynamic
+    private createInstance(Project project, Class clazz) {
+        if (GradleVersion.version('4.0').compareTo(GradleVersion.current()) < 0) {
+            return project.objects.newInstance(clazz)
+        }
+        // If we are building in Gradle 3.x or older use the old mechanism
+        def generator = Class.forName('org.gradle.api.internal.AsmBackedClassGenerator').getConstructor().newInstance()
+        return generator.generate(clazz).getConstructor().newInstance()
     }
 
     /**

@@ -4,8 +4,8 @@ This document describes the release process designed and implemented for `gradle
 # Tools
 The release process uses some external libraries and services described in detail below.
 
-## gradle-git
-The [`gradle-git`](https://github.com/ajoberstar/gradle-git) Gradle plugin is used to automatically determine the project version. `org.ajoberstar.release-opinion` is applied in the main [build.gradle](../build.gradle#L7) and configured in [gradle/release.gradle](../gradle/release.gradle#L16). Please refer to the plugin [documentation](https://github.com/ajoberstar/gradle-git/wiki/Release%20Plugins#how-do-i-use-the-opinion-plugin) for more details.
+## org.ajoberstar.reckon
+The [`org.ajoberstar.reckon`](https://github.com/ajoberstar/reckon) Gradle plugin is used to automatically determine the project version. `org.ajoberstar.reckon` is applied in the main [build.gradle](../build.gradle) and configured in [gradle/release.gradle](../gradle/release.gradle). Please refer to the plugin [documentation](https://github.com/ajoberstar/reckon/blob/master/README.md#how-do-i-use-it) for more details.
 
 ## gradle-git-publish
 The [`gradle-git-publish`](https://github.com/ajoberstar/gradle-git-publish) Gradle plugin is used to publish the documentation to `gh-pages` branch. It is applied and configured in the [gradle/documentation.gradle](../gradle/documentation.gradle) file.
@@ -22,7 +22,7 @@ The release process is automated to some extent. The following steps describe th
 2. Developer commits all changes in local working copy.
 3. Developer triggers new version release using the following command:
 ```
-./gradlew release -Prelease.stage=final -Prelease.scope=[SCOPE]
+./gradlew reckonTagPush -Preckon.stage=final -Preckon.scope=[SCOPE]
 ```
  where `[SCOPE]` can be one of: `major`, `minor` or `patch`, and determines which part of the version string `<major>.<minor>.<patch>`   will be increased.
 
@@ -34,5 +34,5 @@ The release process is automated to some extent. The following steps describe th
 
 # Useful links
 * [Semantic Versioning](http://semver.org/)
-* [gradle-git version inference](https://github.com/ajoberstar/gradle-git/wiki/Release%20Plugins#version-inference)
+* [org.ajoberstar.reckon version inference](https://github.com/ajoberstar/reckon#stage-version-scheme)
 * [Travis script deployment](https://docs.travis-ci.com/user/deployment/script/)

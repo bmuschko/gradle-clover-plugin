@@ -37,6 +37,6 @@ class JavaProjectWithJUnit5Spec extends AbstractFunctionalTestBase {
         where:
         // We can only run this test with the latest versions since
         // JUnit5 support exists since Gradle 4.6 and later.
-        gradle << [ CURRENT_GRADLE ]
+        gradle << GRADLE_TEST_VERSIONS.findAll { it.split('\\.')[0].toInteger() >= 4 }
     }
 }
