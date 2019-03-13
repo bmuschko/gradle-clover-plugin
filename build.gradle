@@ -1,4 +1,5 @@
 plugins {
+    id 'com.gradle.build-scan' version '2.2.1'
     id 'java-gradle-plugin'
     id 'groovy'
     id 'maven-publish'
@@ -7,6 +8,11 @@ plugins {
     id "com.jfrog.bintray" version "1.8.4"
     id 'org.ajoberstar.reckon' version '0.9.0'
     id 'org.ajoberstar.git-publish' version '2.0.0'
+}
+
+buildScan {
+    termsOfServiceUrl   = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
 }
 
 gradlePlugin {
