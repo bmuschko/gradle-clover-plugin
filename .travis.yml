@@ -7,12 +7,12 @@ jdk:
 jobs:
   include:
     - stage: all tests
-      script: GRADLE_OPTS=-Dfile.encoding=windows-1252 ./gradlew clean build --stacktrace --no-daemon
+      script: GRADLE_OPTS=-Dfile.encoding=windows-1252 ./gradlew clean build --stacktrace --no-daemon --scan
     - stage: release
       script: skip
       deploy:
         provider: script
-        script: ./gradlew --stacktrace clean assemble bintrayUpload gitPublishPush -Dorg.ajoberstar.grgit.auth.username=bmuschko -Dorg.ajoberstar.grgit.auth.password=$GH_TOKEN
+        script: ./gradlew --stacktrace clean assemble bintrayUpload gitPublishPush -Dorg.ajoberstar.grgit.auth.username=bmuschko -Dorg.ajoberstar.grgit.auth.password=$GH_TOKEN --scan
         on:
           tags: true
 
