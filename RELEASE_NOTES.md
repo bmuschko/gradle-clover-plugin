@@ -1,3 +1,7 @@
+### Version 2.2.3 (April 21, 2019)
+
+* Fix ncLineCount column gives error - [Issue 135](https://github.com/bmuschko/gradle-clover-plugin/issues/135)
+
 ### Version 2.2.2 (March 9, 2019)
 
 * Fix Does this plugin work with JUnit5? - [Issue 79](https://github.com/bmuschko/gradle-clover-plugin/issues/79)

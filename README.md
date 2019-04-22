@@ -32,7 +32,7 @@ Tested with Oracle JDK8
 | 2.14.1         | yes   |
 | 3.5.1          | yes   |
 | 4.10.1         | yes   |
-| 5.2.1          | yes   |
+| 5.4            | yes   |
 
 ## Usage
 
@@ -51,7 +51,7 @@ example on how to retrieve it from Bintray:
         }
 
         dependencies {
-            classpath 'com.bmuschko:gradle-clover-plugin:2.2.2'
+            classpath 'com.bmuschko:gradle-clover-plugin:2.2.3'
         }
     }
 

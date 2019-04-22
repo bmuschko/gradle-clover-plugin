@@ -257,7 +257,7 @@ class CloverPlugin implements Plugin<Project> {
             map('html') { cloverPluginConvention.report.html }
             map('pdf') { cloverPluginConvention.report.pdf }
             
-            map('additionalColumns') { cloverPluginConvention.report.columns.getColumns() }
+            map('additionalColumns') { cloverPluginConvention.report.columns.jsonColumns }
 
             cloverPluginConvention.report.historical.with {
                 map('historical') { enabled }
@@ -266,8 +266,8 @@ class CloverPlugin implements Plugin<Project> {
                 map('packageFilter') { packageFilter }
                 map('from') { from }
                 map('to') { to }
-                map('added') { added }
-                map('movers') { movers }
+                map('added') { jsonAdded }
+                map('movers') { jsonMovers }
             }
         }
     }

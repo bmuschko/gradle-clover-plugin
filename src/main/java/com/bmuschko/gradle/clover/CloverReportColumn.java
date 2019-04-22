@@ -15,14 +15,24 @@
  */
 package com.bmuschko.gradle.clover;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import org.gradle.api.InvalidUserDataException;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+
+@JsonDeserialize(builder = CloverReportColumn.Builder.class)
 public class CloverReportColumn implements Serializable {
     private static final long serialVersionUID = 1L;
     public CloverReportColumn(String column, Map<String, String> attributes) {
@@ -31,7 +41,7 @@ public class CloverReportColumn implements Serializable {
         }
         
         this.column = column;
-        this.attributes = new HashMap<>(attributes.size());
+        this.attributes = new TreeMap<String, String>();
         for (Map.Entry<String, String> entry : attributes.entrySet()) {
             String key = entry.getKey();
             if (key.equals("format")) {
@@ -56,6 +66,36 @@ public class CloverReportColumn implements Serializable {
     private final Map<String, String> attributes;
     public Map<String, String> getAttributes() {
         return Collections.unmodifiableMap(attributes);
+    }
+
+    public String toJson() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(this);
+    }
+    
+    public static CloverReportColumn fromJson(String jsonString) throws JsonParseException, JsonMappingException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(jsonString, CloverReportColumn.class);
+    }
+    
+    @JsonPOJOBuilder
+    static class Builder {
+        private String column;
+        private Map<String, String> attributes;
+        
+        Builder withColumn(String column) {
+            this.column = column;
+            return this;
+        }
+        
+        Builder withAttributes(Map<String, String> attributes) {
+            this.attributes = attributes;
+            return this;
+        }
+        
+        public CloverReportColumn build() {
+            return new CloverReportColumn(column, attributes);
+        }
     }
 
     private void assertValidFormat(String name, String format) {

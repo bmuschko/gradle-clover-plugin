@@ -62,7 +62,20 @@ class JavaProjectSpec extends AbstractFunctionalTestBase {
         cloverHtmlReport.exists()
         cloverJsonReport.exists()
         cloverPdfReport.exists()
-        
+
+        when: "the Clover report generation task runs with a new report column and incremental build it does not fail"
+        cloverXmlReport.delete()
+        cloverHtmlReport.delete()
+        cloverJsonReport.delete()
+        cloverPdfReport.delete()
+        build('cloverGenerateReport', '-PaddNcCols=true')
+
+        then: "the Clover reports are generated again"
+        cloverXmlReport.exists()
+        cloverHtmlReport.exists()
+        cloverJsonReport.exists()
+        cloverPdfReport.exists()
+
         where:
         gradle << GRADLE_TEST_VERSIONS
     }

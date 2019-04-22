@@ -15,7 +15,13 @@
  */
 package com.bmuschko.gradle.clover;
 
+import java.io.IOException;
 import java.io.Serializable;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HistoricalAdded implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -39,5 +45,15 @@ public class HistoricalAdded implements Serializable {
 
     public void setInterval(String interval) {
         this.interval = interval;
+    }
+
+    public String toJson() throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writeValueAsString(this);
+    }
+
+    public static HistoricalAdded fromJson(String jsonString) throws JsonParseException, JsonMappingException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(jsonString, HistoricalAdded.class);
     }
 }

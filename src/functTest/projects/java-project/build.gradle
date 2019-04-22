@@ -45,6 +45,9 @@ clover {
         testResultsInclude = 'TEST-*.xml'
 
         columns {
+            if (project.findProperty('addNcCols')) {
+                ncLineCount format: 'raw'
+            }
             coveredMethods format: 'longbar', min: '75'
             coveredStatements format: '%'
             coveredBranches format: 'raw'

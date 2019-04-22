@@ -57,7 +57,7 @@ abstract class CloverReportTask extends DefaultTask {
     Boolean historical
 
     @Input
-    Collection<CloverReportColumn> additionalColumns
+    Collection<String> additionalColumns
     
     /**
      * Optional Clover history directory.
@@ -80,10 +80,10 @@ abstract class CloverReportTask extends DefaultTask {
     String to
     @Optional
     @Input
-    HistoricalAdded added
+    String added
     @Optional
     @Input
-    Collection<HistoricalMover> movers
+    Collection<String> movers
 
     /**
      * Checks to see if at least on report type is selected.
@@ -187,6 +187,7 @@ abstract class CloverReportTask extends DefaultTask {
             if (filter) {
                 formatParams.filter = filter
             }
+            
             current(params) {
                 format(formatParams)
                 if (testResultsDir) {
@@ -194,7 +195,8 @@ abstract class CloverReportTask extends DefaultTask {
                 }
                 if (getAdditionalColumns()) {
                     columns {
-                        for (CloverReportColumn col in getAdditionalColumns()) {
+                        for (String jsonString in getAdditionalColumns()) {
+                            CloverReportColumn col = CloverReportColumn.fromJson(jsonString)
                             String name = col.getColumn()
                             "$name"(col.getAttributes())
                         }
@@ -225,11 +227,13 @@ abstract class CloverReportTask extends DefaultTask {
                     metrics()
 
                     if (getAdded()) {
-                        getAdded().with {
+                        HistoricalAdded fromJson = HistoricalAdded.fromJson(getAdded())
+                        fromJson.with {
                             added(range: range, interval: interval)
                         }
                     }
-                    getMovers().each { mover ->
+                    for (String jsonString : getMovers()) {
+                        HistoricalMover mover = HistoricalMover.fromJson(jsonString)
                         mover.with {
                             movers(threshold: "${threshold}%", range: range, interval: interval)
                         }

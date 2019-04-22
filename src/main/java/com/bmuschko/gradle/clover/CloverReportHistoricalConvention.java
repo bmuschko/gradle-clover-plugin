@@ -16,9 +16,12 @@
 package com.bmuschko.gradle.clover;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.gradle.util.ConfigureUtil;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import groovy.lang.Closure;
 
@@ -36,6 +39,21 @@ public class CloverReportHistoricalConvention {
 
     HistoricalAdded added = null;
     List<HistoricalMover> movers = new ArrayList<HistoricalMover>();
+
+    public String getJsonAdded() throws JsonProcessingException {
+        if (added == null) {
+            return null;
+        }
+        return added.toJson();
+    }
+
+    public Collection<String> getJsonMovers() throws JsonProcessingException {
+        Collection<String> jsonMovers = new ArrayList<String>();
+        for (HistoricalMover mover : movers) {
+            jsonMovers.add(mover.toJson());
+        }
+        return jsonMovers;
+    }
 
     public void added(Closure<?> closure) {
         added = new HistoricalAdded();
