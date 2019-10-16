@@ -1,3 +1,7 @@
+### Version 2.2.4 (October 16, 2019)
+
+* Fix Vulnerable version of Jackson bind dependency - [Issue 142](https://github.com/bmuschko/gradle-clover-plugin/issues/142)
+
 ### Version 2.2.3 (April 21, 2019)
 
 * Fix ncLineCount column gives error - [Issue 135](https://github.com/bmuschko/gradle-clover-plugin/issues/135)
