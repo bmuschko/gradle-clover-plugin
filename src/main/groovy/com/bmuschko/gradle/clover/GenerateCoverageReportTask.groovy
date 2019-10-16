@@ -79,16 +79,16 @@ class GenerateCoverageReportTask extends CloverReportTask {
     private void logCoverage(String heading, groovy.util.slurpersupport.NodeChildren metrics) {
         logger.quiet '{} classes coverage', heading
         logger.quiet 'Files: {} Packages: {} Classes: {} LOC: {} NCLOC: {}', metrics.@files, metrics.@packages, metrics.@classes, metrics.@loc, metrics.@ncloc
-        logger.quiet 'Methods coverage {}', computePersentage(metrics.@coveredmethods?.toString(), metrics.@methods?.toString())
-        logger.quiet 'Elements coverage {}', computePersentage(metrics.@coveredelements?.toString(), metrics.@elements?.toString())
-        logger.quiet 'Statements coverage {}', computePersentage(metrics.@coveredstatements?.toString(), metrics.@statements?.toString())
-        logger.quiet 'Conditionals coverage {}', computePersentage(metrics.@coveredconditionals?.toString(), metrics.@conditionals?.toString())
+        logger.quiet 'Methods coverage {}', computePercentage(metrics.@coveredmethods?.toString(), metrics.@methods?.toString())
+        logger.quiet 'Elements coverage {}', computePercentage(metrics.@coveredelements?.toString(), metrics.@elements?.toString())
+        logger.quiet 'Statements coverage {}', computePercentage(metrics.@coveredstatements?.toString(), metrics.@statements?.toString())
+        logger.quiet 'Conditionals coverage {}', computePercentage(metrics.@coveredconditionals?.toString(), metrics.@conditionals?.toString())
         logger.quiet ''
     }
 
-    private String computePersentage(String covered, String total) {
+    private String computePercentage(String covered, String total) {
         try {
-            if (covered && total) {
+            if (covered && total && total != '0') {
                 Double percent = Double.valueOf(covered) * 100.0 / Double.valueOf(total)
                 return String.format('%.2f', percent)
             }
