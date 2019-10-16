@@ -220,7 +220,8 @@ The Clover plugin defines the following convention properties in the `clover` cl
         contexts {
             statement {
                 name = 'log'
-                regexp = '^.*LOG\\..*'
+                //start of line, any amount of whitespace then _LOG. minimal match before finding );
+                regexp = '^[\s]+_LOG\..*?\);'
             }
 
             method {

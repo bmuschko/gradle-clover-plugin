@@ -1,6 +1,7 @@
-### Version 2.2.4 (October 16, 2019)
+### Version 2.2.4 (October 19, 2019)
 
 * Fix Vulnerable version of Jackson bind dependency - [Issue 142](https://github.com/bmuschko/gradle-clover-plugin/issues/142)
+* Fix Documentation - regex for log - [Issue 121](https://github.com/bmuschko/gradle-clover-plugin/issues/121)
 
 ### Version 2.2.3 (April 21, 2019)
 
