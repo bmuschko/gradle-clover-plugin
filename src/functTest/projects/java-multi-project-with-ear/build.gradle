@@ -40,6 +40,9 @@ allprojects {
 
 project(':projectCar') {
     apply plugin: 'java'
+
+    sourceCompatibility = '1.8'
+
     dependencies {
         testCompile deps.junit
     }
@@ -48,6 +51,9 @@ project(':projectCar') {
 
 project(':projectDriver') {
     apply plugin: 'java'
+
+    sourceCompatibility = '1.8'
+
     dependencies {
         compile project(':projectCar')
         testCompile deps.junit

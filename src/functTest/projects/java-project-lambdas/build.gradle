@@ -23,6 +23,8 @@ tasks.withType(GroovyCompile) {
     options.encoding = 'UTF-8'
 }
 
+sourceCompatibility = '1.8'
+
 // Prove that the plugin works if applied in an afterEvaluate listener
 afterEvaluate {
     apply plugin: 'com.bmuschko.clover'

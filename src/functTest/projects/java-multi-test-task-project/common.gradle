@@ -43,6 +43,8 @@ tasks.withType(GroovyCompile) {
     options.encoding = 'UTF-8'
 }
 
+sourceCompatibility = '1.8'
+
 clover {
     compiler {
         encoding = 'UTF-8'

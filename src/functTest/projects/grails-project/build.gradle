@@ -77,6 +77,8 @@ dependencies {
     clover deps.clover
 }
 
+sourceCompatibility = '1.8'
+
 clover {
     targetPercentage = '60%'
 

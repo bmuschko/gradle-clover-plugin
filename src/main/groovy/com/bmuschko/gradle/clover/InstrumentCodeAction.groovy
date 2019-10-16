@@ -154,11 +154,15 @@ class InstrumentCodeAction implements Action<Task> {
     private Map getCloverSetupAttributes() {
         def attributes = [initString: "${getBuildDir()}/${getInitString()}"]
 
+        if (getSourceCompatibility()) {
+            attributes['source'] = getSourceCompatibility()
+        }
+
         if (!getEnabled()) {
             attributes['enabled'] = 'false'
         }
 
-        if(getInstrumentLambda()) {
+        if (getInstrumentLambda()) {
             attributes['instrumentLambda'] = getInstrumentLambda()
         }
 
