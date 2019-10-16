@@ -64,7 +64,7 @@ dependencies {
     compile gradleApi()
     testCompile gradleTestKit()
 
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.0'
     
     testCompile 'junit:junit:4.12'
     testCompile 'commons-io:commons-io:2.5'
