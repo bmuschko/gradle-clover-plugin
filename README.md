@@ -243,6 +243,7 @@ The Clover plugin defines the following convention properties in the `clover` cl
         report {
             html = true
             pdf = true
+            xml = true
             filter = 'log,main,getters,setters'
 
             // Support capturing test results from JUnix XML report
@@ -288,6 +289,31 @@ The Clover plugin defines the following convention properties in the `clover` cl
             }
         }
     }
+
+## Console Clover Coverage Reporting
+
+When `clover.report.xml=true` the `cloverGenerateReport` will emit the following
+information at quiet logger level in the console log.
+
+```
+Project <project name> classes coverage
+Files: ## Packages: ## Classes: ## LOC: ## NCLOC: ##
+Methods coverage ##.##
+Elements coverage ##.##
+Statements coverage ##.##
+Conditionals coverage ##.##
+
+Project <project name> test classes coverage
+Files: ## Packages: ## Classes: ## LOC: ## NCLOC: ##
+Methods coverage ##.##
+Elements coverage ##.##
+Statements coverage ##.##
+Conditionals coverage ##.##
+```
+
+In a multiproject configuration this will be emitted by each `cloverGenerateReport`
+task in the project hierarchy. This does not get emitted by the aggregate report.
+
 
 ## Groovy Compiler Configuration Scripts
 

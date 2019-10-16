@@ -2,6 +2,7 @@
 
 * Fix Vulnerable version of Jackson bind dependency - [Issue 142](https://github.com/bmuschko/gradle-clover-plugin/issues/142)
 * Fix Documentation - regex for log - [Issue 121](https://github.com/bmuschko/gradle-clover-plugin/issues/121)
+* Fix Console reporter - [Issue 117](https://github.com/bmuschko/gradle-clover-plugin/issues/117)
 
 ### Version 2.2.3 (April 21, 2019)
 

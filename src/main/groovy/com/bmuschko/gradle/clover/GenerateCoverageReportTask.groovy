@@ -57,9 +57,46 @@ class GenerateCoverageReportTask extends CloverReportTask {
 
         String filter = getFilter()
         writeReports(filter, getTestResultsDir(), getTestResultsInclude())
+
+        File cloverXml = new File("${getReportsDir()}/clover/clover.xml")
+        if (cloverXml.canRead()) {
+            showConsoleCoverage(cloverXml)
+        }
+
         checkTargetPercentage(filter)
 
         logger.info 'Finished generating Clover code coverage report.'
+    }
+
+    // Crude but effective way to integrate a console coverage display
+    private void showConsoleCoverage(File cloverXml) {
+        def coverage = new XmlSlurper().parse(cloverXml)
+
+        logCoverage('Project ' + coverage.project.@name, coverage.project.metrics)
+        logCoverage('Project ' + coverage.project.@name + ' test', coverage.testproject.metrics)
+    }
+
+    private void logCoverage(String heading, groovy.util.slurpersupport.NodeChildren metrics) {
+        logger.quiet '{} classes coverage', heading
+        logger.quiet 'Files: {} Packages: {} Classes: {} LOC: {} NCLOC: {}', metrics.@files, metrics.@packages, metrics.@classes, metrics.@loc, metrics.@ncloc
+        logger.quiet 'Methods coverage {}', computePersentage(metrics.@coveredmethods?.toString(), metrics.@methods?.toString())
+        logger.quiet 'Elements coverage {}', computePersentage(metrics.@coveredelements?.toString(), metrics.@elements?.toString())
+        logger.quiet 'Statements coverage {}', computePersentage(metrics.@coveredstatements?.toString(), metrics.@statements?.toString())
+        logger.quiet 'Conditionals coverage {}', computePersentage(metrics.@coveredconditionals?.toString(), metrics.@conditionals?.toString())
+        logger.quiet ''
+    }
+
+    private String computePersentage(String covered, String total) {
+        try {
+            if (covered && total) {
+                Double percent = Double.valueOf(covered) * 100.0 / Double.valueOf(total)
+                return String.format('%.2f', percent)
+            }
+            return 'N/A'
+        } catch (NumberFormatException e) {
+            logger.warn 'Caught exception with {} and {}', covered, total, e
+            return 'N/A'
+        }
     }
 
     private void checkTargetPercentage(String filter) {
