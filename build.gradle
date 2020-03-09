@@ -103,3 +103,41 @@ idea.project {
         gradleSettings.appendNode('option', [name: 'SDK_HOME', value: gradle.gradleHomeDir])
     }
 }
+
+eclipse {
+    
+    classpath {
+        // default settings for downloading sources and Javadoc:
+        downloadSources = true
+        downloadJavadoc = true
+
+        // This is a weird requirement that I think is fixed when
+        // we upgrade to the latest Gradle and the plugin tools.
+        sourceSets {
+            main {
+                resources {
+                    srcDirs += "build/resources/main"
+                }
+            }
+        }
+
+        // This makes the Gradle paths and Eclipse paths align so
+        // that we have a working workspace from the start.
+        file {
+            whenMerged { classpath ->
+                classpath.entries.findAll { entry -> entry.kind == 'src' }.each { entry ->
+                    switch(entry.path) {
+                        case ~'src/main/groovy':
+                        entry.output = "build/classes/groovy/main"
+                        break
+                        case ~'src/test/groovy':
+                        entry.output = "build/classes/groovy/test"
+                        break
+                        case ~"build/resources/main":
+                        entry.output = null
+                    }
+                }
+            }
+        }
+    }
+}

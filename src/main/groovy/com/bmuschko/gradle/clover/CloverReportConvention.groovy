@@ -30,6 +30,10 @@ class CloverReportConvention {
     String filter
     String testResultsDir
     String testResultsInclude = 'TEST-*.xml'
+    Boolean alwaysReport = false
+    Boolean includeFailedTestCoverage = false
+    Integer numThreads = 2
+    String timeout = ''
 
     CloverReportHistoricalConvention historical = new CloverReportHistoricalConvention()
 

@@ -1,3 +1,8 @@
+### Version 2.2.5 (March 9, 2020)
+
+* Add sourceCompatibility override to solve OpenClover limit and fallback to 1.3 Java compatibility
+* Fix HTML Reporter throwing NPE - [Issue 146](https://github.com/bmuschko/gradle-clover-plugin/issues/146)
+
 ### Version 2.2.4 (October 19, 2019)
 
 * Fix Vulnerable version of Jackson bind dependency - [Issue 142](https://github.com/bmuschko/gradle-clover-plugin/issues/142)

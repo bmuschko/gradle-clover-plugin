@@ -51,7 +51,7 @@ example on how to retrieve it from Bintray:
         }
 
         dependencies {
-            classpath 'com.bmuschko:gradle-clover-plugin:2.2.3'
+            classpath 'com.bmuschko:gradle-clover-plugin:2.2.5'
         }
     }
 
@@ -84,16 +84,16 @@ define will always be relative to the project's build directory.
 to `'**/*.java'` and `'**/*.groovy'` for Groovy projects).
 * `excludes`: A list of String Ant Glob Patterns to exclude for instrumentation. By default no files are excluded.
 * `testIncludes`: A list of String Ant Glob Patterns to include for instrumentation for
-[per-test coverage](http://confluence.atlassian.com/display/CLOVER/Unit+Test+Results+and+Per-Test+Coverage) (defaults to
+[per-test coverage](http://openclover.org/doc/manual/latest/ant--test-results-and-per-test-coverage.html) (defaults to
 `'**/*Test.java'` for Java projects, defaults to `'**/*Test.java,**/*Test.groovy,**/*Spec.groovy'` for Groovy and Grails3 projects).
 * `testExcludes`: A list of String Ant Glob Patterns to exclude from instrumentation for
-[per-test coverage](http://confluence.atlassian.com/display/CLOVER/Unit+Test+Results+and+Per-Test+Coverage) (for example mock classes, defaults to
+[per-test coverage](http://openclover.org/doc/manual/latest/ant--test-results-and-per-test-coverage.html) (for example mock classes, defaults to
 empty list - no excludes).
 * `additionalSourceSets`: Defines custom source sets to be added for instrumentation. See example clover closure for details below.
 * `additionalTestSourceSets`: Defines custom test source sets to be added for instrumentation. See example clover closure for details below.
 * `targetPercentage`: The required target percentage total coverage e.g. "10%". The build fails if that goals is not met.
 If not specified no target percentage will be checked.
-* `optimizeTests`: If `true`, Clover will try to [optimize your tests](https://confluence.atlassian.com/display/CLOVER/About+Test+Optimization);
+* `optimizeTests`: If `true`, Clover will try to [optimize your tests](http://openclover.org/doc/manual/latest/general--what-is-test-optimization.html);
 if `false` Clover will not try to optimize your tests. Test optimization is disabled by default. Note that Clover does not
 yet fully support test optimization for Groovy code; see [CLOV-1152](https://jira.atlassian.com/browse/CLOV-1152) for more information.
 * `snapshotFile`: The location of the Clover snapshot file used for test optimization, relative to the project directory.
@@ -101,12 +101,12 @@ The snapshot file should survive clean builds, so it should *not* be placed in t
 location is `.clover/coverage.db.snapshot`.
 * `includeTasks`: A list of task names, allows to explicitly specify which test tasks should be introspected and used to gather coverage information - useful if there are more than one `Test` tasks in a project.
 * `excludeTasks`: A list of task names, allows to exclude test tasks from introspection and gathering coverage information - useful if there are more than one `Test` tasks in a project.
-* `instrumentLambda`: Controls which lambda types to instrument. [Expression lambdas may cause instrumentation to crash](https://confluence.atlassian.com/cloverkb/java-8-code-instrumented-by-clover-fails-to-compile-442270815.html).
+* `instrumentLambda`: Controls which lambda types to instrument. [Expression lambdas may cause instrumentation to crash](http://openclover.org/doc/manual/latest/kb--java-8-code-instrumented-by-clover-fails-to-compile.html).
 * `useClover3`: *Deprecated - this is not used anymore*
-* `flushpolicy`: This String attribute controls how Clover flushes coverage data during a test run. Valid values are directed, interval, or threaded. [clover-setup Parameters](https://confluence.atlassian.com/clover/clover-setup-71600085.html#clover-setup-parametersParameters)
-* `flushinterval`: When the flushpolicy is set to interval or threaded this value is the minimum period between flush operations (in milliseconds). [clover-setup Parameters](https://confluence.atlassian.com/clover/clover-setup-71600085.html#clover-setup-parametersParameters)
+* `flushpolicy`: This String attribute controls how Clover flushes coverage data during a test run. Valid values are directed, interval, or threaded. [clover-setup Parameters](http://openclover.org/doc/manual/latest/ant--clover-setup.html#clover-setup-parametersParameters)
+* `flushinterval`: When the flushpolicy is set to interval or threaded this value is the minimum period between flush operations (in milliseconds). [clover-setup Parameters](http://openclover.org/doc/manual/latest/ant--clover-setup.html#clover-setup-parametersParameters)
 
-Within `clover` you can define [coverage contexts](http://confluence.atlassian.com/display/CLOVER/Using+Coverage+Contexts)
+Within `clover` you can define [coverage contexts](http://openclover.org/doc/manual/latest/ant--using-coverage-contexts.html)
 in a closure named `contexts`. There are two types of coverage contexts: statement contexts and method contexts. You can
 define as many contexts as you want. Each of the context type closure define the following attributes:
 
@@ -122,7 +122,7 @@ Additionally, method contexts can be provided any of the following attributes to
 * `maxAggregatedComplexity`: Match a method to this pattern if its aggregated cyclomatic complexity is not greater than maxAggregatedComplexity. In other words - all methods with aggregated complexity <= maxAggregatedComplexity will be filtered out. Aggregated complexity metric is a sum of the method complexity and complexity of all anonymous inline classes declared in the method.
 * `maxAggregatedStatements`: Match a method to this pattern if its number of aggregated statements is not greater than maxAggregatedStatements. In other words - all methods with aggregated statements <= maxAggregatedStaments will be filtered out. Aggregated statements metric is a sum of the method statements and statements of all anonymous inline classes declared in the method.
 
-For more information on method contexts, see the [main Clover documentation](https://confluence.atlassian.com/display/CLOVER/methodContext) for this feature.
+For more information on method contexts, see the [main Clover documentation](http://openclover.org/doc/manual/latest/ant--methodcontext.html) for this feature.
 
 
 Within `clover` you can define which report types should be generated in a closure named `report`:
@@ -132,12 +132,16 @@ Within `clover` you can define which report types should be generated in a closu
 * `html`: Generates HTML report (defaults to `false`).
 * `pdf`: Generates PDF report (defaults to `false`).
 * `filter`: A comma or space separated list of contexts to exclude when generating coverage reports.
-See [Using Coverage Contexts](http://confluence.atlassian.com/display/CLOVER/Using+Coverage+Contexts). By default no filter
+See [Using Coverage Contexts](http://openclover.org/doc/manual/latest/ant--using-coverage-contexts.html). By default no filter
 is applied.
 * `testResultsDir`: Specifies the location of the JUnit4 test results XML report. This is necessary when the test use the new JUnit4 @Rule mechanism to declare expected exceptions. Clover fails to detect coverage for methods when this mechanism is used. This solution uses a feature of Clover that takes the coverage information directly from the JUnit XML report.
 * `testResultsInclude`: If testResultsDir is specified this must be an Ant file name pattern to select the correct XML files within the directory (defaults to TEST-*.xml).
+* `alwaysReport`: See OpenClover documentation for [clover-report current](http://openclover.org/doc/manual/latest/ant--clover-report.html#clover-report-Current)
+* `includeFailedTestCoverage`: See OpenClover documentation for [clover-report current](http://openclover.org/doc/manual/latest/ant--clover-report.html#clover-report-Current)
+* `numThreads`: See OpenClover documentation for [clover-report current](http://openclover.org/doc/manual/latest/ant--clover-report.html#clover-report-Current)
+* `timeout`:  See OpenClover documentation for [clover-report current](http://openclover.org/doc/manual/latest/ant--clover-report.html#clover-report-Current)
 
-Within `report` closure you can define a closure named `columns` to enable selection of columns for the report output. This feature implements support for the columns defined in Clover documentation [Clover ReportComumns Nested Element](https://confluence.atlassian.com/clover/clover-report-71600095.html#clover-report-Columns). Each line in the closure must begin with the name of the column to add followed by a Groovy map with the 4 optional attributes for the column. We support `format`, `min`, `max` and `scope`. The format and scope values are checked against the documented supported contents and will throw errors if unsupported values are used. We do not implement support for the `expression` column at this time, if you attempt to use it the plugin will throw an error:
+Within `report` closure you can define a closure named `columns` to enable selection of columns for the report output. This feature implements support for the columns defined in Clover documentation [Clover ReportComumns Nested Element](http://openclover.org/doc/manual/latest/ant--columns-element.html). Each line in the closure must begin with the name of the column to add followed by a Groovy map with the 4 optional attributes for the column. We support `format`, `min`, `max` and `scope`. The format and scope values are checked against the documented supported contents and will throw errors if unsupported values are used. We do not implement support for the `expression` column at this time, if you attempt to use it the plugin will throw an error:
 
 * `format`: Determines how the value is rendered. Depending on the column, this may be one of raw, bar, % or longbar.
 * `min`: Sets a minimum threshold on the value of the column. If the value is less than this it will be highlighted.
@@ -154,7 +158,7 @@ Within `report` closure you can define a closure named `historical` to enable Cl
 * `to`: Specifies the date after which data points will be ignored (optional, see `to` attribute of Clover historical element)
 * `added`: Closure to support nested `added` element from Clover `historical` element. Only the `range` and `interval` attributes are supported (optional, see `added` nested element of Clover historical element)
 * `mover`: Closure that can appear multiple times to support the `movers` element from Clover `historical` element. Only the `threshold`, `range` and `interval` attributes are supported (optional, see `movers` nested element of Clover historical element)
-See [Clover Report Historical Nested Element](https://confluence.atlassian.com/clover/clover-report-71600095.html#clover-report-<historical>)
+See [Clover Report Historical Nested Element](http://openclover.org/doc/manual/latest/ant--clover-report.html#clover-report-%3Chistorical%3E)
 
 Furthermore, within `clover` you can define compiler settings which will be passed to java and groovyc upon compilation of instrumented sources.
 This is useful when specific compiler settings have been set on the main Java/Groovy compiler for your buildscript and
@@ -165,6 +169,10 @@ need to be carried over to the compilation of the instrumented sources.  These a
 * `debug`: Controls whether to invoke javac with the -g flag. This is useful for Spring MVC code that uses reflection for parameter mapping. (defaults to `false`).
 * `additionalArgs`: The (optional) additional command line arguments for the compiler. This is useful for Spring MVC code that uses reflection for parameter mapping. This should be valid command line arguments as a spaces separated string. No attempt is made to validate this line, it is passed verbatim to the <compilerarg> nested element for the Ant `javac` task.
 * `additionalGroovycOpts`: The (optional) additional options for the `groovyc` compiler. See [http://groovy-lang.org/groovyc.html#_ant_task]
+* `sourceCompatibility`: Overrides the Java Compiler to prevent using compatibility modes not supported by OpenClover
+* `targetCompatiility`: Overrides the Java Compiler to prevent using compatibility modes not supported by OpenClover
+
+The `sourceCompatibility` and `targetCompatiility` options will work only as long as your code is compatible with the selections. If your code uses language features above the language level specified OpenClover will fail to compile the code.
 
 The Clover plugin defines the following convention properties in the `clover` closure:
 
@@ -209,6 +217,10 @@ The Clover plugin defines the following convention properties in the `clover` cl
         compiler {
             encoding = 'UTF-8'
 
+            // Override the Java Compiler source and target compatibility settings
+            sourceCompatibility = '1.8'
+            targetCompatibility = '1.8'
+
             // if the javac executable used by ant should be the same as the one used elsewhere.
             executable = file('/usr/local/java/jdk1.8.0_05')
             // used to add debug information for Spring applications
@@ -249,6 +261,12 @@ The Clover plugin defines the following convention properties in the `clover` cl
             // Support capturing test results from JUnix XML report
             testResultsDir = project.tasks.getByName('test').reports.junitXml.destination
             testResultsInclude = 'TEST-*.xml'
+
+            // Support controlling current-report for OpenClover
+            alwaysReport = false
+            includeFailedTestCoverage = false
+            numThreads = 2
+            timeout = '30 seconds'
 
             // Clover report nested columns support
             columns {

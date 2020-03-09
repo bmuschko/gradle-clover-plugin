@@ -179,8 +179,8 @@ class CloverPlugin implements Plugin<Project> {
             map('buildDir') { project.buildDir }
             map('sourceSets') { resolver.getSourceSets() }
             map('testSourceSets') { resolver.getTestSourceSets() }
-            map('sourceCompatibility') { project.sourceCompatibility?.toString() }
-            map('targetCompatibility') { project.targetCompatibility?.toString() }
+            map('sourceCompatibility') { getSourceCompatibility(project, cloverPluginConvention) }
+            map('targetCompatibility') { getTargetCompatibility(project, cloverPluginConvention) }
             map('includes') { getIncludes(project, cloverPluginConvention) }
             map('excludes') { cloverPluginConvention.excludes }
             map('testIncludes') { getTestIncludes(project, cloverPluginConvention) }
@@ -209,6 +209,10 @@ class CloverPlugin implements Plugin<Project> {
                 map('filter') { cloverPluginConvention.report.filter }
                 map('testResultsDir') { cloverPluginConvention.report.testResultsDir }
                 map('testResultsInclude') { cloverPluginConvention.report.testResultsInclude }
+                map('alwaysReport') { cloverPluginConvention.report.alwaysReport }
+                map('includeFailedTestCoverage') { cloverPluginConvention.report.includeFailedTestCoverage }
+                map('numThreads') { cloverPluginConvention.report.numThreads }
+                map('timeoutInterval') { cloverPluginConvention.report.timeout }
             }
             setCloverReportConventionMappings(project, cloverPluginConvention, generateCoverageReportTask)
         }
@@ -227,6 +231,10 @@ class CloverPlugin implements Plugin<Project> {
                 map('filter') { cloverPluginConvention.report.filter }
                 map('testResultsDir') { cloverPluginConvention.report.testResultsDir }
                 map('testResultsInclude') { cloverPluginConvention.report.testResultsInclude }
+                map('alwaysReport') { cloverPluginConvention.report.alwaysReport }
+                map('includeFailedTestCoverage') { cloverPluginConvention.report.includeFailedTestCoverage }
+                map('numThreads') { cloverPluginConvention.report.numThreads }
+                map('timeoutInterval') { cloverPluginConvention.report.timeout }
             }
             setCloverReportConventionMappings(project, cloverPluginConvention, aggregateReportsTask)
         }
@@ -472,6 +480,22 @@ class CloverPlugin implements Plugin<Project> {
         private Set<File> filterNonExistentDirectories(Set<File> dirs) {
             dirs.findAll { it.exists() }
         }
+    }
+
+    private String getSourceCompatibility(Project project, CloverPluginConvention cloverPluginConvention) {
+        if (cloverPluginConvention.compiler.sourceCompatibility) {
+            return cloverPluginConvention.compiler.sourceCompatibility
+        }
+
+        return project.sourceCompatibility?.toString()
+    }
+
+    private String getTargetCompatibility(Project project, CloverPluginConvention cloverPluginConvention) {
+        if (cloverPluginConvention.compiler.targetCompatibility) {
+            return cloverPluginConvention.compiler.targetCompatibility
+        }
+
+        return project.targetCompatibility?.toString()
     }
 
     /**

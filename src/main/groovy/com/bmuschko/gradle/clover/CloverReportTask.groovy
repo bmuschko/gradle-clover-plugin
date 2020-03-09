@@ -44,6 +44,16 @@ abstract class CloverReportTask extends DefaultTask {
     @OutputDirectory
     File reportsDir
 
+    // Current report parameters
+    @Input
+    Boolean alwaysReport
+    @Input
+    Boolean includeFailedTestCoverage
+    @Input
+    Integer numThreads
+    @Input
+    String timeoutInterval
+    
     // Enabled report types.
     @Input
     Boolean xml
@@ -180,7 +190,16 @@ abstract class CloverReportTask extends DefaultTask {
      */
     private void writeReport(File outfile, ReportType reportType, String filter, String testResultsDir, String testResultsInclude) {
         ant."clover-report"(initString: "$project.buildDir/${getInitString()}") {
-            def params = [ outfile: outfile, title: project.name ]
+            def params = [
+                outfile: outfile,
+                title: project.name,
+                alwaysReport: alwaysReport,
+                includeFailedTestCoverage: includeFailedTestCoverage,
+                numThreads: numThreads,
+            ]
+            if (timeoutInterval) {
+                params.timeout = timeoutInterval
+            }
             if (reportType == ReportType.PDF)
                 params.summary = 'true'
             def formatParams = [ type: reportType.format ]

@@ -22,6 +22,8 @@ package com.bmuschko.gradle.clover
  */
 class CloverCompilerConvention {
     String encoding = 'UTF-8'
+    String sourceCompatibility
+    String targetCompatibility
     File executable
     boolean debug = false
     String additionalArgs = null
