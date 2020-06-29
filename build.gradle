@@ -1,5 +1,4 @@
 plugins {
-    id 'com.gradle.build-scan' version '2.2.1'
     id 'java-gradle-plugin'
     id 'groovy'
     id 'maven-publish'
@@ -65,7 +64,7 @@ dependencies {
     testCompile gradleTestKit()
 
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.0'
-    
+
     testCompile 'junit:junit:4.12'
     testCompile 'commons-io:commons-io:2.5'
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
@@ -105,7 +104,7 @@ idea.project {
 }
 
 eclipse {
-    
+
     classpath {
         // default settings for downloading sources and Javadoc:
         downloadSources = true
