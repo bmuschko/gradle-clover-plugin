@@ -1,5 +1,12 @@
 package com.bmuschko.gradle.clover
 
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.SourceSetOutput
+
 import java.util.concurrent.Callable
 
 import org.gradle.api.file.FileCollection
@@ -9,28 +16,35 @@ import groovy.transform.ToString
 
 @CompileStatic
 @ToString
-class CloverSourceSet implements Serializable {
-    static final long serialVersionUID = 1L
+class CloverSourceSet {
+    private final SourceSetOutput originalSourceSetOutput
 
-    CloverSourceSet(boolean groovy = false) {
+    CloverSourceSet(boolean groovy = false, SourceSetOutput originalSourceSetOutput = null) {
         this.groovy = groovy
+        this.originalSourceSetOutput = originalSourceSetOutput
     }
 
-    Collection<File> srcDirs = new HashSet<File>()
+    @Internal Collection<File> srcDirs = new HashSet<File>()
 
-    File classesDir
+    @InputFiles
+    @Optional
+    FileCollection getOriginalSourceSetOutputDirectories() {
+        return originalSourceSetOutput == null ? null : originalSourceSetOutput.classesDirs.filter { File file -> file.exists() }
+    }
+
+    @Internal File classesDir
     void setClassesDir(File classesDir) {
         this.classesDir = classesDir
         this.backupDir = new File("${classesDir}-bak")
     }
 
     private File backupDir
-    File getBackupDir() {
+    @OutputDirectory File getBackupDir() {
         backupDir
     }
 
     private boolean groovy
-    boolean isGroovy() {
+    @Input boolean isGroovy() {
         groovy
     }
     void setGroovy(boolean groovy) {
@@ -39,6 +53,7 @@ class CloverSourceSet implements Serializable {
 
     private transient Callable<FileCollection> classpathProvider
 
+    @InputFiles
     FileCollection getCompileClasspath() {
         return classpathProvider.call()
     }

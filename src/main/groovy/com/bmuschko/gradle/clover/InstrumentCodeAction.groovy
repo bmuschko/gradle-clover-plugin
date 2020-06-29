@@ -18,12 +18,15 @@ package com.bmuschko.gradle.clover
 import org.gradle.api.Action
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.Optional
 
 /**
  * Clover code instrumentation action.
@@ -32,31 +35,32 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 class InstrumentCodeAction implements Action<Task> {
-    String initString
-    Boolean enabled
-    Boolean compileGroovy
-    FileCollection cloverClasspath
-    FileCollection testRuntimeClasspath
-    FileCollection groovyClasspath
-    @Input List<CloverSourceSet> sourceSets
-    @Input List<CloverSourceSet> testSourceSets
-    @InputDirectory File buildDir
-    String sourceCompatibility
-    String targetCompatibility
-    String executable
-    String encoding
-    List<String> includes
-    List<String> excludes
-    List<String> testIncludes
-    List<String> testExcludes
-    String instrumentLambda
-    def statementContexts
-    def methodContexts
-    boolean debug
-    int flushinterval
-    String flushpolicy
-    String additionalArgs
-    Map additionalGroovycOpts
+    @Input @Optional String initString
+    @Input Boolean enabled
+    @Input Boolean compileGroovy
+    @Classpath FileCollection cloverClasspath
+    @Classpath FileCollection testRuntimeClasspath
+    @Classpath FileCollection groovyClasspath
+    @Nested List<CloverSourceSet> sourceSets
+    @Nested List<CloverSourceSet> testSourceSets
+    @Internal File buildDir
+    @Input @Optional String sourceCompatibility
+    @Input @Optional String targetCompatibility
+    @Input @Optional String executable
+    @Input @Optional String encoding
+    @Input @Optional List<String> includes
+    @Input @Optional List<String> excludes
+    @Input @Optional List<String> testIncludes
+    @Input @Optional List<String> testExcludes
+    @Input @Optional String instrumentLambda
+    @Nested Set<CloverContextConvention> statementContexts
+    @Nested Set<CloverContextConvention> methodContexts
+    @Input boolean debug
+    @Internal int flushinterval
+    @Input @Optional String flushpolicy
+    @Input @Optional String additionalArgs
+    @Input @Optional Map additionalGroovycOpts
+
     @Override
     void execute(Task task) {
         instrumentCode(task)
@@ -150,7 +154,7 @@ class InstrumentCodeAction implements Action<Task> {
             log.info 'Finished instrumenting code using Clover.'
         }
     }
-    
+
     private Map getCloverSetupAttributes() {
         def attributes = [initString: "${getBuildDir()}/${getInitString()}"]
 
@@ -170,7 +174,7 @@ class InstrumentCodeAction implements Action<Task> {
         attributes.flushpolicy = getFlushpolicy()
 
         attributes.encoding = getEncoding()
-        
+
         attributes
     }
 
@@ -240,7 +244,7 @@ class InstrumentCodeAction implements Action<Task> {
 
     /**
      * Gets the compile classpath for the given sourceSet.
-     * 
+     *
      * @param sourceSet the CloverSourceSet to extract the classpath
      *
      * @return Classpath

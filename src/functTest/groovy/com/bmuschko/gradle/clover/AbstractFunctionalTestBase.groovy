@@ -103,7 +103,7 @@ protected abstract class AbstractFunctionalTestBase extends Specification {
             args.addAll(arguments)
         }
 
-        def runner = GradleRunner.create().withGradleVersion(gradleVersion).withProjectDir(projectDir).withArguments(args).withPluginClasspath()
+        def runner = GradleRunner.create().withGradleVersion(gradleVersion).withProjectDir(projectDir).withArguments(args).withPluginClasspath().forwardOutput().withDebug(true)
         createClasspathInjectionScript(runner)
         runner
     }

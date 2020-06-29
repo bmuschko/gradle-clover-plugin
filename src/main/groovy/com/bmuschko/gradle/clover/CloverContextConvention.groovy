@@ -15,12 +15,14 @@
  */
 package com.bmuschko.gradle.clover
 
+import org.gradle.api.tasks.Input
+
 /**
  * Defines Clover context convention.
  *
  * @author Benjamin Muschko
  */
 class CloverContextConvention {
-    String name
-    String regexp
+    @Input String name
+    @Input String regexp
 }

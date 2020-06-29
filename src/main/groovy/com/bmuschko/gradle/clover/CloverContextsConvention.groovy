@@ -15,12 +15,14 @@
  */
 package com.bmuschko.gradle.clover
 
+import org.gradle.api.tasks.Nested
+
 /**
  * Defines Clover contexts convention.
  *
  * @author Benjamin Muschko
  */
 class CloverContextsConvention {
-    def statements = []
-    def methods = []
+    @Nested Set<CloverContextConvention> statements = []
+    @Nested Set<CloverContextConvention> methods = []
 }
