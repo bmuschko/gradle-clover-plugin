@@ -141,15 +141,8 @@ class InstrumentCodeAction implements Action<Task> {
                 }
             }
 
-            // Move original classes
-            moveOriginalClasses(ant)
-            prepareClassesDirs()
-
             // Compile instrumented classes
             compileClasses(ant)
-
-            // Copy resources
-            copyOriginalResources(ant)
 
             log.info 'Finished instrumenting code using Clover.'
         }
@@ -176,47 +169,6 @@ class InstrumentCodeAction implements Action<Task> {
         attributes.encoding = getEncoding()
 
         attributes
-    }
-
-    @CompileStatic
-    private void moveOriginalClasses(AntBuilder ant) {
-        moveClassesDirsToBackupDirs(ant, getSourceSets())
-        moveClassesDirsToBackupDirs(ant, getTestSourceSets())
-    }
-
-    private void moveClassesDirsToBackupDirs(AntBuilder ant, List<CloverSourceSet> sourceSets) {
-        sourceSets.each { sourceSet ->
-            if (CloverSourceSetUtils.existsDirectory(sourceSet.classesDir)) {
-                ant.move(file: sourceSet.classesDir.canonicalPath, tofile: sourceSet.backupDir.canonicalPath, failonerror: true)
-            }
-        }
-    }
-
-    @CompileStatic
-    private void prepareClassesDirs() {
-        createClassesDirs(getSourceSets())
-        createClassesDirs(getTestSourceSets())
-    }
-
-    @CompileStatic
-    private void createClassesDirs(List<CloverSourceSet> sourceSets) {
-        sourceSets.each { it.classesDir.mkdirs() }
-    }
-
-    @CompileStatic
-    private void copyOriginalResources(AntBuilder ant) {
-        copyResourceFilesToBackupDirs(ant, getSourceSets())
-        copyResourceFilesToBackupDirs(ant, getTestSourceSets())
-    }
-
-    private void copyResourceFilesToBackupDirs(AntBuilder ant, List<CloverSourceSet> sourceSets) {
-        sourceSets.each { sourceSet ->
-            if (CloverSourceSetUtils.existsDirectory(sourceSet.backupDir)) {
-                ant.copy(todir: sourceSet.classesDir.canonicalPath, failonerror: true) {
-                    fileset(dir: sourceSet.backupDir.canonicalPath, excludes: '**/*.class')
-                }
-            }
-        }
     }
 
     /**
@@ -264,9 +216,9 @@ class InstrumentCodeAction implements Action<Task> {
         for(CloverSourceSet sourceSet : getSourceSets()) {
             String classpath = getCompileClasspath(sourceSet)
             if (sourceSet.groovy) {
-                compileGroovyAndJava(ant, sourceSet.srcDirs, sourceSet.classesDir, classpath)
+                compileGroovyAndJava(ant, sourceSet.srcDirs, sourceSet.instrumentedClassesDir, classpath)
             } else {
-                compileJava(ant, sourceSet.srcDirs, sourceSet.classesDir, classpath)
+                compileJava(ant, sourceSet.srcDirs, sourceSet.instrumentedClassesDir, classpath)
             }
         }
     }
@@ -282,9 +234,9 @@ class InstrumentCodeAction implements Action<Task> {
         for(CloverSourceSet sourceSet : getTestSourceSets()) {
             String classpath = addClassesDirToClasspath(getCompileClasspath(sourceSet), nonTestClasses)
             if (sourceSet.groovy) {
-                compileGroovyAndJava(ant, sourceSet.srcDirs, sourceSet.classesDir, classpath)
+                compileGroovyAndJava(ant, sourceSet.srcDirs, sourceSet.instrumentedClassesDir, classpath)
             } else {
-                compileJava(ant, sourceSet.srcDirs, sourceSet.classesDir, classpath)
+                compileJava(ant, sourceSet.srcDirs, sourceSet.instrumentedClassesDir, classpath)
             }
         }
     }

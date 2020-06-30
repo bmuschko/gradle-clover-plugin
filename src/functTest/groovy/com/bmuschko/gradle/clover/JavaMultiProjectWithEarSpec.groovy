@@ -15,6 +15,10 @@
  */
 package com.bmuschko.gradle.clover
 
+import org.apache.commons.io.FileUtils
+
+import java.util.function.Predicate
+import java.util.stream.Collectors
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
@@ -63,6 +67,16 @@ class JavaMultiProjectWithEarSpec extends AbstractFunctionalTestBase {
         def carJarInEar = getFromZip(ear, "lib/projectCar.jar")
         zipContains(carJarInEar, "clover.instrumented")
 
+        and: "only the instrumented Car class is in the jar"
+        def carClassInJar = getFromZip(carJarInEar, 'Car.class')
+        def instrumentedCarClass = new File(buildDir, 'projectCar/instrumented/main/java/Car.class')
+        FileUtils.contentEquals(carClassInJar, instrumentedCarClass)
+
+        and: "only the instrumented Driver class is in the jar"
+        def driverClassInJar = getFromZip(driverJarInEar, "Driver.class")
+        def instrumentdDriverClass = new File(buildDir, 'projectDriver/instrumented/main/java/Driver.class')
+        FileUtils.contentEquals(driverClassInJar, instrumentdDriverClass)
+
         where:
         gradle << GRADLE_TEST_VERSIONS
     }
@@ -82,6 +96,10 @@ class JavaMultiProjectWithEarSpec extends AbstractFunctionalTestBase {
     private File getFromZip(File zip, String fileName) {
         ZipFile zipFile = new ZipFile(zip)
         try {
+            def count = zipFile.entries().findAll { it.name == fileName }.size()
+            assert count > 0 : "No entries with path '${fileName}' were found in ${zip.name}"
+            assert count == 1 : "More than one entry with path '${fileName}' was found in ${zip.name}"
+
             ZipEntry zipEntry = zipFile.getEntry(fileName)
             assert zipEntry != null
 

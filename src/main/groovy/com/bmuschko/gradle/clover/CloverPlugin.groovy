@@ -15,6 +15,8 @@
  */
 package com.bmuschko.gradle.clover
 
+import org.gradle.api.file.FileTreeElement
+
 import java.util.concurrent.Callable
 
 import org.gradle.api.Plugin
@@ -103,13 +105,20 @@ class CloverPlugin implements Plugin<Project> {
         return "cloverInstrumentCodeFor${testTask.name.capitalize()}"
     }
 
-    @CompileStatic
     private void configureActionsForTask(Test test, Project project, CloverPluginConvention cloverPluginConvention, SourceSetsResolver resolver, AggregateDatabasesTask aggregateDatabasesTask) {
         if (testTaskEnabled(test, cloverPluginConvention)) {
             // Add instrumentation task
             def instrumentCodeTask = project.tasks.create(getInstrumentationTaskName(test), CloverInstrumentationTask, cloverPluginConvention, test, resolver)
             instrumentCodeTask.dependsOn(test.testClassesDirs)
             test.dependsOn(instrumentCodeTask)
+
+            FileCollection instrumentedClassDirs = project.files { instrumentCodeTask.sourceSets.collect { it.instrumentedClassesDir } }
+            FileCollection instrumentedTestClassDirs = project.files { instrumentCodeTask.testSourceSets.collect { it.instrumentedClassesDir } }
+            FileCollection originalClassDirs = project.files { instrumentCodeTask.sourceSets.collect { it.classesDir } }
+            FileCollection originalTestClassDirs = project.files { instrumentCodeTask.testSourceSets.collect { it.classesDir } }
+            test.classpath = instrumentedClassDirs + instrumentedTestClassDirs + test.classpath - originalClassDirs - originalTestClassDirs
+
+            test.getConventionMapping().map("testClassesDirs") { instrumentedTestClassDirs }
 
             // NB: I believe this is a bug in one of the Android plugins used in the
             // user's build who reported this in Issue #111, adding some defensive
@@ -122,27 +131,21 @@ class CloverPlugin implements Plugin<Project> {
             test.include optimizeTestSetAction // action is also a file inclusion spec
             test.doLast createCreateSnapshotAction(cloverPluginConvention, project, test)
             if (project.hasProperty('cloverInstrumentedJar')) {
+
                 log.info "Skipping RestoreOriginalClassesAction for {} to generate instrumented JAR", test
                 // If we are generating instrumented JAR files make sure the Jar
                 // tasks run after the Test tasks so that the instrumented classes
                 // get packaged in the archives.
                 project.tasks.withType(Jar) { Jar jar ->
-                    jar.mustRunAfter test
+                    jar.dependsOn instrumentCodeTask
+                    jar.from instrumentedClassDirs
+                    jar.exclude { FileTreeElement element ->
+                        originalClassDirs.any { classesDir -> element.file.canonicalPath.startsWith(classesDir.canonicalPath) }
+                    }
                 }
-            } else {
-                test.doLast createRestoreOriginalClassesAction(project, resolver, test)
             }
             aggregateDatabasesTask.aggregate(test)
         }
-    }
-
-    private RestoreOriginalClassesAction createRestoreOriginalClassesAction(Project project, SourceSetsResolver resolver, Test testTask) {
-        RestoreOriginalClassesAction restoreOriginalClassesAction = createInstance(project, RestoreOriginalClassesAction)
-        restoreOriginalClassesAction.conventionMapping.with {
-            map('sourceSets') { resolver.getSourceSets() }
-            map('testSourceSets') { resolver.getTestSourceSets() }
-        }
-        restoreOriginalClassesAction
     }
 
     private CreateSnapshotAction createCreateSnapshotAction(CloverPluginConvention cloverPluginConvention, Project project, Test testTask) {
@@ -344,20 +347,22 @@ class CloverPlugin implements Plugin<Project> {
             }
 
             if (hasJavaPlugin(project)) {
-                CloverSourceSet cloverSourceSet = new CloverSourceSet(false, project.sourceSets.main.output)
+                CloverSourceSet cloverSourceSet = new CloverSourceSet(false)
                 cloverSourceSet.with {
                     srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.main.java.srcDirs))
                     classesDir = project.sourceSets.main.java.outputDir
+                    instrumentedClassesDir = project.layout.buildDirectory.dir("instrumented/main/java").get().asFile
                     classpathProvider = classpathCallable
                 }
                 sourceSets << cloverSourceSet
             }
 
             if (hasGroovyPlugin(project)) {
-                CloverSourceSet cloverSourceSet = new CloverSourceSet(true, project.sourceSets.main.output)
+                CloverSourceSet cloverSourceSet = new CloverSourceSet(true)
                 cloverSourceSet.with {
                     srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.main.groovy.srcDirs))
                     classesDir = project.sourceSets.main.groovy.outputDir
+                    instrumentedClassesDir = project.layout.buildDirectory.dir("instrumented/main/groovy").get().asFile
                     classpathProvider = classpathCallable
                 }
                 sourceSets << cloverSourceSet
@@ -389,20 +394,22 @@ class CloverPlugin implements Plugin<Project> {
             }
 
             if (hasJavaPlugin(project)) {
-                CloverSourceSet cloverSourceSet = new CloverSourceSet(false, project.sourceSets.test.output)
+                CloverSourceSet cloverSourceSet = new CloverSourceSet(false)
                 cloverSourceSet.with {
                     srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.test.java.srcDirs))
                     classesDir = project.sourceSets.test.java.outputDir
+                    instrumentedClassesDir = project.layout.buildDirectory.dir("instrumented/test/java").get().asFile
                     classpathProvider = classpathCallable
                 }
                 testSourceSets << cloverSourceSet
             }
 
             if (hasGroovyPlugin(project)) {
-                CloverSourceSet cloverSourceSet = new CloverSourceSet(true, project.sourceSets.test.output)
+                CloverSourceSet cloverSourceSet = new CloverSourceSet(true)
                 cloverSourceSet.with {
                     srcDirs.addAll(filterNonExistentDirectories(project.sourceSets.test.groovy.srcDirs))
                     classesDir = project.sourceSets.test.groovy.outputDir
+                    instrumentedClassesDir = project.layout.buildDirectory.dir("instrumented/test/groovy").get().asFile
                     classpathProvider = classpathCallable
                 }
                 testSourceSets << cloverSourceSet

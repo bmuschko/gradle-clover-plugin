@@ -64,4 +64,14 @@ class CloverInstrumentationTask extends DefaultTask {
     void instrumentCode() {
         instrumentCodeAction.execute(this)
     }
+
+    @Internal
+    List<CloverSourceSet> getSourceSets() {
+        return instrumentCodeAction.sourceSets
+    }
+
+    @Internal
+    List<CloverSourceSet> getTestSourceSets() {
+        return instrumentCodeAction.testSourceSets
+    }
 }
