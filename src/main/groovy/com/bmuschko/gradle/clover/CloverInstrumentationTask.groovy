@@ -2,6 +2,7 @@ package com.bmuschko.gradle.clover
 
 import com.bmuschko.gradle.clover.CloverPlugin.SourceSetsResolver
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.TaskAction
@@ -36,7 +37,7 @@ class CloverInstrumentationTask extends DefaultTask {
             map('enabled') { cloverPluginConvention.enabled }
             map('compileGroovy') { hasGroovyPlugin(project) }
             map('cloverClasspath') { project.configurations.getByName(CloverPlugin.CONFIGURATION_NAME).asFileTree }
-            map('testRuntimeClasspath') { getTestRuntimeClasspath(project, testTask).asFileTree }
+            map('instrumentationClasspath') { getInstrumentationClasspath(project, testTask).asFileTree }
             map('groovyClasspath') { getGroovyClasspath(project) }
             map('buildDir') { project.buildDir }
             map('sourceSets') { resolver.getSourceSets() }
@@ -66,12 +67,22 @@ class CloverInstrumentationTask extends DefaultTask {
     }
 
     @Internal
-    List<CloverSourceSet> getSourceSets() {
-        return instrumentCodeAction.sourceSets
+    FileCollection getInstrumentedMainClasses() {
+        return project.files({ instrumentCodeAction.sourceSets.collect { it.instrumentedClassesDir } }) { builtBy this }
     }
 
     @Internal
-    List<CloverSourceSet> getTestSourceSets() {
-        return instrumentCodeAction.testSourceSets
+    FileCollection getInstrumentedTestClasses() {
+        return project.files({ instrumentCodeAction.testSourceSets.collect { it.instrumentedClassesDir } }) { builtBy this }
+    }
+
+    @Internal
+    FileCollection getOriginalMainClasses() {
+        return project.files { instrumentCodeAction.sourceSets.collect { it.classesDir } }
+    }
+
+    @Internal
+    FileCollection getOriginalTestClasses() {
+        project.files { instrumentCodeAction.testSourceSets.collect { it.classesDir } }
     }
 }

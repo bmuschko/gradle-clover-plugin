@@ -49,7 +49,6 @@ class CloverPlugin implements Plugin<Project> {
     static final String DEFAULT_CLOVER_SNAPSHOT = '.clover/coverage.db.snapshot'
     static final String DEFAULT_CLOVER_HISTORY_DIR = '.clover/historypoints'
 
-
     @CompileStatic
     @Override
     void apply(Project project) {
@@ -110,12 +109,12 @@ class CloverPlugin implements Plugin<Project> {
             // Add instrumentation task
             def instrumentCodeTask = project.tasks.create(getInstrumentationTaskName(test), CloverInstrumentationTask, cloverPluginConvention, test, resolver)
             instrumentCodeTask.dependsOn(test.testClassesDirs)
-            test.dependsOn(instrumentCodeTask)
 
-            FileCollection instrumentedClassDirs = project.files { instrumentCodeTask.sourceSets.collect { it.instrumentedClassesDir } }
-            FileCollection instrumentedTestClassDirs = project.files { instrumentCodeTask.testSourceSets.collect { it.instrumentedClassesDir } }
-            FileCollection originalClassDirs = project.files { instrumentCodeTask.sourceSets.collect { it.classesDir } }
-            FileCollection originalTestClassDirs = project.files { instrumentCodeTask.testSourceSets.collect { it.classesDir } }
+            FileCollection instrumentedClassDirs = instrumentCodeTask.instrumentedMainClasses
+            FileCollection instrumentedTestClassDirs = instrumentCodeTask.instrumentedTestClasses
+            FileCollection originalClassDirs = instrumentCodeTask.originalMainClasses
+            FileCollection originalTestClassDirs = instrumentCodeTask.originalTestClasses
+            test.ext.originalClasspath = test.classpath
             test.classpath = instrumentedClassDirs + instrumentedTestClassDirs + test.classpath - originalClassDirs - originalTestClassDirs
 
             test.getConventionMapping().map("testClassesDirs") { instrumentedTestClassDirs }
@@ -137,7 +136,6 @@ class CloverPlugin implements Plugin<Project> {
                 // tasks run after the Test tasks so that the instrumented classes
                 // get packaged in the archives.
                 project.tasks.withType(Jar) { Jar jar ->
-                    jar.dependsOn instrumentCodeTask
                     jar.from instrumentedClassDirs
                     jar.exclude { FileTreeElement element ->
                         originalClassDirs.any { classesDir -> element.file.canonicalPath.startsWith(classesDir.canonicalPath) }
@@ -171,38 +169,6 @@ class CloverPlugin implements Plugin<Project> {
             map('buildDir') { project.buildDir }
         }
         optimizeTestSetAction
-    }
-
-    private InstrumentCodeAction createInstrumentCodeAction(CloverPluginConvention cloverPluginConvention, Project project, SourceSetsResolver resolver, Test testTask) {
-        InstrumentCodeAction instrumentCodeAction = createInstance(project, InstrumentCodeAction)
-        instrumentCodeAction.conventionMapping.with {
-            map('initString') { getInitString(cloverPluginConvention, testTask) }
-            map('enabled') { cloverPluginConvention.enabled }
-            map('compileGroovy') { hasGroovyPlugin(project) }
-            map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
-            map('testRuntimeClasspath') { getTestRuntimeClasspath(project, testTask).asFileTree }
-            map('groovyClasspath') { getGroovyClasspath(project) }
-            map('buildDir') { project.buildDir }
-            map('sourceSets') { resolver.getSourceSets() }
-            map('testSourceSets') { resolver.getTestSourceSets() }
-            map('sourceCompatibility') { getSourceCompatibility(project, cloverPluginConvention) }
-            map('targetCompatibility') { getTargetCompatibility(project, cloverPluginConvention) }
-            map('includes') { getIncludes(project, cloverPluginConvention) }
-            map('excludes') { cloverPluginConvention.excludes }
-            map('testIncludes') { getTestIncludes(project, cloverPluginConvention) }
-            map('testExcludes') { getTestExcludes(project, cloverPluginConvention) }
-            map('statementContexts') { cloverPluginConvention.contexts.statements }
-            map('methodContexts') { cloverPluginConvention.contexts.methods }
-            map('executable') { cloverPluginConvention.compiler.executable?.absolutePath }
-            map('encoding') { cloverPluginConvention.compiler.encoding }
-            map('instrumentLambda') { cloverPluginConvention.instrumentLambda }
-            map('debug') { cloverPluginConvention.compiler.debug }
-            map('flushinterval') { cloverPluginConvention.flushinterval }
-            map('flushpolicy') { cloverPluginConvention.flushpolicy.name() }
-            map('additionalArgs') { cloverPluginConvention.compiler.additionalArgs }
-            map('additionalGroovycOpts') { cloverPluginConvention.compiler.additionalGroovycOpts }
-        }
-        instrumentCodeAction
     }
 
     private void configureGenerateCoverageReportTask(Project project, CloverPluginConvention cloverPluginConvention, AggregateDatabasesTask aggregateDatabasesTask) {

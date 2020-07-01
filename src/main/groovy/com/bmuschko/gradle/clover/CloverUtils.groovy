@@ -49,8 +49,9 @@ class CloverUtils {
     }
 
     @CompileStatic
-    static FileCollection getTestRuntimeClasspath(Project project, Test testTask) {
-        testTask.classpath.filter { File file -> !file.directory } + project.configurations.getByName(CloverPlugin.CONFIGURATION_NAME)
+    static FileCollection getInstrumentationClasspath(Project project, Test testTask) {
+        FileCollection originalClasspath = testTask.getExtensions().getExtraProperties().get('originalClasspath') as FileCollection
+        originalClasspath.filter { File file -> !file.directory } + project.configurations.getByName(CloverPlugin.CONFIGURATION_NAME)
     }
 
     static FileCollection getGroovyClasspath(Project project) {

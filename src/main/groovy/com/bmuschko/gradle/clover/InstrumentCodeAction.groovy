@@ -39,7 +39,7 @@ class InstrumentCodeAction implements Action<Task> {
     @Input Boolean enabled
     @Input Boolean compileGroovy
     @Classpath FileCollection cloverClasspath
-    @Classpath FileCollection testRuntimeClasspath
+    @Classpath FileCollection instrumentationClasspath
     @Classpath FileCollection groovyClasspath
     @Nested List<CloverSourceSet> sourceSets
     @Nested List<CloverSourceSet> testSourceSets
@@ -191,7 +191,7 @@ class InstrumentCodeAction implements Action<Task> {
      */
     @CompileStatic
     private String getGroovycClasspath() {
-        getCloverClasspath().asPath + System.getProperty('path.separator') + getGroovyClasspath().asPath + System.getProperty('path.separator') + getTestRuntimeClasspath().asPath
+        getCloverClasspath().asPath + System.getProperty('path.separator') + getGroovyClasspath().asPath + System.getProperty('path.separator') + getInstrumentationClasspath().asPath
     }
 
     /**
