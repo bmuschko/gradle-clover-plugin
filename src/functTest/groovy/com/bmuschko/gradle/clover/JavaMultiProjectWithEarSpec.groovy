@@ -69,12 +69,12 @@ class JavaMultiProjectWithEarSpec extends AbstractFunctionalTestBase {
 
         and: "only the instrumented Car class is in the jar"
         def carClassInJar = getFromZip(carJarInEar, 'Car.class')
-        def instrumentedCarClass = new File(buildDir, 'projectCar/instrumented/main/java/Car.class')
+        def instrumentedCarClass = new File(buildDir, 'projectCar/instrumented/test/main/java/Car.class')
         FileUtils.contentEquals(carClassInJar, instrumentedCarClass)
 
         and: "only the instrumented Driver class is in the jar"
         def driverClassInJar = getFromZip(driverJarInEar, "Driver.class")
-        def instrumentdDriverClass = new File(buildDir, 'projectDriver/instrumented/main/java/Driver.class')
+        def instrumentdDriverClass = new File(buildDir, 'projectDriver/instrumented/test/main/java/Driver.class')
         FileUtils.contentEquals(driverClassInJar, instrumentdDriverClass)
 
         where:

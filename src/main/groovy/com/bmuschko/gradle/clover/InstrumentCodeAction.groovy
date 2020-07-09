@@ -148,8 +148,13 @@ class InstrumentCodeAction implements Action<Task> {
         }
     }
 
+    @Internal
+    File getCloverDatabaseFile() {
+        return new File("${getBuildDir()}/${getInitString()}")
+    }
+
     private Map getCloverSetupAttributes() {
-        def attributes = [initString: "${getBuildDir()}/${getInitString()}"]
+        def attributes = [initString: "${cloverDatabaseFile}"]
 
         if (getSourceCompatibility()) {
             attributes['source'] = getSourceCompatibility()

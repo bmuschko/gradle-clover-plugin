@@ -15,6 +15,7 @@
  */
 package com.bmuschko.gradle.clover
 
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 
@@ -23,6 +24,7 @@ import org.gradle.api.tasks.Optional
  *
  * @author Benjamin Muschko
  */
+@CacheableTask
 class GenerateCoverageReportTask extends CloverReportTask {
     @Optional
     @Input

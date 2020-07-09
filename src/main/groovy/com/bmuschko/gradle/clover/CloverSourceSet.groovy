@@ -6,6 +6,8 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 
 import java.util.concurrent.Callable
 
@@ -17,6 +19,11 @@ import groovy.transform.ToString
 @CompileStatic
 @ToString
 class CloverSourceSet {
+    @Internal
+    final UUID uuid = UUID.randomUUID()
+
+    String name
+
     CloverSourceSet(boolean groovy = false) {
         this.groovy = groovy
     }
@@ -26,11 +33,10 @@ class CloverSourceSet {
     @Internal File classesDir
     void setClassesDir(File classesDir) {
         this.classesDir = classesDir
-        this.instrumentedClassesDir = new File("${classesDir}-instrumented")
     }
 
     // Workaround for limitation of @Optional (see https://github.com/gradle/gradle/issues/2016)
-    @InputDirectory @Optional
+    @InputDirectory @Optional @PathSensitive(PathSensitivity.RELATIVE)
     File getClassesDirIfExists() {
         return classesDir.exists() ? classesDir : null
     }
@@ -50,8 +56,13 @@ class CloverSourceSet {
 
     private transient Callable<FileCollection> classpathProvider
 
-    @InputFiles
+    @InputFiles @PathSensitive(PathSensitivity.RELATIVE)
     FileCollection getCompileClasspath() {
         return classpathProvider.call()
+    }
+
+    @Input
+    String getName() {
+        return name == null ? uuid.toString() : name
     }
 }

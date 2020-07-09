@@ -3,8 +3,10 @@ package com.bmuschko.gradle.clover
 import com.bmuschko.gradle.clover.CloverPlugin.SourceSetsResolver
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.testing.Test
 
@@ -12,6 +14,7 @@ import javax.inject.Inject
 
 import static com.bmuschko.gradle.clover.CloverUtils.*
 
+@CacheableTask
 class CloverInstrumentationTask extends DefaultTask {
     @Nested
     final InstrumentCodeAction instrumentCodeAction
@@ -40,8 +43,8 @@ class CloverInstrumentationTask extends DefaultTask {
             map('instrumentationClasspath') { getInstrumentationClasspath(project, testTask).asFileTree }
             map('groovyClasspath') { getGroovyClasspath(project) }
             map('buildDir') { project.buildDir }
-            map('sourceSets') { resolver.getSourceSets() }
-            map('testSourceSets') { resolver.getTestSourceSets() }
+            map('sourceSets') { resolver.getSourceSets(testTask.name) }
+            map('testSourceSets') { resolver.getTestSourceSets(testTask.name) }
             map('sourceCompatibility') { getSourceCompatibility(project, cloverPluginConvention) }
             map('targetCompatibility') { getTargetCompatibility(project, cloverPluginConvention) }
             map('includes') { getIncludes(project, cloverPluginConvention) }
@@ -59,6 +62,10 @@ class CloverInstrumentationTask extends DefaultTask {
             map('additionalArgs') { cloverPluginConvention.compiler.additionalArgs }
             map('additionalGroovycOpts') { cloverPluginConvention.compiler.additionalGroovycOpts }
         }
+    }
+
+    private Set<CloverSourceSet> taskSpecificSourceSets(Set<CloverSourceSet> sourceSets) {
+
     }
 
     @TaskAction
@@ -83,6 +90,11 @@ class CloverInstrumentationTask extends DefaultTask {
 
     @Internal
     FileCollection getOriginalTestClasses() {
-        project.files { instrumentCodeAction.testSourceSets.collect { it.classesDir } }
+        return project.files { instrumentCodeAction.testSourceSets.collect { it.classesDir } }
+    }
+
+    @OutputFile
+    File getCloverDatabaseFile() {
+        return instrumentCodeAction.cloverDatabaseFile
     }
 }
