@@ -191,7 +191,7 @@ class CloverPlugin implements Plugin<Project> {
 
     private void configureGenerateCoverageReportTask(Project project, CloverPluginConvention cloverPluginConvention, AggregateDatabasesTask aggregateDatabasesTask) {
         project.tasks.withType(GenerateCoverageReportTask) { GenerateCoverageReportTask generateCoverageReportTask ->
-            dependsOn aggregateDatabasesTask
+            coverageDatabaseFiles = aggregateDatabasesTask.outputs.files
             outputs.cacheIf("Historical reports are enabled") { task -> ! task.historical }
             conventionMapping.with {
                 map('initString') { getInitString(cloverPluginConvention) }

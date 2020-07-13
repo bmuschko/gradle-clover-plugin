@@ -16,18 +16,28 @@ class AbstractCachingFunctionalSpec extends AbstractFunctionalTestBase {
     File initScript
     File localCacheDir
     String accessToken
+    boolean relocateBuild
 
     @Override
     protected File getProjectDir() {
         assert projectName != null
-        return new File(testBuildDir.getRoot(), projectName)
+        return relocateBuild ? new File(testBuildDir.getRoot(), "relocated/${projectName}") : new File(testBuildDir.getRoot(), projectName)
+    }
+
+    @Override
+    protected File getBuildDir() {
+        return relocateBuild ? new File(testBuildDir.getRoot(), "relocated/build") : super.getBuildDir()
     }
 
     def withProjectTemplate(String projectName) {
         this.projectName = projectName
+        return withProjectTemplate(super.getProjectDir())
+    }
+
+    def withProjectTemplate(File sourceDir) {
         // Create a copy of the project directory so we can change it during tests
-        FileUtils.copyDirectory(super.getProjectDir(), getProjectDir())
-        FileUtils.copyFile(new File(super.getProjectDir().parentFile, 'deps.gradle'), new File(testBuildDir.getRoot(), 'deps.gradle'))
+        FileUtils.copyDirectory(sourceDir, getProjectDir())
+        FileUtils.copyFile(new File(sourceDir.parentFile, 'deps.gradle'), new File(getProjectDir().parentFile, 'deps.gradle'))
     }
 
     def setup() {
@@ -152,6 +162,78 @@ class AbstractCachingFunctionalSpec extends AbstractFunctionalTestBase {
     void assertTasksOutcomeAllMatch(BuildResult result, TaskOutcome outcome, String... taskPaths) {
         taskPaths.each { taskPath ->
             assertTaskOutcomeMatches(result, outcome, taskPath)
+        }
+    }
+
+    BuildResult relocateAndBuild(String... arguments) {
+        def originalProjectDir = getProjectDir()
+        withRelocatedBuild {
+            withProjectTemplate(originalProjectDir)
+            build(arguments)
+        }
+    }
+
+    protected <T> T withRelocatedBuild(Closure<T> closure) {
+        boolean previousState = relocateBuild
+        try {
+            relocateBuild = true
+            closure.call()
+        } finally {
+            relocateBuild = previousState
+        }
+    }
+
+    protected File getRelocatedCloverDb() {
+        withRelocatedBuild {
+            new File(buildDir, '.clover/clover.db')
+        }
+    }
+
+    protected File getRelocatedCloverSnapshot() {
+        withRelocatedBuild {
+            new File(projectDir, '.clover/coverage.db.snapshot-test')
+        }
+    }
+
+    protected File getRelocatedCloverXmlReport() {
+        withRelocatedBuild {
+            new File(getReportsDir(), 'clover.xml')
+        }
+    }
+
+    protected File getRelocatedCloverHtmlReport() {
+        withRelocatedBuild {
+            new File(getReportsDir(), 'html')
+        }
+    }
+
+    protected File getRelocatedCloverJsonReport() {
+        withRelocatedBuild {
+            new File(getReportsDir(), 'json')
+        }
+    }
+
+    protected File getRelocatedCloverPdfReport() {
+        withRelocatedBuild {
+            new File(getReportsDir(), 'clover.pdf')
+        }
+    }
+
+    protected File getRelocatedCloverHistoricalHtmlReport() {
+        withRelocatedBuild {
+            new File(getReportsDir(), 'html/historical.html')
+        }
+    }
+
+    protected File getRelocatedCloverHistoricalPdfReport() {
+        withRelocatedBuild {
+            new File(getReportsDir(), 'historical.pdf')
+        }
+    }
+
+    protected File getRelocatedReportsDir() {
+        withRelocatedBuild {
+            super.getReportsDir()
         }
     }
 }
