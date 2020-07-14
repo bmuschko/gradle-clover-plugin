@@ -9,11 +9,6 @@ plugins {
     id 'org.ajoberstar.git-publish' version '2.1.1'
 }
 
-buildScan {
-    termsOfServiceUrl   = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
-}
-
 gradlePlugin {
     plugins {
         gradleCloverPlugin {
@@ -76,13 +71,18 @@ ext.compatibilityVersion = '1.8'
 sourceCompatibility = compatibilityVersion
 targetCompatibility = compatibilityVersion
 
-jar {
-    manifest {
-        attributes 'Implementation-Title': 'Gradle Clover plugin',
-                   'Implementation-Version': version,
-                   'Built-By': System.getProperty("user.name"),
-                   'Built-Date': new Date(),
-                   'Built-JDK': System.getProperty("java.version")
+// Only add changing data to the manifest when publishing
+gradle.taskGraph.whenReady { graph ->
+    if (graph.allTasks.any { task -> task instanceof PublishToMavenLocal || task instanceof PublishToMavenRepository }) {
+        jar {
+            manifest {
+                attributes 'Implementation-Title': 'Gradle Clover plugin',
+                    'Implementation-Version': version,
+                    'Built-By': System.getProperty("user.name"),
+                    'Built-Date': new Date(),
+                    'Built-JDK': System.getProperty("java.version")
+            }
+        }
     }
 }
 
