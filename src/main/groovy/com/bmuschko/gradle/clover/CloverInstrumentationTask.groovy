@@ -64,10 +64,6 @@ class CloverInstrumentationTask extends DefaultTask {
         }
     }
 
-    private Set<CloverSourceSet> taskSpecificSourceSets(Set<CloverSourceSet> sourceSets) {
-
-    }
-
     @TaskAction
     void instrumentCode() {
         instrumentCodeAction.execute(this)

@@ -28,7 +28,7 @@ class CloverSourceSet {
         this.groovy = groovy
     }
 
-    @Internal Collection<File> srcDirs = new HashSet<File>()
+    @InputFiles @PathSensitive(PathSensitivity.RELATIVE) Collection<File> srcDirs = new HashSet<File>()
 
     @Internal File classesDir
     void setClassesDir(File classesDir) {
@@ -61,7 +61,7 @@ class CloverSourceSet {
         return classpathProvider.call()
     }
 
-    @Input
+    @Internal
     String getName() {
         return name == null ? uuid.toString() : name
     }
