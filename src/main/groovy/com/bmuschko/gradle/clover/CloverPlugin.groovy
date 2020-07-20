@@ -204,6 +204,7 @@ class CloverPlugin implements Plugin<Project> {
                 map('includeFailedTestCoverage') { cloverPluginConvention.report.includeFailedTestCoverage }
                 map('numThreads') { cloverPluginConvention.report.numThreads }
                 map('timeoutInterval') { cloverPluginConvention.report.timeout }
+                map('reportsDir') { new File(project.buildDir, 'reports') }
             }
             setCloverReportConventionMappings(project, cloverPluginConvention, generateCoverageReportTask)
         }
@@ -226,6 +227,7 @@ class CloverPlugin implements Plugin<Project> {
                 map('includeFailedTestCoverage') { cloverPluginConvention.report.includeFailedTestCoverage }
                 map('numThreads') { cloverPluginConvention.report.numThreads }
                 map('timeoutInterval') { cloverPluginConvention.report.timeout }
+                map('reportsDir') { new File(project.buildDir, 'reports-all') }
             }
             setCloverReportConventionMappings(project, cloverPluginConvention, aggregateReportsTask)
         }
@@ -250,7 +252,6 @@ class CloverPlugin implements Plugin<Project> {
      */
     private void setCloverReportConventionMappings(Project project, CloverPluginConvention cloverPluginConvention, Task task) {
         task.conventionMapping.with {
-            map('reportsDir') { new File(project.buildDir, 'reports') }
             map('xml') { cloverPluginConvention.report.xml }
             map('json') { cloverPluginConvention.report.json }
             map('html') { cloverPluginConvention.report.html }

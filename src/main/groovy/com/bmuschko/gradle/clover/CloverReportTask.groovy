@@ -183,7 +183,7 @@ abstract class CloverReportTask extends DefaultTask {
     private void createHistoryPoint(String filter, String testResultsDir, String testResultsInclude) {
         logger.info 'Starting to create a Clover history point in ${getHistoryDir()}.'
 
-        ant."clover-historypoint"(initString: "$project.buildDir/${getInitString()}", historyDir: getHistoryDir(), overwrite: 'true') {
+        ant."clover-historypoint"(initString: "${databasePath}", historyDir: getHistoryDir(), overwrite: 'true') {
             if (testResultsDir) {
                 testresults(dir: testResultsDir, includes: testResultsInclude)
             }
@@ -200,7 +200,7 @@ abstract class CloverReportTask extends DefaultTask {
      * @param filter Optional filter
      */
     private void writeReport(File outfile, ReportType reportType, String filter, String testResultsDir, String testResultsInclude) {
-        ant."clover-report"(initString: "$project.buildDir/${getInitString()}") {
+        ant."clover-report"(initString: "${databasePath}") {
             def params = [
                 outfile: outfile,
                 title: project.name,
@@ -280,6 +280,11 @@ abstract class CloverReportTask extends DefaultTask {
         ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
     }
 
+    @Internal
+    protected String getDatabasePath() {
+        return databaseFile.canonicalFile
+    }
+
     @TaskAction
     void start() {
         validateConfiguration()
@@ -288,4 +293,7 @@ abstract class CloverReportTask extends DefaultTask {
     }
 
     abstract void generateCodeCoverage()
+
+    @Internal
+    abstract File getDatabaseFile()
 }

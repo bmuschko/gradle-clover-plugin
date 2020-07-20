@@ -52,6 +52,10 @@ abstract class AbstractFunctionalTestBase extends Specification {
         new File(buildDir, '.clover/clover.db')
     }
 
+    protected File getAllCloverDb() {
+        new File(buildDir, '.clover/clover.db-all')
+    }
+
     protected File getCloverSnapshot() {
         new File(projectDir, '.clover/coverage.db.snapshot-test')
     }

@@ -2,6 +2,8 @@
 apply from: '../deps.gradle'
 
 allprojects {
+    apply plugin: "base"
+
     repositories {
         jcenter()
     }
@@ -9,7 +11,7 @@ allprojects {
     tasks.withType(JavaCompile) {
         options.encoding = 'UTF-8'
     }
-    
+
     tasks.withType(GroovyCompile) {
         groovyOptions.encoding = 'UTF-8'
         options.encoding = 'UTF-8'
@@ -38,9 +40,9 @@ allprojects {
 
 subprojects {
     apply plugin: 'java'
-    
+
     sourceCompatibility = '1.8'
-    
+
     dependencies {
         testCompile deps.junit
     }

@@ -19,6 +19,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -58,7 +59,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
     }
 
     private boolean isCloverDatabaseExistent() {
-        new File("$project.buildDir/${getInitString()}").exists()
+        databaseFile.exists()
     }
 
     private void generateReport() {
@@ -111,7 +112,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
     private void checkTargetPercentage(String filter) {
         if(getTargetPercentage()) {
             Map arguments = [
-                initString: "$project.buildDir/${getInitString()}",
+                initString: "${databasePath}",
                 target: getTargetPercentage(),
                 haltOnFailure: true
             ]
@@ -122,5 +123,11 @@ class GenerateCoverageReportTask extends CloverReportTask {
 
             ant."clover-check"(arguments)
         }
+    }
+
+    @Override
+    @Internal
+    File getDatabaseFile() {
+        return project.layout.buildDirectory.file(getInitString()).get().asFile
     }
 }
