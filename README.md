@@ -172,7 +172,7 @@ need to be carried over to the compilation of the instrumented sources.  These a
 * `sourceCompatibility`: Overrides the Java Compiler to prevent using compatibility modes not supported by OpenClover
 * `targetCompatibility`: Overrides the Java Compiler to prevent using compatibility modes not supported by OpenClover
 
-The `sourceCompatibility` and `targetCompatiility` options will work only as long as your code is compatible with the selections. If your code uses language features above the language level specified OpenClover will fail to compile the code.
+The `sourceCompatibility` and `targetCompatibility` options will work only as long as your code is compatible with the selections. If your code uses language features above the language level specified OpenClover will fail to compile the code.
 
 The Clover plugin defines the following convention properties in the `clover` closure:
 
