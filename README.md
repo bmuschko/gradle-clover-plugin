@@ -170,7 +170,7 @@ need to be carried over to the compilation of the instrumented sources.  These a
 * `additionalArgs`: The (optional) additional command line arguments for the compiler. This is useful for Spring MVC code that uses reflection for parameter mapping. This should be valid command line arguments as a spaces separated string. No attempt is made to validate this line, it is passed verbatim to the <compilerarg> nested element for the Ant `javac` task.
 * `additionalGroovycOpts`: The (optional) additional options for the `groovyc` compiler. See [http://groovy-lang.org/groovyc.html#_ant_task]
 * `sourceCompatibility`: Overrides the Java Compiler to prevent using compatibility modes not supported by OpenClover
-* `targetCompatiility`: Overrides the Java Compiler to prevent using compatibility modes not supported by OpenClover
+* `targetCompatibility`: Overrides the Java Compiler to prevent using compatibility modes not supported by OpenClover
 
 The `sourceCompatibility` and `targetCompatiility` options will work only as long as your code is compatible with the selections. If your code uses language features above the language level specified OpenClover will fail to compile the code.
 
