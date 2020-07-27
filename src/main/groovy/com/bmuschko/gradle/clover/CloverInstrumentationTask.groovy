@@ -35,6 +35,8 @@ class CloverInstrumentationTask extends DefaultTask {
         this.testTask = testTask
         this.resolver = resolver
 
+        this.dependsOn(testTask.testClassesDirs)
+
         instrumentCodeAction.conventionMapping.with {
             map('initString') { getInitString(cloverPluginConvention, testTask) }
             map('enabled') { cloverPluginConvention.enabled }
@@ -43,8 +45,8 @@ class CloverInstrumentationTask extends DefaultTask {
             map('instrumentationClasspath') { getInstrumentationClasspath(project, testTask).asFileTree }
             map('groovyClasspath') { getGroovyClasspath(project) }
             map('buildDir') { project.buildDir }
-            map('sourceSets') { resolver.getSourceSets(testTask.name) }
-            map('testSourceSets') { resolver.getTestSourceSets(testTask.name) }
+            map('sourceSets') { resolver.getSourceSets(testTask) }
+            map('testSourceSets') { resolver.getTestSourceSets(testTask) }
             map('sourceCompatibility') { getSourceCompatibility(project, cloverPluginConvention) }
             map('targetCompatibility') { getTargetCompatibility(project, cloverPluginConvention) }
             map('includes') { getIncludes(project, cloverPluginConvention) }

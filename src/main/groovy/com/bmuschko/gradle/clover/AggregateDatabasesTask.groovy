@@ -12,6 +12,7 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.testing.Test
 
 @CacheableTask
 class AggregateDatabasesTask extends DefaultTask {
@@ -37,9 +38,9 @@ class AggregateDatabasesTask extends DefaultTask {
         new File(project.buildDir, getInitString())
     }
 
-    void aggregate(CloverInstrumentationTask instrumentationTask) {
-        dependsOn(instrumentationTask)
-        cloverDbFiles.from(instrumentationTask.cloverDatabaseFile)
+    void aggregate(Test testTask) {
+        dependsOn(testTask)
+        cloverDbFiles.from(testTask.ext.cloverDatabaseFile)
     }
 
     @TaskAction

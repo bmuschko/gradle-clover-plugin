@@ -63,18 +63,7 @@ class JavaMultiProjectCachingSpec extends AbstractCachingFunctionalSpec {
         assertTasksExecuted(result, ':cloverAggregateReports')
 
         and: "the aggregated Clover report is generated and is correct"
-        cloverXmlReport.exists()
-        def coverage = new XmlSlurper().parse(cloverXmlReport)
-        coverage.project.package.file.size() == 2
-        coverage.project.package.file[0].@name == 'Car.java'
-        coverage.project.package.file[1].@name == 'Truck.java'
-        !coverage.project.package.file*.@name.contains('Motorbike.java')
-        coverage.testproject.package.file.size() == 3
-        coverage.testproject.package.file.collect { it.@name }.sort() == [ 'TruckTest.java', 'AnotherCarTest.java', 'CarTest.java' ]
-        !coverage.testproject.package.file*.@name.contains('MotorbikeTest.java')
-        cloverHtmlReport.exists()
-        cloverJsonReport.exists()
-        cloverPdfReport.exists()
+        assertCoverageIsCorrect()
 
         and: "the Clover snapshot is not generated because test optimization is not enabled"
         !cloverSnapshot.exists()
@@ -96,21 +85,28 @@ class JavaMultiProjectCachingSpec extends AbstractCachingFunctionalSpec {
         assertTasksCached(result, ':cloverAggregateReports')
 
         and: "the aggregated Clover report is generated and is correct"
-        relocatedCloverXmlReport.exists()
-        def relocatedCoverage = new XmlSlurper().parse(relocatedCloverXmlReport)
-        relocatedCoverage.project.package.file.size() == 2
-        relocatedCoverage.project.package.file[0].@name == 'Car.java'
-        relocatedCoverage.project.package.file[1].@name == 'Truck.java'
-        !relocatedCoverage.project.package.file*.@name.contains('Motorbike.java')
-        relocatedCoverage.testproject.package.file.size() == 3
-        relocatedCoverage.testproject.package.file.collect { it.@name }.sort() == [ 'TruckTest.java', 'AnotherCarTest.java', 'CarTest.java' ]
-        !relocatedCoverage.testproject.package.file*.@name.contains('MotorbikeTest.java')
-        relocatedCloverHtmlReport.exists()
-        relocatedCloverJsonReport.exists()
-        relocatedCloverPdfReport.exists()
+        withRelocatedBuild {
+            assertCoverageIsCorrect()
+        }
 
         where:
         gradle << GRADLE_TEST_VERSIONS
+    }
+
+    boolean assertCoverageIsCorrect() {
+        assert cloverXmlReport.exists()
+        def coverage = new XmlSlurper().parse(cloverXmlReport)
+        assert coverage.project.package.file.size() == 2
+        assert coverage.project.package.file[0].@name == 'Car.java'
+        assert coverage.project.package.file[1].@name == 'Truck.java'
+        assert !coverage.project.package.file*.@name.contains('Motorbike.java')
+        assert coverage.testproject.package.file.size() == 3
+        assert coverage.testproject.package.file.collect { it.@name }.sort() == [ 'TruckTest.java', 'AnotherCarTest.java', 'CarTest.java' ]
+        assert !coverage.testproject.package.file*.@name.contains('MotorbikeTest.java')
+        assert cloverHtmlReport.exists()
+        assert cloverJsonReport.exists()
+        assert cloverPdfReport.exists()
+        return true
     }
 
     String[] allTasksFor(String subproject) {

@@ -69,17 +69,7 @@ class GroovyProjectCompileConfigCachingSpec extends AbstractCachingFunctionalSpe
         cloverDb.exists()
 
         and: "the Clover report is present and is correct"
-        def coverage = new XmlSlurper().parse(cloverXmlReport)
-        cloverXmlReport.exists()
-        coverage.project.metrics.@classes == '1'
-        coverage.project.metrics.@methods == '2'
-        coverage.project.metrics.@coveredmethods == '1'
-        coverage.testproject.metrics.@classes == '3'
-        coverage.testproject.metrics.@methods == '3'
-        coverage.testproject.metrics.@coveredmethods == '3'
-        cloverHtmlReport.exists()
-        cloverJsonReport.exists()
-        cloverPdfReport.exists()
+        assertCoverageIsCorrect()
 
         and: "the Clover snapshot is not generated because test optimization is not enabled"
         cloverSnapshot.exists() == false
@@ -91,23 +81,32 @@ class GroovyProjectCompileConfigCachingSpec extends AbstractCachingFunctionalSpe
         assertTasksCached(result, ':compileGroovy', ':compileTestGroovy', ':cloverInstrumentCodeForTest', ':test', ':cloverAggregateDatabases', ':cloverGenerateReport')
 
         and: "the Clover coverage database is present"
-        relocatedCloverDb.exists()
+        withRelocatedBuild {
+            cloverDb.exists()
+        }
 
         and: "the Clover report is present and is correct"
-        def relocatedCoverage = new XmlSlurper().parse(relocatedCloverXmlReport)
-        relocatedCloverXmlReport.exists()
-        relocatedCoverage.project.metrics.@classes == '1'
-        relocatedCoverage.project.metrics.@methods == '2'
-        relocatedCoverage.project.metrics.@coveredmethods == '1'
-        relocatedCoverage.testproject.metrics.@classes == '3'
-        relocatedCoverage.testproject.metrics.@methods == '3'
-        relocatedCoverage.testproject.metrics.@coveredmethods == '3'
-        relocatedCloverHtmlReport.exists()
-        relocatedCloverJsonReport.exists()
-        relocatedCloverPdfReport.exists()
+        withRelocatedBuild {
+            assertCoverageIsCorrect()
+        }
 
         where:
         gradle << GRADLE_TEST_VERSIONS
+    }
+
+    boolean assertCoverageIsCorrect() {
+        def coverage = new XmlSlurper().parse(cloverXmlReport)
+        assert cloverXmlReport.exists()
+        assert coverage.project.metrics.@classes == '1'
+        assert coverage.project.metrics.@methods == '2'
+        assert coverage.project.metrics.@coveredmethods == '1'
+        assert coverage.testproject.metrics.@classes == '3'
+        assert coverage.testproject.metrics.@methods == '3'
+        assert coverage.testproject.metrics.@coveredmethods == '3'
+        assert cloverHtmlReport.exists()
+        assert cloverJsonReport.exists()
+        assert cloverPdfReport.exists()
+        return true
     }
 
     File addNewTestSourceFile() {
