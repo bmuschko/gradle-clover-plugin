@@ -65,4 +65,15 @@ class CloverSourceSet {
     String getName() {
         return name == null ? uuid.toString() : name
     }
+
+    static CloverSourceSet from(CloverSourceSet other) {
+        CloverSourceSet newSourceSet = new CloverSourceSet()
+        newSourceSet.with {
+            name = other.name
+            groovy = other.groovy
+            srcDirs = other.srcDirs
+            classesDir = other.classesDir
+        }
+        return newSourceSet
+    }
 }

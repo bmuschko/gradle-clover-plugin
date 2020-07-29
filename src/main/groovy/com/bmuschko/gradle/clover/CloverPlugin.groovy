@@ -16,8 +16,8 @@
 package com.bmuschko.gradle.clover
 
 import org.gradle.api.file.FileTreeElement
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SourceSet
-import org.gradle.util.GradleVersion
 
 import java.util.concurrent.Callable
 
@@ -132,6 +132,21 @@ class CloverPlugin implements Plugin<Project> {
             test.doFirst optimizeTestSetAction
             test.include optimizeTestSetAction // action is also a file inclusion spec
 
+            // Generate recording files into a separate directory.  Because the database file and the recording files need to be
+            // in the same directory, we make a copy of the database file so that we can keep the outputs separate between the
+            // two tasks and avoid any overlaps.
+            test.ext.recordingFilesDir = project.file { new File(instrumentCodeTask.cloverDatabaseFile.parentFile, test.name) }
+            test.ext.cloverDatabaseFile = project.file { new File(test.ext.recordingFilesDir, instrumentCodeTask.cloverDatabaseFile.name) }
+            test.doFirst {
+                project.sync {
+                    from instrumentCodeTask.cloverDatabaseFile
+                    into test.ext.recordingFilesDir
+                }
+                systemProperty 'clover.initstring', ext.cloverDatabaseFile.absolutePath
+            }
+            test.inputs.file(instrumentCodeTask.cloverDatabaseFile).withPropertyName('cloverDatabaseFile').withPathSensitivity(PathSensitivity.RELATIVE)
+            test.outputs.dir(test.ext.recordingFilesDir).withPropertyName('coverageRecordingFiles')
+
             // Create a snapshot after tests have executed
             test.doLast createCreateSnapshotAction(cloverPluginConvention, project, test)
 
@@ -148,16 +163,6 @@ class CloverPlugin implements Plugin<Project> {
                 }
             }
 
-            test.ext.recordingFilesDir = project.file { new File(instrumentCodeTask.cloverDatabaseFile.parentFile, test.name) }
-            test.ext.cloverDatabaseFile = project.file { new File(test.ext.recordingFilesDir, instrumentCodeTask.cloverDatabaseFile.name) }
-            test.doLast {
-                project.sync {
-                    from getCoverageRecordingFiles(instrumentCodeTask)
-                    into test.ext.recordingFilesDir
-                }
-            }
-            test.outputs.dir(test.ext.recordingFilesDir).withPropertyName('coverageRecordingFiles')
-
             aggregateDatabasesTask.aggregate(test)
         }
     }
@@ -165,7 +170,7 @@ class CloverPlugin implements Plugin<Project> {
     private CreateSnapshotAction createCreateSnapshotAction(CloverPluginConvention cloverPluginConvention, Project project, Test testTask) {
         CreateSnapshotAction createSnapshotAction = createInstance(project, CreateSnapshotAction)
         createSnapshotAction.conventionMapping.with {
-            map('initString') { getInitString(cloverPluginConvention, testTask) }
+            map('initString') { project.relativePath(testTask.ext.cloverDatabaseFile) }
             map('optimizeTests') { cloverPluginConvention.optimizeTests }
             map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, true, testTask) }
             map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
@@ -177,7 +182,7 @@ class CloverPlugin implements Plugin<Project> {
     private OptimizeTestSetAction createOptimizeTestSetAction(CloverPluginConvention cloverPluginConvention, Project project, SourceSetsResolver resolver, Test testTask) {
         OptimizeTestSetAction optimizeTestSetAction = createInstance(project, OptimizeTestSetAction)
         optimizeTestSetAction.conventionMapping.with {
-            map('initString') { getInitString(cloverPluginConvention, testTask) }
+            map('initString') { project.relativePath(testTask.ext.cloverDatabaseFile) }
             map('optimizeTests') { cloverPluginConvention.optimizeTests }
             map('snapshotFile') { getSnapshotFile(project, cloverPluginConvention, false, testTask) }
             map('cloverClasspath') { project.configurations.getByName(CONFIGURATION_NAME).asFileTree }
@@ -368,12 +373,11 @@ class CloverPlugin implements Plugin<Project> {
             }
 
             if (cloverPluginConvention.additionalSourceSets) {
-                cloverPluginConvention.additionalSourceSets.each { additionalSourceSet ->
+                cloverPluginConvention.additionalSourceSets.each { sourceSet ->
+                    CloverSourceSet additionalSourceSet = CloverSourceSet.from(sourceSet)
                     additionalSourceSet.groovy = hasGroovySource(project, additionalSourceSet.srcDirs)
                     additionalSourceSet.classpathProvider = classpathCallable
-                    if (additionalSourceSet.instrumentedClassesDir == null) {
-                        additionalSourceSet.instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${additionalSourceSet.name}").get().asFile
-                    }
+                    additionalSourceSet.instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${additionalSourceSet.name}").get().asFile
                     sourceSets[testTask.name] << additionalSourceSet
                 }
             }
@@ -433,12 +437,11 @@ class CloverPlugin implements Plugin<Project> {
             }
 
             if (cloverPluginConvention.additionalTestSourceSets) {
-                cloverPluginConvention.additionalTestSourceSets.each { additionalTestSourceSet ->
+                cloverPluginConvention.additionalTestSourceSets.each { testSourceSet ->
+                    CloverSourceSet additionalTestSourceSet = CloverSourceSet.from(testSourceSet)
                     additionalTestSourceSet.groovy = hasGroovySource(project, additionalTestSourceSet.srcDirs)
                     additionalTestSourceSet.classpathProvider = classpathCallable
-                    if (additionalTestSourceSet.instrumentedClassesDir == null) {
-                        additionalTestSourceSet.instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${additionalTestSourceSet.name}").get().asFile
-                    }
+                    additionalTestSourceSet.instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${additionalTestSourceSet.name}").get().asFile
                     testSourceSets[testTask.name] << additionalTestSourceSet
                 }
             }
