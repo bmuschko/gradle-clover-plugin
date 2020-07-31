@@ -15,7 +15,6 @@
  */
 package com.bmuschko.gradle.clover
 
-import com.bmuschko.gradle.clover.CloverSourceSet
 
 import groovy.transform.CompileStatic
 
@@ -28,14 +27,18 @@ import groovy.transform.CompileStatic
 final class CloverSourceSetUtils {
     private CloverSourceSetUtils() {}
 
-    static List<File> getSourceDirs(Collection<CloverSourceSet> sourceSets) {
+    static List<File> getValidSourceDirs(Collection<CloverSourceSet> sourceSets) {
         def srcDirs = []
 
         sourceSets.each { sourceSet ->
-            srcDirs.addAll(sourceSet.srcDirs)
+            srcDirs.addAll(getValidSourceDirs(sourceSet))
         }
 
         srcDirs
+    }
+
+    static Collection<File> getValidSourceDirs(CloverSourceSet sourceSet) {
+        return sourceSet.srcDirs.findAll { it.exists() }
     }
 
     static boolean existsDirectory(File dir) {

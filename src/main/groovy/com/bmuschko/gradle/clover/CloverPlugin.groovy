@@ -351,7 +351,7 @@ class CloverPlugin implements Plugin<Project> {
                     CloverSourceSet cloverSourceSet = new CloverSourceSet(false)
                     cloverSourceSet.with {
                         name = 'java'
-                        srcDirs.addAll(filterNonExistentDirectories(sourceSet.java.srcDirs))
+                        srcDirs.addAll(sourceSet.java.srcDirs)
                         classesDir = sourceSet.java.outputDir
                         instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${name}").get().asFile
                         classpathProvider = classpathCallable
@@ -363,7 +363,7 @@ class CloverPlugin implements Plugin<Project> {
                     CloverSourceSet cloverSourceSet = new CloverSourceSet(true)
                     cloverSourceSet.with {
                         name = 'groovy'
-                        srcDirs.addAll(filterNonExistentDirectories(sourceSet.groovy.srcDirs))
+                        srcDirs.addAll(sourceSet.groovy.srcDirs)
                         classesDir = sourceSet.groovy.outputDir
                         instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${name}").get().asFile
                         classpathProvider = classpathCallable
@@ -415,7 +415,7 @@ class CloverPlugin implements Plugin<Project> {
                     CloverSourceSet cloverSourceSet = new CloverSourceSet(false)
                     cloverSourceSet.with {
                         name = 'java'
-                        srcDirs.addAll(filterNonExistentDirectories(sourceSet.java.srcDirs))
+                        srcDirs.addAll(sourceSet.java.srcDirs)
                         classesDir = sourceSet.java.outputDir
                         instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${name}").get().asFile
                         classpathProvider = classpathCallable
@@ -427,7 +427,7 @@ class CloverPlugin implements Plugin<Project> {
                     CloverSourceSet cloverSourceSet = new CloverSourceSet(true)
                     cloverSourceSet.with {
                         name = 'groovy'
-                        srcDirs.addAll(filterNonExistentDirectories(sourceSet.groovy.srcDirs))
+                        srcDirs.addAll(sourceSet.groovy.srcDirs)
                         classesDir = sourceSet.groovy.outputDir
                         instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${name}").get().asFile
                         classpathProvider = classpathCallable
@@ -457,11 +457,6 @@ class CloverPlugin implements Plugin<Project> {
                 }
             }
             return false
-        }
-
-        @CompileStatic
-        private Set<File> filterNonExistentDirectories(Set<File> dirs) {
-            dirs.findAll { it.exists() }
         }
     }
 
