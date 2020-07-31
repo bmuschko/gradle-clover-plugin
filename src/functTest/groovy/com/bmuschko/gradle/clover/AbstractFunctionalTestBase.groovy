@@ -107,7 +107,7 @@ abstract class AbstractFunctionalTestBase extends Specification {
             args.addAll(arguments)
         }
 
-        def runner = GradleRunner.create().withGradleVersion(gradleVersion).withProjectDir(projectDir).withArguments(args).withPluginClasspath().forwardOutput().withDebug(true)
+        def runner = GradleRunner.create().withGradleVersion(gradleVersion).withProjectDir(projectDir).withArguments(args).withPluginClasspath().forwardOutput()
         createClasspathInjectionScript(runner)
         runner
     }

@@ -43,7 +43,6 @@ tasks.withType(Test) {
         outputs.upToDateWhen { false }
     }
     testLogging {
-        showStandardStreams = true
         events 'started', 'passed', 'failed', 'skipped'
     }
 }

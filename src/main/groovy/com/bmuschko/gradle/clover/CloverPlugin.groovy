@@ -475,10 +475,4 @@ class CloverPlugin implements Plugin<Project> {
     private boolean hasJavaPlugin(Project project) {
         project.plugins.hasPlugin(JavaPlugin)
     }
-
-    static FileCollection getCoverageRecordingFiles(CloverInstrumentationTask instrumentCodeTask) {
-        return instrumentCodeTask.project.fileTree(instrumentCodeTask.cloverDatabaseFile.parentFile).filter { file ->
-            file.name.startsWith(instrumentCodeTask.cloverDatabaseFile.name)
-        }
-    }
 }
