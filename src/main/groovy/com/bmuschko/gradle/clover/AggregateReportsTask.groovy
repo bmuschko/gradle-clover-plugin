@@ -15,16 +15,25 @@
  */
 package com.bmuschko.gradle.clover
 
+import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 
 /**
  * Task for aggregrating Clover code coverage reports.
  *
  * @author Benjamin Muschko
  */
+@CacheableTask
 class AggregateReportsTask extends CloverReportTask {
-    @Input
+    @Internal
     List<File> subprojectBuildDirs
     @Optional
     @Input
@@ -51,10 +60,8 @@ class AggregateReportsTask extends CloverReportTask {
     }
 
     private void mergeSubprojectCloverDatabases() {
-        ant.'clover-merge'(initString: "${project.buildDir.canonicalPath}/${getInitString()}") {
-            getSubprojectBuildDirs().each { subprojectBuildDir ->
-                File cloverDb = new File("$subprojectBuildDir.canonicalPath/${getInitString()}")
-
+        ant.'clover-merge'(initString: "${databasePath}") {
+            databasesToMerge.each { File cloverDb ->
                 if(cloverDb.exists()) {
                     ant.cloverDb(initString: cloverDb.canonicalPath)
                 }
@@ -63,5 +70,22 @@ class AggregateReportsTask extends CloverReportTask {
                 }
             }
         }
+    }
+
+    @InputFiles @PathSensitive(PathSensitivity.RELATIVE)
+    Set<File> getDatabasesToMerge() {
+        def databasesToMerge = getSubprojectBuildDirs().collect { dir -> new File(dir, getInitString()) } as Set
+        return databasesToMerge
+    }
+
+    @OutputFile
+    Provider<RegularFile> getMergedCloverDatabaseFile() {
+        return project.layout.buildDirectory.file("${getInitString()}-all")
+    }
+
+    @Override
+    @Internal
+    File getDatabaseFile() {
+        return mergedCloverDatabaseFile.get().asFile
     }
 }

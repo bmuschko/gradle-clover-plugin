@@ -13,16 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bmuschko.gradle.clover
 
-import org.gradle.api.tasks.Input
+import org.apache.commons.lang3.JavaVersion;
+import java.util.ArrayList;
 
-/**
- * Defines Clover context convention.
- *
- * @author Benjamin Muschko
- */
-class CloverContextConvention {
-    @Input String name
-    @Input String regexp
+public class Book {
+    ArrayList<Page> pages = new ArrayList<Page>();
+
+    // tested
+    public boolean open() {
+        return true;
+    }
+
+    public void throwsRuntimeException() {
+        throw new RuntimeException("Testing");
+    }
+
+    public boolean isAtLeastJavaVersion() {
+        return JavaVersion.JAVA_1_8.atLeast(JavaVersion.JAVA_1_7);
+    }
+
+    // untested
+    public boolean close() {
+        return false;
+    }
 }

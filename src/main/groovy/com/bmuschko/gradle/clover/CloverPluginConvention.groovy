@@ -15,6 +15,7 @@
  */
 package com.bmuschko.gradle.clover
 
+import org.gradle.api.tasks.Internal
 import org.gradle.util.ConfigureUtil
 
 /**

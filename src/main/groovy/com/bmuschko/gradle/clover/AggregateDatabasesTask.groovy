@@ -3,18 +3,24 @@ package com.bmuschko.gradle.clover
 import org.gradle.api.DefaultTask
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.testing.Test
 
+@CacheableTask
 class AggregateDatabasesTask extends DefaultTask {
     /**
      * Classpath containing Clover Ant tasks.
      */
     @InputFiles
+    @PathSensitive(PathSensitivity.RELATIVE)
     FileCollection cloverClasspath
 
     /**
@@ -24,16 +30,17 @@ class AggregateDatabasesTask extends DefaultTask {
     String initString
 
     @InputFiles
-    List<File> cloverDbFiles = new ArrayList<File>()
+    @PathSensitive(PathSensitivity.RELATIVE)
+    FileCollection cloverDbFiles = project.files()
 
     @OutputFile
     File getAggregationFile() {
         new File(project.buildDir, getInitString())
     }
 
-    void aggregate(Task testTask) {
-        dependsOn testTask
-        cloverDbFiles << new File("${aggregationFile.canonicalPath}-${testTask.name}")
+    void aggregate(Test testTask) {
+        dependsOn(testTask)
+        cloverDbFiles.from(testTask.ext.cloverDatabaseFile)
     }
 
     @TaskAction
@@ -57,7 +64,7 @@ class AggregateDatabasesTask extends DefaultTask {
      * @param cloverDbFiles Clover database files
      * @return Flag
      */
-    private boolean existsAtLeastOneCloverDbFile(List<File> cloverDbFiles) {
+    private static boolean existsAtLeastOneCloverDbFile(FileCollection cloverDbFiles) {
          cloverDbFiles.findAll { cloverDbFile -> cloverDbFile.exists() }.size() > 0
     }
 }

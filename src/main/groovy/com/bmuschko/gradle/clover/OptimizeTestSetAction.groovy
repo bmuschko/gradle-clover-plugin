@@ -57,7 +57,7 @@ class OptimizeTestSetAction implements Action<Task>, Spec<FileTreeElement> {
             def resource = 'cloverlib.xml'
             ant.taskdef(resource: resource, classpath: getCloverClasspath().asPath)
             ant.property(name: 'clover.initstring', value: "${getBuildDir()}/${getInitString()}")
-            List<File> testSrcDirs = CloverSourceSetUtils.getSourceDirs(getTestSourceSets())
+            List<File> testSrcDirs = CloverSourceSetUtils.getValidSourceDirs(getTestSourceSets())
             def testset = ant."clover-optimized-testset"(snapshotFile: getSnapshotFile(), debug: true) {
                 testSrcDirs.each { testSrcDir ->
                     ant.fileset(dir: testSrcDir)

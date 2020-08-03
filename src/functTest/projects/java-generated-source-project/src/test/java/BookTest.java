@@ -13,16 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.bmuschko.gradle.clover
 
-import org.gradle.api.tasks.Input
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-/**
- * Defines Clover context convention.
- *
- * @author Benjamin Muschko
- */
-class CloverContextConvention {
-    @Input String name
-    @Input String regexp
+public class BookTest {
+
+    @Rule
+    public ExpectedException exceptions = ExpectedException.none();
+
+    @Test
+    public void testOpen() {
+        new Book().open();
+    }
+
+    @Test
+    public void testThrowsRuntimeException() {
+        exceptions.expect(RuntimeException.class);
+        new Book().throwsRuntimeException();
+    }
+
+    @Test
+    public void testIsAtLeastJavaVersion() {
+        new Book().isAtLeastJavaVersion();
+    }
 }

@@ -29,7 +29,7 @@ class JavaMultiProjectSpec extends AbstractFunctionalTestBase {
         build('--init-script', "$initScript", 'clean', 'cloverAggregateReports')
 
         then: "the aggregated Clover coverage database is generated"
-        cloverDb.exists()
+        allCloverDb.exists()
 
         and: "the aggregated Clover report is generated and is correct"
         cloverXmlReport.exists()
@@ -51,5 +51,10 @@ class JavaMultiProjectSpec extends AbstractFunctionalTestBase {
 
         where:
         gradle << GRADLE_TEST_VERSIONS
+    }
+
+    @Override
+    protected File getReportsDir() {
+        new File(buildDir, 'reports-all/clover')
     }
 }

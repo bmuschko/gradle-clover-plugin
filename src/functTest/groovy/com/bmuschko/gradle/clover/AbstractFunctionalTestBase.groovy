@@ -22,7 +22,7 @@ import org.junit.rules.TemporaryFolder
 
 import spock.lang.Specification
 
-protected abstract class AbstractFunctionalTestBase extends Specification {
+abstract class AbstractFunctionalTestBase extends Specification {
     protected static final CURRENT_GRADLE
     protected static final GRADLE_TEST_VERSIONS
 
@@ -50,6 +50,10 @@ protected abstract class AbstractFunctionalTestBase extends Specification {
 
     protected File getCloverDb() {
         new File(buildDir, '.clover/clover.db')
+    }
+
+    protected File getAllCloverDb() {
+        new File(buildDir, '.clover/clover.db-all')
     }
 
     protected File getCloverSnapshot() {
@@ -96,16 +100,20 @@ protected abstract class AbstractFunctionalTestBase extends Specification {
         createAndConfigureGradleRunner(arguments).buildAndFail()
     }
 
-    private GradleRunner createAndConfigureGradleRunner(String... arguments) {
+    protected GradleRunner createAndConfigureGradleRunner(String... arguments) {
         // Provide the buildDir as a property to process in deps.gradle
         def args = ['--stacktrace', "-PtestBuildDir=$buildDir".toString(), '--init-script', "$initScript".toString()]
         if (arguments) {
             args.addAll(arguments)
         }
 
-        def runner = GradleRunner.create().withGradleVersion(gradleVersion).withProjectDir(projectDir).withArguments(args).withPluginClasspath()
+        def runner = GradleRunner.create().withGradleVersion(gradleVersion).withProjectDir(projectDir).withArguments(args).withPluginClasspath().forwardOutput()
         createClasspathInjectionScript(runner)
         runner
+    }
+
+    protected File file(String path) {
+        return new File(getProjectDir(), path)
     }
 
     private void createClasspathInjectionScript(GradleRunner runner) {

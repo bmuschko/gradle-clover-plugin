@@ -1,5 +1,4 @@
 plugins {
-    id 'com.gradle.build-scan' version '2.2.1'
     id 'java-gradle-plugin'
     id 'groovy'
     id 'maven-publish'
@@ -8,11 +7,6 @@ plugins {
     id "com.jfrog.bintray" version "1.8.4"
     id 'org.ajoberstar.reckon' version '0.9.0'
     id 'org.ajoberstar.git-publish' version '2.1.1'
-}
-
-buildScan {
-    termsOfServiceUrl   = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
 }
 
 gradlePlugin {
@@ -49,7 +43,6 @@ tasks.withType(Test) {
         outputs.upToDateWhen { false }
     }
     testLogging {
-        showStandardStreams = true
         events 'started', 'passed', 'failed', 'skipped'
     }
 }
@@ -65,7 +58,7 @@ dependencies {
     testCompile gradleTestKit()
 
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.10.0'
-    
+
     testCompile 'junit:junit:4.12'
     testCompile 'commons-io:commons-io:2.5'
     testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
@@ -77,13 +70,18 @@ ext.compatibilityVersion = '1.8'
 sourceCompatibility = compatibilityVersion
 targetCompatibility = compatibilityVersion
 
-jar {
-    manifest {
-        attributes 'Implementation-Title': 'Gradle Clover plugin',
-                   'Implementation-Version': version,
-                   'Built-By': System.getProperty("user.name"),
-                   'Built-Date': new Date(),
-                   'Built-JDK': System.getProperty("java.version")
+// Only add changing data to the manifest when publishing
+gradle.taskGraph.whenReady { graph ->
+    if (graph.allTasks.any { task -> task instanceof PublishToMavenLocal || task instanceof PublishToMavenRepository }) {
+        jar {
+            manifest {
+                attributes 'Implementation-Title': 'Gradle Clover plugin',
+                    'Implementation-Version': version,
+                    'Built-By': System.getProperty("user.name"),
+                    'Built-Date': new Date(),
+                    'Built-JDK': System.getProperty("java.version")
+            }
+        }
     }
 }
 
@@ -105,7 +103,7 @@ idea.project {
 }
 
 eclipse {
-    
+
     classpath {
         // default settings for downloading sources and Javadoc:
         downloadSources = true

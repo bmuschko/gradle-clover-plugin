@@ -1,5 +1,14 @@
 package com.bmuschko.gradle.clover
 
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+
 import java.util.concurrent.Callable
 
 import org.gradle.api.file.FileCollection
@@ -9,28 +18,36 @@ import groovy.transform.ToString
 
 @CompileStatic
 @ToString
-class CloverSourceSet implements Serializable {
-    static final long serialVersionUID = 1L
+class CloverSourceSet {
+    @Internal
+    final UUID uuid = UUID.randomUUID()
+
+    String name
 
     CloverSourceSet(boolean groovy = false) {
         this.groovy = groovy
     }
 
-    Collection<File> srcDirs = new HashSet<File>()
+    @InputFiles @PathSensitive(PathSensitivity.RELATIVE) Collection<File> srcDirs = new HashSet<File>()
 
-    File classesDir
+    @Internal File classesDir
     void setClassesDir(File classesDir) {
         this.classesDir = classesDir
-        this.backupDir = new File("${classesDir}-bak")
     }
 
-    private File backupDir
-    File getBackupDir() {
-        backupDir
+    // Workaround for limitation of @Optional (see https://github.com/gradle/gradle/issues/2016)
+    @InputDirectory @Optional @PathSensitive(PathSensitivity.RELATIVE)
+    File getClassesDirIfExists() {
+        return classesDir.exists() ? classesDir : null
+    }
+
+    @OutputDirectory File instrumentedClassesDir
+    void setInstrumentedClassesDir(File instrumentedClassesDir) {
+        this.instrumentedClassesDir = instrumentedClassesDir
     }
 
     private boolean groovy
-    boolean isGroovy() {
+    @Input boolean isGroovy() {
         groovy
     }
     void setGroovy(boolean groovy) {
@@ -39,7 +56,24 @@ class CloverSourceSet implements Serializable {
 
     private transient Callable<FileCollection> classpathProvider
 
+    @InputFiles @PathSensitive(PathSensitivity.RELATIVE)
     FileCollection getCompileClasspath() {
         return classpathProvider.call()
+    }
+
+    @Internal
+    String getName() {
+        return name == null ? uuid.toString() : name
+    }
+
+    static CloverSourceSet from(CloverSourceSet other) {
+        CloverSourceSet newSourceSet = new CloverSourceSet()
+        newSourceSet.with {
+            name = other.name
+            groovy = other.groovy
+            srcDirs = other.srcDirs
+            classesDir = other.classesDir
+        }
+        return newSourceSet
     }
 }

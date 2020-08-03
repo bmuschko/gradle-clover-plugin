@@ -18,12 +18,15 @@ package com.bmuschko.gradle.clover
 import org.gradle.api.Action
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.Optional
 
 /**
  * Clover code instrumentation action.
@@ -32,31 +35,32 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 class InstrumentCodeAction implements Action<Task> {
-    String initString
-    Boolean enabled
-    Boolean compileGroovy
-    FileCollection cloverClasspath
-    FileCollection testRuntimeClasspath
-    FileCollection groovyClasspath
-    @Input List<CloverSourceSet> sourceSets
-    @Input List<CloverSourceSet> testSourceSets
-    @InputDirectory File buildDir
-    String sourceCompatibility
-    String targetCompatibility
-    String executable
-    String encoding
-    List<String> includes
-    List<String> excludes
-    List<String> testIncludes
-    List<String> testExcludes
-    String instrumentLambda
-    def statementContexts
-    def methodContexts
-    boolean debug
-    int flushinterval
-    String flushpolicy
-    String additionalArgs
-    Map additionalGroovycOpts
+    @Input @Optional String initString
+    @Input Boolean enabled
+    @Input Boolean compileGroovy
+    @Classpath FileCollection cloverClasspath
+    @Classpath FileCollection instrumentationClasspath
+    @Classpath FileCollection groovyClasspath
+    @Nested List<CloverSourceSet> sourceSets
+    @Nested List<CloverSourceSet> testSourceSets
+    @Internal File buildDir
+    @Input @Optional String sourceCompatibility
+    @Input @Optional String targetCompatibility
+    @Input @Optional String executable
+    @Input @Optional String encoding
+    @Input @Optional List<String> includes
+    @Input @Optional List<String> excludes
+    @Input @Optional List<String> testIncludes
+    @Input @Optional List<String> testExcludes
+    @Input @Optional String instrumentLambda
+    @Nested Set<CloverContextConvention> statementContexts
+    @Nested Set<CloverContextConvention> methodContexts
+    @Input boolean debug
+    @Internal int flushinterval
+    @Input @Optional String flushpolicy
+    @Input @Optional String additionalArgs
+    @Input @Optional Map additionalGroovycOpts
+
     @Override
     void execute(Task task) {
         instrumentCode(task)
@@ -73,86 +77,82 @@ class InstrumentCodeAction implements Action<Task> {
     }
 
     void instrumentCode(Task task) {
-        if (existsAllClassesDir()) {
-            log.info 'Starting to instrument code using Clover.'
+        log.info 'Starting to instrument code using Clover.'
 
-            def ant = task.project.ant
+        def ant = task.project.ant
 
-            // Inject the Clover JAR into the Ant classloader to effectively
-            // enable it for the CloverCompilerAdapter issue #125
-            ClassLoader antClassLoader = org.apache.tools.ant.Project.class.classLoader
-            getCloverClasspath().each { File file ->
-                def url = file.toURI().toURL()
-                antClassLoader.addURL(url)
-            }
-
-            ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-            ant."clover-clean"(initString: "${getBuildDir()}/${getInitString()}")
-
-            List<File> srcDirs = CloverSourceSetUtils.getSourceDirs(getSourceSets())
-            List<File> testSrcDirs = CloverSourceSetUtils.getSourceDirs(getTestSourceSets())
-
-            ant.'clover-setup'(getCloverSetupAttributes()) {
-                srcDirs.each { srcDir ->
-                    ant.fileset(dir: srcDir) {
-                        getIncludes().each { include ->
-                            ant.include(name: include)
-                        }
-
-                        getExcludes().each { exclude ->
-                            ant.exclude(name: exclude)
-                        }
-                    }
-                }
-
-                testSrcDirs.each { testSrcDir ->
-                    ant.fileset(dir: testSrcDir) {
-                        getTestIncludes().each { include ->
-                            ant.include(name: include)
-                        }
-
-                        getTestExcludes().each { exclude ->
-                            ant.exclude(name: exclude)
-                        }
-                    }
-                }
-
-                // Apply statement and method coverage contexts
-                getStatementContexts().each {
-                    ant.statementContext(name: it.name, regexp: it.regexp)
-                }
-
-                getMethodContexts().each {
-                    def args = [ name: it.name, regexp: it.regexp ]
-                    // Add optional method metrics if provided
-                    if (it.maxComplexity != null)
-                        args.maxComplexity = it.maxComplexity
-                    if (it.maxStatements != null)
-                        args.maxStatements = it.maxStatements
-                    if (it.maxAggregatedComplexity != null)
-                        args.maxAggregatedComplexity = it.maxAggregatedComplexity
-                    if (it.maxAggregatedStatements != null)
-                        args.maxAggregatedStatements = it.maxAggregatedStatements
-                    ant.methodContext(args)
-                }
-            }
-
-            // Move original classes
-            moveOriginalClasses(ant)
-            prepareClassesDirs()
-
-            // Compile instrumented classes
-            compileClasses(ant)
-
-            // Copy resources
-            copyOriginalResources(ant)
-
-            log.info 'Finished instrumenting code using Clover.'
+        // Inject the Clover JAR into the Ant classloader to effectively
+        // enable it for the CloverCompilerAdapter issue #125
+        ClassLoader antClassLoader = org.apache.tools.ant.Project.class.classLoader
+        getCloverClasspath().each { File file ->
+            def url = file.toURI().toURL()
+            antClassLoader.addURL(url)
         }
+
+        ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
+        ant."clover-clean"(initString: "${getBuildDir()}/${getInitString()}")
+
+        List<File> srcDirs = CloverSourceSetUtils.getValidSourceDirs(getSourceSets())
+        List<File> testSrcDirs = CloverSourceSetUtils.getValidSourceDirs(getTestSourceSets())
+
+        ant.'clover-setup'(getCloverSetupAttributes()) {
+            srcDirs.each { srcDir ->
+                ant.fileset(dir: srcDir) {
+                    getIncludes().each { include ->
+                        ant.include(name: include)
+                    }
+
+                    getExcludes().each { exclude ->
+                        ant.exclude(name: exclude)
+                    }
+                }
+            }
+
+            testSrcDirs.each { testSrcDir ->
+                ant.fileset(dir: testSrcDir) {
+                    getTestIncludes().each { include ->
+                        ant.include(name: include)
+                    }
+
+                    getTestExcludes().each { exclude ->
+                        ant.exclude(name: exclude)
+                    }
+                }
+            }
+
+            // Apply statement and method coverage contexts
+            getStatementContexts().each {
+                ant.statementContext(name: it.name, regexp: it.regexp)
+            }
+
+            getMethodContexts().each {
+                def args = [ name: it.name, regexp: it.regexp ]
+                // Add optional method metrics if provided
+                if (it.maxComplexity != null)
+                    args.maxComplexity = it.maxComplexity
+                if (it.maxStatements != null)
+                    args.maxStatements = it.maxStatements
+                if (it.maxAggregatedComplexity != null)
+                    args.maxAggregatedComplexity = it.maxAggregatedComplexity
+                if (it.maxAggregatedStatements != null)
+                    args.maxAggregatedStatements = it.maxAggregatedStatements
+                ant.methodContext(args)
+            }
+        }
+
+        // Compile instrumented classes
+        compileClasses(ant)
+
+        log.info 'Finished instrumenting code using Clover.'
     }
-    
+
+    @Internal
+    File getCloverDatabaseFile() {
+        return new File("${getBuildDir()}/${getInitString()}")
+    }
+
     private Map getCloverSetupAttributes() {
-        def attributes = [initString: "${getBuildDir()}/${getInitString()}"]
+        def attributes = [initString: "${cloverDatabaseFile}"]
 
         if (getSourceCompatibility()) {
             attributes['source'] = getSourceCompatibility()
@@ -170,49 +170,8 @@ class InstrumentCodeAction implements Action<Task> {
         attributes.flushpolicy = getFlushpolicy()
 
         attributes.encoding = getEncoding()
-        
+
         attributes
-    }
-
-    @CompileStatic
-    private void moveOriginalClasses(AntBuilder ant) {
-        moveClassesDirsToBackupDirs(ant, getSourceSets())
-        moveClassesDirsToBackupDirs(ant, getTestSourceSets())
-    }
-
-    private void moveClassesDirsToBackupDirs(AntBuilder ant, List<CloverSourceSet> sourceSets) {
-        sourceSets.each { sourceSet ->
-            if (CloverSourceSetUtils.existsDirectory(sourceSet.classesDir)) {
-                ant.move(file: sourceSet.classesDir.canonicalPath, tofile: sourceSet.backupDir.canonicalPath, failonerror: true)
-            }
-        }
-    }
-
-    @CompileStatic
-    private void prepareClassesDirs() {
-        createClassesDirs(getSourceSets())
-        createClassesDirs(getTestSourceSets())
-    }
-
-    @CompileStatic
-    private void createClassesDirs(List<CloverSourceSet> sourceSets) {
-        sourceSets.each { it.classesDir.mkdirs() }
-    }
-
-    @CompileStatic
-    private void copyOriginalResources(AntBuilder ant) {
-        copyResourceFilesToBackupDirs(ant, getSourceSets())
-        copyResourceFilesToBackupDirs(ant, getTestSourceSets())
-    }
-
-    private void copyResourceFilesToBackupDirs(AntBuilder ant, List<CloverSourceSet> sourceSets) {
-        sourceSets.each { sourceSet ->
-            if (CloverSourceSetUtils.existsDirectory(sourceSet.backupDir)) {
-                ant.copy(todir: sourceSet.classesDir.canonicalPath, failonerror: true) {
-                    fileset(dir: sourceSet.backupDir.canonicalPath, excludes: '**/*.class')
-                }
-            }
-        }
     }
 
     /**
@@ -235,12 +194,12 @@ class InstrumentCodeAction implements Action<Task> {
      */
     @CompileStatic
     private String getGroovycClasspath() {
-        getCloverClasspath().asPath + System.getProperty('path.separator') + getGroovyClasspath().asPath + System.getProperty('path.separator') + getTestRuntimeClasspath().asPath
+        getCloverClasspath().asPath + System.getProperty('path.separator') + getGroovyClasspath().asPath + System.getProperty('path.separator') + getInstrumentationClasspath().asPath
     }
 
     /**
      * Gets the compile classpath for the given sourceSet.
-     * 
+     *
      * @param sourceSet the CloverSourceSet to extract the classpath
      *
      * @return Classpath
@@ -260,9 +219,9 @@ class InstrumentCodeAction implements Action<Task> {
         for(CloverSourceSet sourceSet : getSourceSets()) {
             String classpath = getCompileClasspath(sourceSet)
             if (sourceSet.groovy) {
-                compileGroovyAndJava(ant, sourceSet.srcDirs, sourceSet.classesDir, classpath)
+                compileGroovyAndJava(ant, CloverSourceSetUtils.getValidSourceDirs(sourceSet), sourceSet.instrumentedClassesDir, classpath)
             } else {
-                compileJava(ant, sourceSet.srcDirs, sourceSet.classesDir, classpath)
+                compileJava(ant, CloverSourceSetUtils.getValidSourceDirs(sourceSet), sourceSet.instrumentedClassesDir, classpath)
             }
         }
     }
@@ -278,9 +237,9 @@ class InstrumentCodeAction implements Action<Task> {
         for(CloverSourceSet sourceSet : getTestSourceSets()) {
             String classpath = addClassesDirToClasspath(getCompileClasspath(sourceSet), nonTestClasses)
             if (sourceSet.groovy) {
-                compileGroovyAndJava(ant, sourceSet.srcDirs, sourceSet.classesDir, classpath)
+                compileGroovyAndJava(ant, CloverSourceSetUtils.getValidSourceDirs(sourceSet), sourceSet.instrumentedClassesDir, classpath)
             } else {
-                compileJava(ant, sourceSet.srcDirs, sourceSet.classesDir, classpath)
+                compileJava(ant, CloverSourceSetUtils.getValidSourceDirs(sourceSet), sourceSet.instrumentedClassesDir, classpath)
             }
         }
     }
