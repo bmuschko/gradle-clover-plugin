@@ -15,25 +15,27 @@
  */
 package com.bmuschko.gradle.clover
 
-import org.gradle.api.file.FileTreeElement
-import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.SourceSet
+import static com.bmuschko.gradle.clover.CloverUtils.*
 
 import java.util.concurrent.Callable
+
+import javax.inject.Inject
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.FileTreeElement
+import org.gradle.api.internal.project.IsolatedAntBuilder
 import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.testing.Test
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-
-import static com.bmuschko.gradle.clover.CloverUtils.*
 
 /**
  * <p>A {@link org.gradle.api.Plugin} that provides a task for creating a code coverage report using Clover.</p>
@@ -50,7 +52,7 @@ class CloverPlugin implements Plugin<Project> {
     static final String CLOVER_GROUP = 'clover'
     static final String DEFAULT_CLOVER_SNAPSHOT = '.clover/coverage.db.snapshot'
     static final String DEFAULT_CLOVER_HISTORY_DIR = '.clover/historypoints'
-
+    
     @CompileStatic
     @Override
     void apply(Project project) {
@@ -115,17 +117,20 @@ class CloverPlugin implements Plugin<Project> {
             FileCollection instrumentedTestClassDirs = instrumentCodeTask.instrumentedTestClasses
             FileCollection originalClassDirs = instrumentCodeTask.originalMainClasses
             FileCollection originalTestClassDirs = instrumentCodeTask.originalTestClasses
+
+            // NB: I believe this is a bug in one of the Android plugins used in the
+            // user's build who reported this in Issue #111, adding some defensive
+            // logic here to avoid adding to a null pointer. In Gradle 4.7 this
+            // might change even further and perhaps will disallow assigning a null.
+            test.classpath = (test.classpath ?: project.files())
+
             test.ext.originalClasspath = test.classpath
             test.classpath = instrumentedClassDirs + instrumentedTestClassDirs + test.classpath - originalClassDirs - originalTestClassDirs
 
             test.ext.originalTestClassesDir = test.getTestClassesDirs()
             test.getConventionMapping().map("testClassesDirs") { instrumentedTestClassDirs }
 
-            // NB: I believe this is a bug in one of the Android plugins used in the
-            // user's build who reported this in Issue #111, adding some defensive
-            // logic here to avoid adding to a null pointer. In Gradle 4.7 this
-            // might change even further and perhaps will disallow assigning a null.
-            test.classpath = (test.classpath ?: project.files()).plus(project.configurations.getByName(CONFIGURATION_NAME))
+            test.classpath = test.classpath + project.configurations.getByName(CONFIGURATION_NAME)
 
             // Optimize how tests are executed based on previous results
             OptimizeTestSetAction optimizeTestSetAction = createOptimizeTestSetAction(cloverPluginConvention, project, resolver, test)
@@ -154,7 +159,7 @@ class CloverPlugin implements Plugin<Project> {
                 // If we are generating instrumented JAR files make sure the jar
                 // task now consumes the instrumented classes
                 project.pluginManager.withPlugin('java') {
-                    project.tasks.named('jar').configure { Jar jar ->
+                    project.tasks.withType(Jar) { Jar jar ->
                         jar.from instrumentedClassDirs
                         jar.exclude { FileTreeElement element ->
                             originalClassDirs.any { classesDir -> element.file.canonicalPath.startsWith(classesDir.canonicalPath) }
@@ -168,7 +173,7 @@ class CloverPlugin implements Plugin<Project> {
     }
 
     private CreateSnapshotAction createCreateSnapshotAction(CloverPluginConvention cloverPluginConvention, Project project, Test testTask) {
-        CreateSnapshotAction createSnapshotAction = createInstance(project, CreateSnapshotAction)
+        CreateSnapshotAction createSnapshotAction = project.objects.newInstance(CreateSnapshotAction)
         createSnapshotAction.conventionMapping.with {
             map('initString') { project.relativePath(testTask.ext.cloverDatabaseFile) }
             map('optimizeTests') { cloverPluginConvention.optimizeTests }
@@ -180,7 +185,7 @@ class CloverPlugin implements Plugin<Project> {
     }
 
     private OptimizeTestSetAction createOptimizeTestSetAction(CloverPluginConvention cloverPluginConvention, Project project, SourceSetsResolver resolver, Test testTask) {
-        OptimizeTestSetAction optimizeTestSetAction = createInstance(project, OptimizeTestSetAction)
+        OptimizeTestSetAction optimizeTestSetAction = project.objects.newInstance(OptimizeTestSetAction)
         optimizeTestSetAction.conventionMapping.with {
             map('initString') { project.relativePath(testTask.ext.cloverDatabaseFile) }
             map('optimizeTests') { cloverPluginConvention.optimizeTests }
@@ -253,7 +258,7 @@ class CloverPlugin implements Plugin<Project> {
      * @param cloverPluginConvention Clover plugin convention
      * @param task Task
      */
-    private void setCloverReportConventionMappings(Project project, CloverPluginConvention cloverPluginConvention, Task task) {
+    def setCloverReportConventionMappings(Project project, CloverPluginConvention cloverPluginConvention, Task task) {
         task.conventionMapping.with {
             map('xml') { cloverPluginConvention.report.xml }
             map('json') { cloverPluginConvention.report.json }
@@ -341,6 +346,7 @@ class CloverPlugin implements Plugin<Project> {
             sourceSets[testTask.name] = new ArrayList<CloverSourceSet>()
             String instrumentedDirPath = "instrumented/${testTask.name}/main"
             Callable<FileCollection> classpathCallable = new Callable<FileCollection>() {
+                @Override
                 FileCollection call() {
                     project.sourceSets.main.getCompileClasspath() + project.configurations.getByName(CONFIGURATION_NAME)
                 }
@@ -375,7 +381,7 @@ class CloverPlugin implements Plugin<Project> {
             if (cloverPluginConvention.additionalSourceSets) {
                 cloverPluginConvention.additionalSourceSets.each { sourceSet ->
                     CloverSourceSet additionalSourceSet = CloverSourceSet.from(sourceSet)
-                    additionalSourceSet.groovy = hasGroovySource(project, additionalSourceSet.srcDirs)
+                    additionalSourceSet.groovy = hasGroovySource(additionalSourceSet.srcDirs)
                     additionalSourceSet.classpathProvider = classpathCallable
                     additionalSourceSet.instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${additionalSourceSet.name}").get().asFile
                     sourceSets[testTask.name] << additionalSourceSet
@@ -405,6 +411,7 @@ class CloverPlugin implements Plugin<Project> {
             testSourceSets[testTask.name] = new ArrayList<CloverSourceSet>()
             String instrumentedDirPath = "instrumented/${testTask.name}/test"
             Callable<FileCollection> classpathCallable = new Callable<FileCollection>() {
+                @Override
                 FileCollection call() {
                     project.sourceSets.test.getCompileClasspath() + project.configurations.getByName(CONFIGURATION_NAME)
                 }
@@ -439,7 +446,7 @@ class CloverPlugin implements Plugin<Project> {
             if (cloverPluginConvention.additionalTestSourceSets) {
                 cloverPluginConvention.additionalTestSourceSets.each { testSourceSet ->
                     CloverSourceSet additionalTestSourceSet = CloverSourceSet.from(testSourceSet)
-                    additionalTestSourceSet.groovy = hasGroovySource(project, additionalTestSourceSet.srcDirs)
+                    additionalTestSourceSet.groovy = hasGroovySource(additionalTestSourceSet.srcDirs)
                     additionalTestSourceSet.classpathProvider = classpathCallable
                     additionalTestSourceSet.instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${additionalTestSourceSet.name}").get().asFile
                     testSourceSets[testTask.name] << additionalTestSourceSet
@@ -450,7 +457,7 @@ class CloverPlugin implements Plugin<Project> {
         }
 
         @CompileStatic
-        private boolean hasGroovySource(Project project, Collection<File> dirs) {
+        private boolean hasGroovySource(Collection<File> dirs) {
             for (File dir : dirs) {
                 if (!project.fileTree(dir: dir, includes: ['**/*.groovy']).getFiles().isEmpty()) {
                     return true

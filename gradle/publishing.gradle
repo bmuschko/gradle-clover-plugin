@@ -1,35 +1,30 @@
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifact sourcesJar
-            artifact groovydocJar
-            artifact javadocJar
-
-            pom.withXml {
-                def root = asNode()
-                root.appendNode('name', 'Gradle Clover plugin')
-                root.appendNode('description', 'Gradle plugin for generating a code coverage report using Clover.')
-                root.appendNode('url', 'https://github.com/bmuschko/gradle-clover-plugin')
-                root.appendNode('inceptionYear', '2012')
-
-                def scm = root.appendNode('scm')
-                scm.appendNode('url', 'https://github.com/bmuschko/gradle-clover-plugin')
-                scm.appendNode('connection', 'scm:https://bmuschko@github.com/bmuschko/gradle-clover-plugin.git')
-                scm.appendNode('developerConnection', 'scm:git://github.com/bmuschko/gradle-clover-plugin.git')
-
-                def license = root.appendNode('licenses').appendNode('license')
-                license.appendNode('name', 'The Apache Software License, Version 2.0')
-                license.appendNode('url', 'http://www.apache.org/licenses/LICENSE-2.0.txt')
-                license.appendNode('distribution', 'repo')
-
-                def developers = root.appendNode('developers')
-                def bmuschko = developers.appendNode('developer')
-                bmuschko.appendNode('id', 'bmuschko')
-                bmuschko.appendNode('name', 'Benjamin Muschko')
-                bmuschko.appendNode('email', 'benjamin.muschko@gmail.com')
-            }
+afterEvaluate {
+    publishing.publications.named('pluginMaven').configure {
+        artifact groovydocJar
+    
+        pom.withXml {
+            def root = asNode()
+            root.appendNode('name', 'Gradle Clover plugin')
+            root.appendNode('description', 'Gradle plugin for generating a code coverage report using Clover.')
+            root.appendNode('url', 'https://github.com/bmuschko/gradle-clover-plugin')
+            root.appendNode('inceptionYear', '2012')
+    
+            def scm = root.appendNode('scm')
+            scm.appendNode('url', 'https://github.com/bmuschko/gradle-clover-plugin')
+            scm.appendNode('connection', 'scm:https://bmuschko@github.com/bmuschko/gradle-clover-plugin.git')
+            scm.appendNode('developerConnection', 'scm:git://github.com/bmuschko/gradle-clover-plugin.git')
+    
+            def license = root.appendNode('licenses').appendNode('license')
+            license.appendNode('name', 'The Apache Software License, Version 2.0')
+            license.appendNode('url', 'http://www.apache.org/licenses/LICENSE-2.0.txt')
+            license.appendNode('distribution', 'repo')
+    
+            def developers = root.appendNode('developers')
+            def bmuschko = developers.appendNode('developer')
+            bmuschko.appendNode('id', 'bmuschko')
+            bmuschko.appendNode('name', 'Benjamin Muschko')
+            bmuschko.appendNode('email', 'benjamin.muschko@gmail.com')
         }
     }
 }
@@ -37,7 +32,7 @@ publishing {
 bintray {
     user = resolveProperty('BINTRAY_USER', 'bintrayUser')
     key = resolveProperty('BINTRAY_KEY', 'bintrayKey')
-    publications = ['mavenJava']
+    publications = ['pluginMaven', 'gradleCloverPluginPluginMarkerMaven']
     publish = true
 
     pkg {

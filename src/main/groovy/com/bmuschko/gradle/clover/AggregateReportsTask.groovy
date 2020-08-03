@@ -46,20 +46,20 @@ class AggregateReportsTask extends CloverReportTask {
     String testResultsInclude
 
     @Override
-    void generateCodeCoverage() {
-        aggregateReports()
+    void generateCodeCoverage(def ant) {
+        aggregateReports(ant)
     }
 
-    private void aggregateReports() {
+    private void aggregateReports(def ant) {
         logger.info 'Starting to aggregate Clover code coverage reports.'
 
-        mergeSubprojectCloverDatabases()
-        writeReports(getFilter(), getTestResultsDir(), getTestResultsInclude())
+        mergeSubprojectCloverDatabases(ant)
+        writeReports(ant, getFilter(), getTestResultsDir(), getTestResultsInclude())
 
         logger.info 'Finished aggregating Clover code coverage reports.'
     }
 
-    private void mergeSubprojectCloverDatabases() {
+    private void mergeSubprojectCloverDatabases(def ant) {
         ant.'clover-merge'(initString: "${databasePath}") {
             databasesToMerge.each { File cloverDb ->
                 if(cloverDb.exists()) {

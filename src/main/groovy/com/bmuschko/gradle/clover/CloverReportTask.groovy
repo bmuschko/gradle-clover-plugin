@@ -15,9 +15,12 @@
  */
 package com.bmuschko.gradle.clover
 
+import javax.inject.Inject
+
 import org.gradle.api.DefaultTask
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.project.IsolatedAntBuilder
 import org.gradle.api.tasks.*
 
 /**
@@ -97,13 +100,18 @@ abstract class CloverReportTask extends DefaultTask {
 
     @OutputDirectory
     @Optional
-    public File getHistoryDirOrNull() {
+    File getHistoryDirOrNull() {
         return historical ? historyDir : null
     }
 
     @OutputDirectory
-    getCloverReportsDir() {
+    File getCloverReportsDir() {
         return new File( "${getReportsDir()}/clover")
+    }
+
+    @Inject
+    IsolatedAntBuilder getAntBuilder() {
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -156,31 +164,31 @@ abstract class CloverReportTask extends DefaultTask {
      *
      * @param filter Optional filter
      */
-    protected void writeReports(String filter, String testResultsDir = null, String testResultsInclude = null) {
+    protected void writeReports(def ant, String filter, String testResultsDir = null, String testResultsInclude = null) {
         File cloverReportDir = getCloverReportsDir()
 
         if (getHistorical()) {
-            createHistoryPoint(filter, testResultsDir, testResultsInclude)
+            createHistoryPoint(ant, filter, testResultsDir, testResultsInclude)
         }
 
         if(getXml()) {
-            writeReport(new File(cloverReportDir, 'clover.xml'), ReportType.XML, filter, testResultsDir, testResultsInclude)
+            writeReport(ant, new File(cloverReportDir, 'clover.xml'), ReportType.XML, filter, testResultsDir, testResultsInclude)
         }
 
         if(getJson()) {
-            writeReport(new File(cloverReportDir, 'json'), ReportType.JSON, filter, testResultsDir, testResultsInclude)
+            writeReport(ant, new File(cloverReportDir, 'json'), ReportType.JSON, filter, testResultsDir, testResultsInclude)
         }
 
         if(getHtml()) {
-            writeReport(new File(cloverReportDir, 'html'), ReportType.HTML, filter, testResultsDir, testResultsInclude)
+            writeReport(ant, new File(cloverReportDir, 'html'), ReportType.HTML, filter, testResultsDir, testResultsInclude)
         }
 
         if(getPdf()) {
-            writeReport(new File(cloverReportDir, 'clover.pdf'), ReportType.PDF, filter, testResultsDir, testResultsInclude)
+            writeReport(ant, new File(cloverReportDir, 'clover.pdf'), ReportType.PDF, filter, testResultsDir, testResultsInclude)
         }
     }
 
-    private void createHistoryPoint(String filter, String testResultsDir, String testResultsInclude) {
+    private void createHistoryPoint(def ant, String filter, String testResultsDir, String testResultsInclude) {
         logger.info 'Starting to create a Clover history point in ${getHistoryDir()}.'
 
         ant."clover-historypoint"(initString: "${databasePath}", historyDir: getHistoryDir(), overwrite: 'true') {
@@ -199,7 +207,7 @@ abstract class CloverReportTask extends DefaultTask {
      * @param reportType Report type
      * @param filter Optional filter
      */
-    private void writeReport(File outfile, ReportType reportType, String filter, String testResultsDir, String testResultsInclude) {
+    private void writeReport(def ant, File outfile, ReportType reportType, String filter, String testResultsDir, String testResultsInclude) {
         ant."clover-report"(initString: "${databasePath}") {
             def params = [
                 outfile: outfile,
@@ -273,13 +281,6 @@ abstract class CloverReportTask extends DefaultTask {
         }
     }
 
-    /**
-     * Initializes Clover Ant tasks.
-     */
-    private void initAntTasks() {
-        ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-    }
-
     @Internal
     protected String getDatabasePath() {
         return databaseFile.canonicalFile
@@ -288,11 +289,15 @@ abstract class CloverReportTask extends DefaultTask {
     @TaskAction
     void start() {
         validateConfiguration()
-        initAntTasks()
-        generateCodeCoverage()
+        antBuilder.withClasspath(getCloverClasspath().files).execute {
+            CloverUtils.injectCloverClasspath(ant.getBuilder(), getCloverClasspath().files)
+            CloverUtils.loadCloverlib(ant.getBuilder())
+
+            generateCodeCoverage(ant)
+        }
     }
 
-    abstract void generateCodeCoverage()
+    abstract void generateCodeCoverage(def ant)
 
     @Internal
     abstract File getDatabaseFile()

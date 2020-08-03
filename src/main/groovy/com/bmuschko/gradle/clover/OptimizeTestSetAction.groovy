@@ -15,16 +15,21 @@
  */
 package com.bmuschko.gradle.clover
 
-import groovy.util.logging.Slf4j
+import javax.inject.Inject
+
 import org.gradle.api.Action
-import org.gradle.api.specs.Spec
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileTreeElement
+import org.gradle.api.internal.project.IsolatedAntBuilder
+import org.gradle.api.specs.Spec
+import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
+
+import groovy.util.logging.Slf4j
 
 /**
  * Action which optimizes the test set, based on information collected by Clover about previous test runs.
@@ -36,26 +41,27 @@ import org.gradle.api.tasks.Optional
  */
 @Slf4j
 class OptimizeTestSetAction implements Action<Task>, Spec<FileTreeElement> {
-    String initString
-    boolean optimizeTests
-    FileCollection cloverClasspath
+    @Input String initString
+    @Input boolean optimizeTests
+    @Classpath FileCollection cloverClasspath
     @Optional @InputFile File snapshotFile
-    @InputDirectory File buildDir
+    @Internal File buildDir
     @Input List<CloverSourceSet> testSourceSets
-    Set<String> includes
-
+    
+    @Internal Set<String> includes
+    
     @Override
     void execute(Task task) {
-        initIncludes()
+        initIncludes(task)
     }
 
-    void initIncludes() {
-        if(getOptimizeTests() && getSnapshotFile() != null && getSnapshotFile().exists()) {
+    void initIncludes(Task task) {
+        if (getOptimizeTests() && getSnapshotFile() != null && getSnapshotFile().exists()) {
             log.info 'Optimizing test set.'
 
-            def ant = new AntBuilder()
-            def resource = 'cloverlib.xml'
-            ant.taskdef(resource: resource, classpath: getCloverClasspath().asPath)
+            // This cannot use the isolated classloader and I am giving up on it.
+            AntBuilder ant = new AntBuilder()
+            ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
             ant.property(name: 'clover.initstring', value: "${getBuildDir()}/${getInitString()}")
             List<File> testSrcDirs = CloverSourceSetUtils.getValidSourceDirs(getTestSourceSets())
             def testset = ant."clover-optimized-testset"(snapshotFile: getSnapshotFile(), debug: true) {

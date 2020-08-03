@@ -1,13 +1,15 @@
 package com.bmuschko.gradle.clover
 
+import javax.inject.Inject
+
 import org.gradle.api.DefaultTask
-import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.project.IsolatedAntBuilder
 import org.gradle.api.tasks.CacheableTask
+import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.PathSensitive
 import org.gradle.api.tasks.PathSensitivity
@@ -19,8 +21,7 @@ class AggregateDatabasesTask extends DefaultTask {
     /**
      * Classpath containing Clover Ant tasks.
      */
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @Classpath
     FileCollection cloverClasspath
 
     /**
@@ -42,16 +43,24 @@ class AggregateDatabasesTask extends DefaultTask {
         dependsOn(testTask)
         cloverDbFiles.from(testTask.ext.cloverDatabaseFile)
     }
+    
+    @Inject
+    IsolatedAntBuilder getAntBuilder() {
+        throw new UnsupportedOperationException();
+    }
 
     @TaskAction
     void aggregateDatabases() {
         if (existsAtLeastOneCloverDbFile(cloverDbFiles)) {
-            ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-
-            ant.'clover-merge'(initString: aggregationFile.canonicalPath) {
-                cloverDbFiles.each { cloverDbFile ->
-                    if (cloverDbFile.exists()) {
-                        ant.cloverDb(initString: cloverDbFile.canonicalPath)
+            antBuilder.withClasspath(getCloverClasspath().files).execute {
+                CloverUtils.injectCloverClasspath(ant.getBuilder(), getCloverClasspath().files)
+                CloverUtils.loadCloverlib(ant.getBuilder())
+                
+                ant.'clover-merge'(initString: aggregationFile.canonicalPath) {
+                    cloverDbFiles.each { cloverDbFile ->
+                        if (cloverDbFile.exists()) {
+                            ant.cloverDb(initString: cloverDbFile.canonicalPath)
+                        }
                     }
                 }
             }

@@ -48,9 +48,9 @@ class GenerateCoverageReportTask extends CloverReportTask {
     FileCollection coverageDatabaseFiles
 
     @Override
-    void generateCodeCoverage() {
+    void generateCodeCoverage(def ant) {
         if(allowReportGeneration()) {
-            generateReport()
+            generateReport(ant)
         }
     }
 
@@ -62,18 +62,17 @@ class GenerateCoverageReportTask extends CloverReportTask {
         databaseFile.exists()
     }
 
-    private void generateReport() {
+    private void generateReport(def ant) {
         logger.info 'Starting to generate Clover code coverage report.'
 
-        String filter = getFilter()
-        writeReports(filter, getTestResultsDir(), getTestResultsInclude())
+        writeReports(ant, getFilter(), getTestResultsDir(), getTestResultsInclude())
 
         File cloverXml = new File("${getReportsDir()}/clover/clover.xml")
         if (cloverXml.canRead()) {
             showConsoleCoverage(cloverXml)
         }
 
-        checkTargetPercentage(filter)
+        checkTargetPercentage(ant)
 
         logger.info 'Finished generating Clover code coverage report.'
     }
@@ -109,7 +108,7 @@ class GenerateCoverageReportTask extends CloverReportTask {
         }
     }
 
-    private void checkTargetPercentage(String filter) {
+    private void checkTargetPercentage(def ant) {
         if(getTargetPercentage()) {
             Map arguments = [
                 initString: "${databasePath}",
@@ -117,8 +116,8 @@ class GenerateCoverageReportTask extends CloverReportTask {
                 haltOnFailure: true
             ]
 
-            if(filter) {
-                arguments['filter'] = filter
+            if (getFilter()) {
+                arguments['filter'] = getFilter()
             }
 
             ant."clover-check"(arguments)

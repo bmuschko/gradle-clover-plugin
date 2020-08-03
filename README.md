@@ -29,10 +29,14 @@ Tested with Oracle JDK8
 
 | Gradle Version | Works |
 | :------------: | :---: |
-| 2.14.1         | yes   |
-| 3.5.1          | yes   |
-| 4.10.1         | yes   |
-| 5.4            | yes   |
+| 4.7            | yes   |
+| 4.10.2         | yes   |
+| 5.6.4          | yes   |
+| 6.5.1          | yes   |
+
+# Gradle version 4.6 and older
+
+For all versions of Gradle older than 4.7 use the 2.2.5 version of this plugin. Version 3.0.0 and newer only support Gradle 4.7 or later.
 
 ## Usage
 
@@ -51,7 +55,7 @@ example on how to retrieve it from Bintray:
         }
 
         dependencies {
-            classpath 'com.bmuschko:gradle-clover-plugin:2.2.5'
+            classpath 'com.bmuschko:gradle-clover-plugin:3.0.0'
         }
     }
 
@@ -59,7 +63,7 @@ To define the Clover dependency please use the `clover` configuration name in yo
 with a multi-module project make sure you apply the plugin and declare the `clover` dependency within the `allprojects` closure.
 
     dependencies {
-        clover 'org.openclover:clover:4.3.1'
+        clover 'org.openclover:clover:4.4.1'
     }
 
 With the introduction of the OpenClover support the `licenseLocation` clover convention is

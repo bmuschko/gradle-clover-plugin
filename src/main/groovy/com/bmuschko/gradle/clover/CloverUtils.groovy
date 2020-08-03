@@ -1,13 +1,14 @@
 package com.bmuschko.gradle.clover
 
-import groovy.transform.CompileDynamic
-import groovy.transform.CompileStatic
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.GroovyPlugin
 import org.gradle.api.tasks.testing.Test
-import org.gradle.util.GradleVersion
+
+import com.bmuschko.gradle.clover.internal.AntResourceWorkaround
+
+import groovy.transform.CompileStatic
 
 
 class CloverUtils {
@@ -146,19 +147,20 @@ class CloverUtils {
         []
     }
 
-    /**
-     * Creates an instance of the specified class, using an ASM-backed class generator.
-     *
-     * @param clazz the type of object to create
-     * @return an instance of the specified type
-     */
-    @CompileDynamic
-    static <T> T createInstance(Project project, Class<T> clazz) {
-        if (GradleVersion.version('4.0').compareTo(GradleVersion.current()) < 0) {
-            return project.objects.newInstance(clazz)
+    static void injectCloverClasspath(Object antBuilder, Set<File> files) {
+        // Inject the Clover JAR into the Ant classloader to effectively
+        // enable it for the CloverCompilerAdapter issue #125
+        URLClassLoader antClassLoader = antBuilder.getProject().getClass().getClassLoader()
+        def currentUrls = antClassLoader.getURLs() as List
+        for (File file : files) {
+            def url = file.toURI().toURL()
+            if (!currentUrls.contains(url)) {
+                antClassLoader.addURL(url)
+            }
         }
-        // If we are building in Gradle 3.x or older use the old mechanism
-        def generator = Class.forName('org.gradle.api.internal.AsmBackedClassGenerator').getConstructor().newInstance()
-        return generator.generate(clazz).getConstructor().newInstance()
+    }
+    
+    static void loadCloverlib(Object antBuilder) {
+        new AntResourceWorkaround(antBuilder).taskdef('cloverlib.xml')
     }
 }

@@ -83,12 +83,12 @@ public class CloverReportColumn implements Serializable {
         private String column;
         private Map<String, String> attributes;
         
-        Builder withColumn(String column) {
+        Builder withColumn(@SuppressWarnings("hiding") String column) {
             this.column = column;
             return this;
         }
         
-        Builder withAttributes(Map<String, String> attributes) {
+        Builder withAttributes(@SuppressWarnings("hiding") Map<String, String> attributes) {
             this.attributes = attributes;
             return this;
         }

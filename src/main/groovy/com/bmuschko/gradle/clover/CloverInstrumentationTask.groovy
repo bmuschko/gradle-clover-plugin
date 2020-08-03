@@ -1,6 +1,9 @@
 package com.bmuschko.gradle.clover
 
-import com.bmuschko.gradle.clover.CloverPlugin.SourceSetsResolver
+import static com.bmuschko.gradle.clover.CloverUtils.*
+
+import javax.inject.Inject
+
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.CacheableTask
@@ -10,9 +13,7 @@ import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.testing.Test
 
-import javax.inject.Inject
-
-import static com.bmuschko.gradle.clover.CloverUtils.*
+import com.bmuschko.gradle.clover.CloverPlugin.SourceSetsResolver
 
 @CacheableTask
 class CloverInstrumentationTask extends DefaultTask {
@@ -27,10 +28,10 @@ class CloverInstrumentationTask extends DefaultTask {
 
     @Internal
     final SourceSetsResolver resolver
-
+    
     @Inject
     CloverInstrumentationTask(CloverPluginConvention cloverPluginConvention, Test testTask, SourceSetsResolver resolver) {
-        this.instrumentCodeAction = createInstance(project, InstrumentCodeAction)
+        this.instrumentCodeAction = project.objects.newInstance(InstrumentCodeAction)
         this.cloverPluginConvention = cloverPluginConvention
         this.testTask = testTask
         this.resolver = resolver

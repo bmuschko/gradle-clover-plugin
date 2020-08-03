@@ -15,18 +15,23 @@
  */
 package com.bmuschko.gradle.clover
 
+import javax.inject.Inject
+
 import org.gradle.api.Action
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.project.IsolatedAntBuilder
 import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
+import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.Optional
+
+import com.bmuschko.gradle.clover.internal.AntResourceWorkaround
 
 import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.Nested
-import org.gradle.api.tasks.Optional
 
 /**
  * Clover code instrumentation action.
@@ -35,7 +40,7 @@ import org.gradle.api.tasks.Optional
  */
 @Slf4j
 class InstrumentCodeAction implements Action<Task> {
-    @Input @Optional String initString
+    @Input String initString
     @Input Boolean enabled
     @Input Boolean compileGroovy
     @Classpath FileCollection cloverClasspath
@@ -61,6 +66,11 @@ class InstrumentCodeAction implements Action<Task> {
     @Input @Optional String additionalArgs
     @Input @Optional Map additionalGroovycOpts
 
+    @Inject
+    IsolatedAntBuilder getAntBuilder() {
+        throw new UnsupportedOperationException();
+    }
+
     @Override
     void execute(Task task) {
         instrumentCode(task)
@@ -79,69 +89,63 @@ class InstrumentCodeAction implements Action<Task> {
     void instrumentCode(Task task) {
         log.info 'Starting to instrument code using Clover.'
 
-        def ant = task.project.ant
+        antBuilder.withClasspath(getClasspath().files).execute {
+            CloverUtils.injectCloverClasspath(ant.getBuilder(), getCloverClasspath().files)
+            CloverUtils.loadCloverlib(ant.getBuilder())
 
-        // Inject the Clover JAR into the Ant classloader to effectively
-        // enable it for the CloverCompilerAdapter issue #125
-        ClassLoader antClassLoader = org.apache.tools.ant.Project.class.classLoader
-        getCloverClasspath().each { File file ->
-            def url = file.toURI().toURL()
-            antClassLoader.addURL(url)
-        }
-
-        ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-        ant."clover-clean"(initString: "${getBuildDir()}/${getInitString()}")
-
-        List<File> srcDirs = CloverSourceSetUtils.getValidSourceDirs(getSourceSets())
-        List<File> testSrcDirs = CloverSourceSetUtils.getValidSourceDirs(getTestSourceSets())
-
-        ant.'clover-setup'(getCloverSetupAttributes()) {
-            srcDirs.each { srcDir ->
-                ant.fileset(dir: srcDir) {
-                    getIncludes().each { include ->
-                        ant.include(name: include)
-                    }
-
-                    getExcludes().each { exclude ->
-                        ant.exclude(name: exclude)
+            ant."clover-clean"(initString: "${getBuildDir()}/${getInitString()}")
+    
+            List<File> srcDirs = CloverSourceSetUtils.getValidSourceDirs(getSourceSets())
+            List<File> testSrcDirs = CloverSourceSetUtils.getValidSourceDirs(getTestSourceSets())
+    
+            ant.'clover-setup'(getCloverSetupAttributes()) {
+                srcDirs.each { srcDir ->
+                    ant.fileset(dir: srcDir) {
+                        getIncludes().each { include ->
+                            ant.include(name: include)
+                        }
+    
+                        getExcludes().each { exclude ->
+                            ant.exclude(name: exclude)
+                        }
                     }
                 }
-            }
-
-            testSrcDirs.each { testSrcDir ->
-                ant.fileset(dir: testSrcDir) {
-                    getTestIncludes().each { include ->
-                        ant.include(name: include)
-                    }
-
-                    getTestExcludes().each { exclude ->
-                        ant.exclude(name: exclude)
+    
+                testSrcDirs.each { testSrcDir ->
+                    ant.fileset(dir: testSrcDir) {
+                        getTestIncludes().each { include ->
+                            ant.include(name: include)
+                        }
+    
+                        getTestExcludes().each { exclude ->
+                            ant.exclude(name: exclude)
+                        }
                     }
                 }
+    
+                // Apply statement and method coverage contexts
+                getStatementContexts().each {
+                    ant.statementContext(name: it.name, regexp: it.regexp)
+                }
+    
+                getMethodContexts().each {
+                    def args = [ name: it.name, regexp: it.regexp ]
+                    // Add optional method metrics if provided
+                    if (it.maxComplexity != null)
+                        args.maxComplexity = it.maxComplexity
+                    if (it.maxStatements != null)
+                        args.maxStatements = it.maxStatements
+                    if (it.maxAggregatedComplexity != null)
+                        args.maxAggregatedComplexity = it.maxAggregatedComplexity
+                    if (it.maxAggregatedStatements != null)
+                        args.maxAggregatedStatements = it.maxAggregatedStatements
+                    ant.methodContext(args)
+                }
             }
-
-            // Apply statement and method coverage contexts
-            getStatementContexts().each {
-                ant.statementContext(name: it.name, regexp: it.regexp)
-            }
-
-            getMethodContexts().each {
-                def args = [ name: it.name, regexp: it.regexp ]
-                // Add optional method metrics if provided
-                if (it.maxComplexity != null)
-                    args.maxComplexity = it.maxComplexity
-                if (it.maxStatements != null)
-                    args.maxStatements = it.maxStatements
-                if (it.maxAggregatedComplexity != null)
-                    args.maxAggregatedComplexity = it.maxAggregatedComplexity
-                if (it.maxAggregatedStatements != null)
-                    args.maxAggregatedStatements = it.maxAggregatedStatements
-                ant.methodContext(args)
-            }
+    
+            // Compile instrumented classes
+            compileClasses(ant)
         }
-
-        // Compile instrumented classes
-        compileClasses(ant)
 
         log.info 'Finished instrumenting code using Clover.'
     }
@@ -151,7 +155,8 @@ class InstrumentCodeAction implements Action<Task> {
         return new File("${getBuildDir()}/${getInitString()}")
     }
 
-    private Map getCloverSetupAttributes() {
+    @Internal
+    Map getCloverSetupAttributes() {
         def attributes = [initString: "${cloverDatabaseFile}"]
 
         if (getSourceCompatibility()) {
@@ -179,9 +184,9 @@ class InstrumentCodeAction implements Action<Task> {
      *
      * @param ant Ant builder
      */
-    private void compileClasses(AntBuilder ant) {
+    void compileClasses(def ant) {
         if (getCompileGroovy()) {
-            ant.taskdef(name: 'groovyc', classname: 'org.codehaus.groovy.ant.Groovyc', classpath: getGroovycClasspath())
+             ant.taskdef(name: 'groovyc', classname: 'org.codehaus.groovy.ant.Groovyc')
         }
         compileSrcFiles(ant)
         compileTestSrcFiles(ant)
@@ -193,8 +198,13 @@ class InstrumentCodeAction implements Action<Task> {
      * @return Classpath
      */
     @CompileStatic
-    private String getGroovycClasspath() {
-        getCloverClasspath().asPath + System.getProperty('path.separator') + getGroovyClasspath().asPath + System.getProperty('path.separator') + getInstrumentationClasspath().asPath
+    private FileCollection getClasspath() {
+        FileCollection classpath = getCloverClasspath()
+        classpath = classpath.plus(getInstrumentationClasspath())
+        if (getCompileGroovy()) {
+            classpath = classpath.plus(getGroovyClasspath())
+        }
+        classpath
     }
 
     /**
@@ -215,7 +225,7 @@ class InstrumentCodeAction implements Action<Task> {
      * @param ant Ant builder
      */
     @CompileStatic
-    private void compileSrcFiles(AntBuilder ant) {
+    private void compileSrcFiles(def ant) {
         for(CloverSourceSet sourceSet : getSourceSets()) {
             String classpath = getCompileClasspath(sourceSet)
             if (sourceSet.groovy) {
@@ -232,7 +242,7 @@ class InstrumentCodeAction implements Action<Task> {
      * @param ant Ant builder
      */
     @CompileDynamic
-    private void compileTestSrcFiles(AntBuilder ant) {
+    private void compileTestSrcFiles(def ant) {
         def nonTestClasses = getSourceSets().collect { it.classesDir }
         for(CloverSourceSet sourceSet : getTestSourceSets()) {
             String classpath = addClassesDirToClasspath(getCompileClasspath(sourceSet), nonTestClasses)
@@ -271,7 +281,7 @@ class InstrumentCodeAction implements Action<Task> {
      * @param destDir Destination directory
      * @param classpath Classpath
      */
-    private void compileGroovyAndJava(AntBuilder ant, Collection<File> srcDirs, File destDir, String classpath) {
+    private void compileGroovyAndJava(def ant, Collection<File> srcDirs, File destDir, String classpath) {
         if (srcDirs.size() > 0) {
             String args = getAdditionalArgs()
             Map groovycAttrs = [destdir: destDir.canonicalPath, classpath: classpath, encoding: getEncoding()] + (getAdditionalGroovycOpts() ?: [:])
@@ -299,7 +309,7 @@ class InstrumentCodeAction implements Action<Task> {
      * @param destDir Destination directory
      * @param classpath Classpath
      */
-    private void compileJava(AntBuilder ant, Collection<File> srcDirs, File destDir, String classpath) {
+    private void compileJava(def ant, Collection<File> srcDirs, File destDir, String classpath) {
         if (srcDirs.size() > 0) {
             String args = getAdditionalArgs()
             ant.javac(destdir: destDir.canonicalPath, source: getSourceCompatibility(), target: getTargetCompatibility(),

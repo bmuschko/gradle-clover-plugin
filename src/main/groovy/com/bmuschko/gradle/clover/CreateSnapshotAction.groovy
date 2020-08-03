@@ -15,14 +15,19 @@
  */
 package com.bmuschko.gradle.clover
 
-import groovy.util.logging.Slf4j
+import javax.inject.Inject
+
 import org.gradle.api.Action
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.project.IsolatedAntBuilder
+import org.gradle.api.tasks.Classpath
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.Optional
+
+import groovy.util.logging.Slf4j
 
 /**
  * Create code coverage snapshot action.
@@ -34,11 +39,16 @@ import org.gradle.api.tasks.Optional
  */
 @Slf4j
 class CreateSnapshotAction implements Action<Task> {
-    String initString
-    boolean optimizeTests
-    FileCollection cloverClasspath
-    @InputDirectory File buildDir
+    @Input String initString
+    @Input boolean optimizeTests
+    @Classpath FileCollection cloverClasspath
+    @Internal File buildDir
     @OutputFile File snapshotFile
+    
+    @Inject
+    IsolatedAntBuilder getAntBuilder() {
+        throw new UnsupportedOperationException();
+    }
 
     @Override
     void execute(Task task) {
@@ -46,12 +56,15 @@ class CreateSnapshotAction implements Action<Task> {
     }
 
     void createSnapshot() {
-        if(getOptimizeTests()) {
+        if (getOptimizeTests()) {
             log.info 'Creating Clover snapshot.'
 
-            def ant = new AntBuilder()
-            ant.taskdef(resource: 'cloverlib.xml', classpath: getCloverClasspath().asPath)
-            ant."clover-snapshot"(initString: "${getBuildDir()}/${getInitString()}", file: getSnapshotFile())
+            antBuilder.withClasspath(getCloverClasspath().files).execute {
+                CloverUtils.injectCloverClasspath(ant.getBuilder(), getCloverClasspath().files)
+                CloverUtils.loadCloverlib(ant.getBuilder())
+
+                ant."clover-snapshot"(initString: "${getBuildDir()}/${getInitString()}", file: getSnapshotFile())
+            }
 
             log.info 'Finished creating Clover snapshot.'
         }
