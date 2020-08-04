@@ -1,7 +1,12 @@
 ### Version 3.0.0 (August 8, 2020)
 
-* Dropped compatibility with Gradle 4.6 and older, the version 2.2.5 will be the last one supporting these releases of Gradle.
+## BREAKING CHANGE FOR BACKWARDS COMPATIBILITY at Gradle 4.7
+
+* Dropped compatibility with Gradle 4.6 and older, the plugin version 2.2.5 will be the last one supporting these releases of Gradle.
+========================================
+
 * Made Clover instrumentation cacheable and corrected the incremental compilation of large projects.
+
 * Fixed issues with ClassLoader failing to load Clover classes in multi-project configurations.
 
 * Fix re-instrument and recompile every single source file - [Issue 118](https://github.com/bmuschko/gradle-clover-plugin/issues/118)
