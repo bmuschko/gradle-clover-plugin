@@ -55,7 +55,7 @@ example on how to retrieve it from Bintray:
         }
 
         dependencies {
-            classpath 'com.bmuschko:gradle-clover-plugin:3.0.0'
+            classpath 'com.bmuschko:gradle-clover-plugin:3.0.1'
         }
     }
 
@@ -76,6 +76,12 @@ The Clover plugin defines the following tasks:
 * `cloverGenerateReport`: Generates Clover code coverage report.
 * `cloverAggregateReports`: Aggregate Clover code coverage reports in a multi-module project setup. This task can only be
 run from the root directory of your project and requires at least one submodule. This task depends on `cloverGenerateReport`.
+
+When the `cloverAggregateReports` is created for a multi-project configuration the Clover report for the aggregated results
+is located in the `$buildDir/reports/clover` location. The `cloverGenerateReport` task for the root project only will use the
+`$buildDir/reports/clover-root` location in this case. This is done to avoid a problem when the root project has Clover
+enabled code in addition to subprojects with Clover enabled code. The problem was that `cloverGenerateReport` and the
+`cloverAggregateReports` task would overwrite their outputs and would be perpetually not UP-TO-DATE.
 
 ## Convention properties
 

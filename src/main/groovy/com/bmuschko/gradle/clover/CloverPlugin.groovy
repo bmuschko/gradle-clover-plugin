@@ -235,18 +235,24 @@ class CloverPlugin implements Plugin<Project> {
                 map('includeFailedTestCoverage') { cloverPluginConvention.report.includeFailedTestCoverage }
                 map('numThreads') { cloverPluginConvention.report.numThreads }
                 map('timeoutInterval') { cloverPluginConvention.report.timeout }
-                map('reportsDir') { new File(project.buildDir, 'reports-all') }
+                map('reportsDir') { new File(project.buildDir, 'reports') }
             }
             setCloverReportConventionMappings(project, cloverPluginConvention, aggregateReportsTask)
         }
 
         // Only add task to root project
-        if(project == project.rootProject && project.subprojects.size() > 0) {
+        if (project == project.rootProject && project.subprojects.size() > 0) {
             AggregateReportsTask aggregateReportsTask = project.rootProject.tasks.create(AGGREGATE_REPORTS_TASK_NAME, AggregateReportsTask)
             aggregateReportsTask.description = 'Aggregates Clover code coverage reports.'
             aggregateReportsTask.group = REPORT_GROUP
             project.allprojects*.tasks*.withType(GenerateCoverageReportTask) {
                 aggregateReportsTask.dependsOn it
+            }
+            // Avoid the root project having both the GenerateCoverageReportTask and
+            // the AggregateReportsTask share the reports directory while keeping the
+            // original behavior of the root AggregateReportsTask intact.
+            project.tasks.withType(GenerateCoverageReportTask) {
+                cloverReportBase = "clover-root"
             }
         }
     }

@@ -149,9 +149,4 @@ class JavaMultiProjectCachingSpec extends AbstractCachingFunctionalSpec {
             }
         """
     }
-
-    @Override
-    protected File getReportsDir() {
-        new File(buildDir, 'reports-all/clover')
-    }
 }

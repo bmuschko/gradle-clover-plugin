@@ -97,6 +97,8 @@ abstract class CloverReportTask extends DefaultTask {
     @Optional
     @Input
     Collection<String> movers
+    @Internal
+    String cloverReportBase = "clover"
 
     @OutputDirectory
     @Optional
@@ -106,7 +108,7 @@ abstract class CloverReportTask extends DefaultTask {
 
     @OutputDirectory
     File getCloverReportsDir() {
-        return new File( "${getReportsDir()}/clover")
+        return new File( "${getReportsDir()}/${cloverReportBase}")
     }
 
     @Inject

@@ -52,9 +52,4 @@ class JavaMultiProjectSpec extends AbstractFunctionalTestBase {
         where:
         gradle << GRADLE_TEST_VERSIONS
     }
-
-    @Override
-    protected File getReportsDir() {
-        new File(buildDir, 'reports-all/clover')
-    }
 }
