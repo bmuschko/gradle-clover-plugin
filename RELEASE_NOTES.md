@@ -1,4 +1,8 @@
-### Version 3.0.0 (August 8, 2020)
+### Version 3.0.1 (August 6, 2020)
+
+* Restore original location of Clover reports for multi-project use case when cloverAggregateReports is executed.
+
+### Version 3.0.0 (August 4, 2020)
 
 ## BREAKING CHANGE FOR BACKWARDS COMPATIBILITY at Gradle 4.7
 
