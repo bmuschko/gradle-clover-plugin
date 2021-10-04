@@ -1,20 +1,25 @@
 
 pluginManagement {
     repositories {
-        mavenLocal()
         gradlePluginPortal()
-        jcenter()
+        mavenCentral()
     }
 }
 
 plugins {
-    id "com.gradle.enterprise" version "3.4"
+    id "com.gradle.enterprise" version "3.7"
 }
 
 gradleEnterprise {
     buildScan {
         termsOfServiceUrl = "https://gradle.com/terms-of-service"
         termsOfServiceAgree = "yes"
+
+        def ci = System.getenv("CI")
+        if (ci != null && ci.trim() != '') {
+            publishAlways()
+            tag("CI")
+        }
     }
 }
 

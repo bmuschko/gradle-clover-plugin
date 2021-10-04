@@ -1,0 +1,64 @@
+name: Build and Release [Linux]
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Set up Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Compilation
+        uses: gradle/gradle-build-action@v2
+        env:
+          GRADLE_OPTS: -Dfile.encoding=windows-1252
+        with:
+          arguments: classes
+      - name: Validate plugin
+        uses: gradle/gradle-build-action@v2
+        env:
+          GRADLE_OPTS: -Dfile.encoding=windows-1252
+        with:
+          arguments: validatePlugins
+      - name: Unit tests
+        uses: gradle/gradle-build-action@v2
+        env:
+          GRADLE_OPTS: -Dfile.encoding=windows-1252
+        with:
+          arguments: test
+      - name: Integration tests
+        uses: gradle/gradle-build-action@v2
+        env:
+          GRADLE_OPTS: -Dfile.encoding=windows-1252
+        with:
+          arguments: integrationTest
+      - name: Functional tests
+        uses: gradle/gradle-build-action@v2
+        env:
+          GRADLE_OPTS: -Dfile.encoding=windows-1252
+        with:
+          arguments: functionalTest
+      - name: Assemble artifact
+        uses: gradle/gradle-build-action@v2
+        env:
+          GRADLE_OPTS: -Dfile.encoding=windows-1252
+        with:
+          arguments: assemble
+      - name: Store artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: gradle-clover-plugin.jar
+          path: build/libs/*.jar
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: gradle/gradle-build-action@v2
+        env:
+          GRADLE_OPTS: -Dfile.encoding=windows-1252
+          PLUGIN_PORTAL_KEY: ${{ secrets.PLUGIN_PORTAL_KEY }}
+          PLUGIN_PORTAL_SECRET: ${{ secrets.PLUGIN_PORTAL_SECRET }}
+        with:
+          arguments: publishPlugins gitPublishPush -Pgradle.publish.key=${{ secrets.PLUGIN_PORTAL_KEY }} -Pgradle.publish.secret=${{ secrets.PLUGIN_PORTAL_SECRET }} -Dorg.ajoberstar.grgit.auth.username=${{ secrets.GH_TOKEN }} -is

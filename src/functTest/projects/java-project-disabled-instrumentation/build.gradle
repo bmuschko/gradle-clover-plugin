@@ -6,11 +6,11 @@ plugins {
 apply from: '../deps.gradle'
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
-    testCompile deps.junit
+    testImplementation deps.junit
     clover deps.clover
 }
 

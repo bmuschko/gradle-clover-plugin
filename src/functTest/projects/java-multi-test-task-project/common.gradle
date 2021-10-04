@@ -4,17 +4,18 @@ apply plugin: 'java'
 apply plugin: 'com.bmuschko.clover'
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
-    testCompile deps.junit
+    testImplementation deps.junit
+    testRuntimeOnly deps.junit
     clover deps.clover
 }
 
 configurations {
-    customTestCompile.extendsFrom testCompile
-    customTestRuntime.extendsFrom testRuntime
+    customTestImplementation.extendsFrom testImplementation
+    customTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 sourceSets {

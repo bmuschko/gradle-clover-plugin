@@ -10,11 +10,8 @@ The [`org.ajoberstar.reckon`](https://github.com/ajoberstar/reckon) Gradle plugi
 ## gradle-git-publish
 The [`gradle-git-publish`](https://github.com/ajoberstar/gradle-git-publish) Gradle plugin is used to publish the documentation to `gh-pages` branch. It is applied and configured in the [gradle/documentation.gradle](../gradle/documentation.gradle) file.
 
-## Travis CI
-[Travis CI](https://travis-ci.com) service is used as our current [CI/CD](https://en.wikipedia.org/wiki/CI/CD) server. Build and deploy jobs are configured in [.travis.yml](../.travis.yml) file. Please refer its [documentation](https://docs.travis-ci.com/) for more details.
-
-## Bintray
-[Bintray](https://bintray.com) service is used to publish plugin versions. With [BintrayPlugin](https://github.com/bintray/gradle-bintray-plugin) artifacts are uploaded to a remote reposiotry. Plugin configuration is in the [gradle/publishing.gradle](../gradle/publishing.gradle) file.
+## Github Actions
+[Github Actions](https://github.com/bmuschko/gradle-clover-plugin/actions) service is used as our current [CI/CD](https://en.wikipedia.org/wiki/CI/CD) server. Build and release jobs are configured in [workflows](../.github/workflows) file. Please refer its [documentation](https://github.com/actions/starter-workflows#readme) for more details.
 
 # Workflow
 The release process is automated to some extent. The following steps describe the workflow.
@@ -28,11 +25,10 @@ The release process is automated to some extent. The following steps describe th
 
 4. Gradle executes a build on developer's machine which calculates new version string, creates new tag with it and pushes to the `origin`.
 5. When Gradle build is finished, developer's work is done and the rest of the release process is automated.
-6. After push to the `origin`, Travis detects new tag and triggers a build.
-7. Travis [is instructed](../.travis.yml#L17) to execute [release stage](https://docs.travis-ci.com/user/build-stages/) when on Git tag.
-8. In this stage [Gradle script](../.travis.yml#L15) assembles plugin binaries (with new version) and uploads them to Bintray (credentials are stored as [secure variables](https://docs.travis-ci.com/user/environment-variables/#Defining-Variables-in-Repository-Settings) in Travis). Also JavaDoc is published to `gh-pages` branch (GitHub username and [access token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/) are also stored as secure variables).
+6. After push to the `origin`, Github Actions detects new tag and triggers a build.
+7. Github Action [is instructed](../.github/workflows/linux-build-release.yml#L56) to execute Release/Publish when on Git tag.
 
 # Useful links
 * [Semantic Versioning](http://semver.org/)
 * [org.ajoberstar.reckon version inference](https://github.com/ajoberstar/reckon#stage-version-scheme)
-* [Travis script deployment](https://docs.travis-ci.com/user/deployment/script/)
+* [Github Starter Workflows](https://github.com/actions/starter-workflows#readme)

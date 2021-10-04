@@ -24,19 +24,21 @@ The plugin provides generation of code coverage reports using [OpenClover](http:
 
 # Gradle Compatibility Tested
 
-Built for Oracle JDK8
-Tested with Oracle JDK8
+Built for OpenJDK JDK8
+Tested with OpenJDK JDK8
 
 | Gradle Version | Works |
 | :------------: | :---: |
-| 4.7            | yes   |
 | 4.10.2         | yes   |
 | 5.6.4          | yes   |
-| 6.5.1          | yes   |
+| 6.9.1          | yes   |
+| 7.2            | yes   |
 
 # Gradle version 4.6 and older
 
 For all versions of Gradle older than 4.7 use the 2.2.5 version of this plugin. Version 3.0.0 and newer only support Gradle 4.7 or later.
+
+We are switching the build to run on JDK 11 which means we cannot test with Gradle 4.7 anymore so I cannot guarantee that the 4.7 compatibilty will be available after 3.0.2 release.
 
 ## Usage
 
@@ -45,17 +47,17 @@ To use the Clover plugin, include in your build script:
     apply plugin: 'com.bmuschko.clover'
 
 The plugin JAR needs to be defined in the classpath of your build script. It is directly available on
-[Bintray](https://bintray.com/bmuschko/gradle-plugins/com.bmuschko%3Agradle-clover-plugin).
+[Gradle Plugins Portal](https://plugins.gradle.org/plugin/com.bmuschko.clover).
 Alternatively, you can download it from GitHub and deploy it to your local repository. The following code snippet shows an
-example on how to retrieve it from Bintray:
+example on how to retrieve it from Gradle Plugins Portal:
 
     buildscript {
         repositories {
-            jcenter()
+            gradlePluginPortal()
         }
 
         dependencies {
-            classpath 'com.bmuschko:gradle-clover-plugin:3.0.1'
+            classpath 'com.bmuschko:gradle-clover-plugin:3.0.2'
         }
     }
 

@@ -5,7 +5,7 @@ allprojects {
     apply plugin: "base"
 
     repositories {
-        jcenter()
+        mavenCentral()
     }
 
     tasks.withType(JavaCompile) {
@@ -44,7 +44,7 @@ subprojects {
     sourceCompatibility = '1.8'
 
     dependencies {
-        testCompile deps.junit
+        testImplementation deps.junit
     }
     buildDir = new File(rootProject.buildDir, name)
 }

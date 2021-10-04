@@ -1,3 +1,9 @@
+### Version 3.0.2 (October 5, 2021)
+
+* Compatibility with Gradle 7.2
+* Update publishing to push to Gradle Plugin Portal directly
+* Change CI/CD to Github Actions
+
 ### Version 3.0.1 (August 6, 2020)
 
 * Restore original location of Clover reports for multi-project use case when cloverAggregateReports is executed.

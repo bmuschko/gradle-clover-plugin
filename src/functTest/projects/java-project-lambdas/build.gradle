@@ -7,11 +7,11 @@ apply from: '../deps.gradle'
 sourceCompatibility = 1.8
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
-    testCompile deps.junit
+    testImplementation deps.junit
 }
 
 tasks.withType(JavaCompile) {

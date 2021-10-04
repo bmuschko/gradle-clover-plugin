@@ -6,12 +6,12 @@ plugins {
 apply from: '../deps.gradle'
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
-    compile localGroovy()
-    testCompile deps.junit
+    implementation localGroovy()
+    testImplementation deps.junit
     clover deps.clover
 }
 

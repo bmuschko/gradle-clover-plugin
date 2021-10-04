@@ -2,7 +2,7 @@ sourceSets {
     integrationTest {
         groovy.srcDir file('src/integTest/groovy')
         resources.srcDir file('src/integTest/resources')
-        compileClasspath += sourceSets.main.output + configurations.testRuntime
+        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
         runtimeClasspath += output + compileClasspath
     }
 }
@@ -26,6 +26,5 @@ idea.module {
         testSourceDirs += it
     }
 
-    scopes.TEST.plus += [configurations.integrationTestCompile]
     scopes.TEST.plus += [configurations.integrationTestRuntime]
 }

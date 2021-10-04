@@ -6,11 +6,22 @@ plugins {
 apply from: '../deps.gradle'
 
 repositories {
-    jcenter()
+    mavenCentral()
+}
+
+boolean isGradle6OrLess = gradle.gradleVersion.split('\\.')[0].toInteger() < 7
+def spockVersion = isGradle6OrLess ? '1.0-groovy-2.4' : '2.0-groovy-3.0'
+
+test {
+    if (isGradle6OrLess) {
+        useJUnit()
+    } else {
+        useJUnitPlatform()
+    }
 }
 
 dependencies {
-    testCompile('org.spockframework:spock-core:1.0-groovy-2.4')
+    testImplementation("org.spockframework:spock-core:$spockVersion")
     clover deps.clover
 }
 

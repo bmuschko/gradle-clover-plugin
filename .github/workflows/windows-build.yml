@@ -1,0 +1,35 @@
+name: Build [Windows]
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-2019
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Set up Java
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Compilation
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: classes
+      - name: Unit tests
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: test
+      - name: Integration tests
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: integrationTest
+      - name: Assemble artifact
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: assemble
+      - name: Store artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: gradle-clover-plugin.jar
+          path: build/libs/*.jar

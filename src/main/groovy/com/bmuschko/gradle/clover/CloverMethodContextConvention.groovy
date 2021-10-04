@@ -15,14 +15,24 @@
  */
 package com.bmuschko.gradle.clover
 
+import org.gradle.api.tasks.*
+
 /**
  * Defines Clover method context convention.
  *
  * @author Alex Volanis
  */
 class CloverMethodContextConvention extends CloverContextConvention {
+    @Input
+    @Optional
     Integer maxComplexity
+    @Input
+    @Optional
     Integer maxStatements
+    @Input
+    @Optional
     Integer maxAggregatedComplexity
+    @Input
+    @Optional
     Integer maxAggregatedStatements
 }

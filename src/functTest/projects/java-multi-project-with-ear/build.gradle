@@ -3,7 +3,7 @@ apply from: '../deps.gradle'
 
 allprojects {
     repositories {
-        jcenter()
+        mavenCentral()
     }
 
     tasks.withType(JavaCompile) {
@@ -44,7 +44,7 @@ project(':projectCar') {
     sourceCompatibility = '1.8'
 
     dependencies {
-        testCompile deps.junit
+        testImplementation deps.junit
     }
     buildDir = new File(rootProject.buildDir, name)
 }
@@ -55,8 +55,8 @@ project(':projectDriver') {
     sourceCompatibility = '1.8'
 
     dependencies {
-        compile project(':projectCar')
-        testCompile deps.junit
+        implementation project(':projectCar')
+        testImplementation deps.junit
     }
     buildDir = new File(rootProject.buildDir, name)
 }

@@ -6,11 +6,11 @@ plugins {
 apply from: '../deps.gradle'
 
 repositories {
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
-    testCompile deps.junit
+    testImplementation deps.junit
     clover deps.clover
 }
 
@@ -18,9 +18,13 @@ sourceSets {
     integTest {
         java.srcDir file('src/integTest/java')
         resources.srcDir file('src/integTest/resources')
-        compileClasspath = sourceSets.main.output + configurations.testRuntime
+        compileClasspath = sourceSets.main.output + configurations.testRuntimeClasspath
         runtimeClasspath = output + compileClasspath
     }
+}
+
+processIntegTestResources {
+    duplicatesStrategy = 'exclude'
 }
 
 task integrationTest(type: Test, dependsOn: test) {
@@ -45,6 +49,13 @@ tasks.withType(GroovyCompile) {
 }
 
 sourceCompatibility = '1.8'
+
+// Need to wire the instrumentation task to the compile task when
+// using the aditional tests facility because we loose visibility
+// into the task dependencies of the source sets injected
+tasks.matching { it.name == 'cloverInstrumentCodeForTest' }.configureEach {
+    dependsOn 'compileIntegTestJava'
+}
 
 clover {
     additionalTestSourceSet {
