@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"com.bmuschko.gradle.clover"},{"l":"com.bmuschko.gradle.clover.internal"}]
