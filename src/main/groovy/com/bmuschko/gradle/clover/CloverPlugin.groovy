@@ -19,14 +19,11 @@ import static com.bmuschko.gradle.clover.CloverUtils.*
 
 import java.util.concurrent.Callable
 
-import javax.inject.Inject
-
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileTreeElement
-import org.gradle.api.internal.project.IsolatedAntBuilder
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.SourceSet
@@ -59,7 +56,7 @@ class CloverPlugin implements Plugin<Project> {
         project.configurations.create(CONFIGURATION_NAME).setVisible(false).setTransitive(true)
                 .setDescription('The Clover library to be used for this project.')
 
-        CloverPluginConvention cloverPluginConvention = new CloverPluginConvention()
+        CloverPluginConvention cloverPluginConvention = project.objects.newInstance(CloverPluginConvention)
         project.convention.plugins.clover = cloverPluginConvention
 
         AggregateDatabasesTask aggregateDatabasesTask = configureAggregateDatabasesTask(project, cloverPluginConvention)
@@ -360,8 +357,9 @@ class CloverPlugin implements Plugin<Project> {
 
             project.sourceSets.each { SourceSet sourceSet ->
                 if (hasJavaPlugin(project) && isJavaSourceSetOf(sourceSet, testTask)) {
-                    CloverSourceSet cloverSourceSet = new CloverSourceSet(false)
+                    CloverSourceSet cloverSourceSet = project.objects.newInstance(CloverSourceSet)
                     cloverSourceSet.with {
+                        groovy = false
                         name = 'java'
                         srcDirs.addAll(sourceSet.java.srcDirs)
                         classesDir = sourceSet.java.outputDir
@@ -372,8 +370,9 @@ class CloverPlugin implements Plugin<Project> {
                 }
 
                 if (hasGroovyPlugin(project) && isGroovySourceSetOf(sourceSet, testTask)) {
-                    CloverSourceSet cloverSourceSet = new CloverSourceSet(true)
+                    CloverSourceSet cloverSourceSet = project.objects.newInstance(CloverSourceSet)
                     cloverSourceSet.with {
+                        groovy = true
                         name = 'groovy'
                         srcDirs.addAll(sourceSet.groovy.srcDirs)
                         classesDir = sourceSet.groovy.outputDir
@@ -386,10 +385,12 @@ class CloverPlugin implements Plugin<Project> {
 
             if (cloverPluginConvention.additionalSourceSets) {
                 cloverPluginConvention.additionalSourceSets.each { sourceSet ->
-                    CloverSourceSet additionalSourceSet = CloverSourceSet.from(sourceSet)
-                    additionalSourceSet.groovy = hasGroovySource(additionalSourceSet.srcDirs)
-                    additionalSourceSet.classpathProvider = classpathCallable
-                    additionalSourceSet.instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${additionalSourceSet.name}").get().asFile
+                    CloverSourceSet additionalSourceSet = CloverSourceSet.from(project.objects, sourceSet)
+                    additionalSourceSet.with {
+                        groovy = hasGroovySource(additionalSourceSet.srcDirs)
+                        instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${additionalSourceSet.name}").get().asFile
+                        classpathProvider = classpathCallable
+                    }
                     sourceSets[testTask.name] << additionalSourceSet
                 }
             }
@@ -425,8 +426,9 @@ class CloverPlugin implements Plugin<Project> {
 
             project.sourceSets.each { SourceSet sourceSet ->
                 if (hasJavaPlugin(project) && isJavaTestSourceSetOf(sourceSet, testTask)) {
-                    CloverSourceSet cloverSourceSet = new CloverSourceSet(false)
+                    CloverSourceSet cloverSourceSet = project.objects.newInstance(CloverSourceSet)
                     cloverSourceSet.with {
+                        groovy = false
                         name = 'java'
                         srcDirs.addAll(sourceSet.java.srcDirs)
                         classesDir = sourceSet.java.outputDir
@@ -437,8 +439,9 @@ class CloverPlugin implements Plugin<Project> {
                 }
 
                 if (hasGroovyPlugin(project) && isGroovyTestSourceSetOf(sourceSet, testTask)) {
-                    CloverSourceSet cloverSourceSet = new CloverSourceSet(true)
+                    CloverSourceSet cloverSourceSet = project.objects.newInstance(CloverSourceSet)
                     cloverSourceSet.with {
+                        groovy = true
                         name = 'groovy'
                         srcDirs.addAll(sourceSet.groovy.srcDirs)
                         classesDir = sourceSet.groovy.outputDir
@@ -451,10 +454,12 @@ class CloverPlugin implements Plugin<Project> {
 
             if (cloverPluginConvention.additionalTestSourceSets) {
                 cloverPluginConvention.additionalTestSourceSets.each { testSourceSet ->
-                    CloverSourceSet additionalTestSourceSet = CloverSourceSet.from(testSourceSet)
-                    additionalTestSourceSet.groovy = hasGroovySource(additionalTestSourceSet.srcDirs)
-                    additionalTestSourceSet.classpathProvider = classpathCallable
-                    additionalTestSourceSet.instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${additionalTestSourceSet.name}").get().asFile
+                    CloverSourceSet additionalTestSourceSet = CloverSourceSet.from(project.objects, testSourceSet)
+                    additionalTestSourceSet.with {
+                        groovy = hasGroovySource(additionalTestSourceSet.srcDirs)
+                        instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${additionalTestSourceSet.name}").get().asFile
+                        classpathProvider = classpathCallable
+                    }
                     testSourceSets[testTask.name] << additionalTestSourceSet
                 }
             }

@@ -15,8 +15,10 @@
  */
 package com.bmuschko.gradle.clover
 
-import org.gradle.api.tasks.Internal
-import org.gradle.util.ConfigureUtil
+import org.gradle.api.Action
+import org.gradle.api.model.ObjectFactory
+
+import javax.inject.Inject
 
 /**
  * Defines Clover plugin convention.
@@ -40,9 +42,9 @@ class CloverPluginConvention {
     List<String> excludes
     List<String> testIncludes
     List<String> testExcludes
-    CloverReportConvention report = new CloverReportConvention()
-    CloverContextsConvention contexts = new CloverContextsConvention()
-    CloverCompilerConvention compiler = new CloverCompilerConvention()
+    final CloverReportConvention report
+    final CloverContextsConvention contexts
+    final CloverCompilerConvention compiler
     List<String> includeTasks
     List<String> excludeTasks
     String instrumentLambda
@@ -50,51 +52,53 @@ class CloverPluginConvention {
     int flushinterval = 1000
     FlushPolicy flushpolicy = FlushPolicy.directed
 
-    def clover(Closure closure) {
-        ConfigureUtil.configure(closure, this)
+    private final ObjectFactory objectFactory
+
+    @Inject
+    CloverPluginConvention(ObjectFactory objectFactory) {
+        this.objectFactory = objectFactory
+        report = objectFactory.newInstance(CloverReportConvention)
+        contexts = objectFactory.newInstance(CloverContextsConvention)
+        compiler = objectFactory.newInstance(CloverCompilerConvention)
     }
 
-    def contexts(Closure closure) {
-        ConfigureUtil.configure(closure, contexts)
+    def clover(Action<CloverPluginConvention> action) {
+        action.execute(this)
     }
 
-    def statement(Closure closure) {
-        closure.resolveStrategy = Closure.DELEGATE_FIRST
-        CloverContextConvention statementContext = new CloverContextConvention()
-        closure.delegate = statementContext
+    def contexts(Action<CloverContextsConvention> action) {
+        action.execute(contexts)
+    }
+
+    def statement(Action<CloverContextConvention> action) {
+        CloverContextConvention statementContext = objectFactory.newInstance(CloverContextConvention)
         contexts.statements << statementContext
-        closure()
+        action.execute(statementContext)
     }
 
-    def method(Closure closure) {
-        closure.resolveStrategy = Closure.DELEGATE_FIRST
-        CloverMethodContextConvention methodContext = new CloverMethodContextConvention()
-        closure.delegate = methodContext
+    def method(Action<CloverMethodContextConvention> action) {
+        CloverMethodContextConvention methodContext = objectFactory.newInstance(CloverMethodContextConvention)
         contexts.methods << methodContext
-        closure()
+        action.execute(methodContext)
     }
 
-    def additionalSourceSet(Closure closure) {
-        closure.resolveStrategy = Closure.DELEGATE_FIRST
-        CloverSourceSet additionalSourceSet = new CloverSourceSet()
-        closure.delegate = additionalSourceSet
+    def additionalSourceSet(Action<CloverSourceSet> action) {
+        CloverSourceSet additionalSourceSet = objectFactory.newInstance(CloverSourceSet)
         additionalSourceSets << additionalSourceSet
-        closure()
+        action.execute(additionalSourceSet)
     }
 
-    def additionalTestSourceSet(Closure closure) {
-        closure.resolveStrategy = Closure.DELEGATE_FIRST
-        CloverSourceSet additionalTestSourceSet = new CloverSourceSet()
-        closure.delegate = additionalTestSourceSet
+    def additionalTestSourceSet(Action<CloverSourceSet> action) {
+        CloverSourceSet additionalTestSourceSet = objectFactory.newInstance(CloverSourceSet)
         additionalTestSourceSets << additionalTestSourceSet
-        closure()
+        action.execute(additionalTestSourceSet)
     }
 
-    def report(Closure closure) {
-        ConfigureUtil.configure(closure, report)
+    def report(Action<CloverReportConvention> action) {
+        action.execute(report)
     }
 
-    def compiler(Closure closure) {
-        ConfigureUtil.configure(closure, compiler)
+    def compiler(Action<CloverCompilerConvention> action) {
+        action.execute(compiler)
     }
 }

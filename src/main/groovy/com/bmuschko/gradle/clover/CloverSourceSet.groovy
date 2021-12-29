@@ -1,5 +1,6 @@
 package com.bmuschko.gradle.clover
 
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
@@ -14,19 +15,13 @@ import java.util.concurrent.Callable
 import org.gradle.api.file.FileCollection
 
 import groovy.transform.CompileStatic
-import groovy.transform.ToString
 
 @CompileStatic
-@ToString
 class CloverSourceSet {
     @Internal
     final UUID uuid = UUID.randomUUID()
 
     String name
-
-    CloverSourceSet(boolean groovy = false) {
-        this.groovy = groovy
-    }
 
     @InputFiles @PathSensitive(PathSensitivity.RELATIVE) Collection<File> srcDirs = new HashSet<File>()
 
@@ -46,7 +41,7 @@ class CloverSourceSet {
         this.instrumentedClassesDir = instrumentedClassesDir
     }
 
-    private boolean groovy
+    private boolean groovy = false
     @Input boolean isGroovy() {
         groovy
     }
@@ -55,6 +50,15 @@ class CloverSourceSet {
     }
 
     private transient Callable<FileCollection> classpathProvider
+
+    @Internal
+    Callable<FileCollection> getClasspathProvider() {
+        return classpathProvider
+    }
+
+    void setClasspathProvider(Callable<FileCollection> classpathProvider) {
+        this.classpathProvider = classpathProvider
+    }
 
     @InputFiles @PathSensitive(PathSensitivity.RELATIVE)
     FileCollection getCompileClasspath() {
@@ -66,8 +70,9 @@ class CloverSourceSet {
         return name == null ? uuid.toString() : name
     }
 
-    static CloverSourceSet from(CloverSourceSet other) {
-        CloverSourceSet newSourceSet = new CloverSourceSet()
+
+    static CloverSourceSet from(ObjectFactory objects, CloverSourceSet other) {
+        CloverSourceSet newSourceSet = objects.newInstance(CloverSourceSet)
         newSourceSet.with {
             name = other.name
             groovy = other.groovy
@@ -75,5 +80,16 @@ class CloverSourceSet {
             classesDir = other.classesDir
         }
         return newSourceSet
+    }
+
+    @Override
+    String toString() {
+        return "CloverSourceSet{" +
+                "name='" + name + '\'' +
+                ", groovy=" + groovy +
+                ", srcDirs=" + srcDirs +
+                ", classesDir=" + classesDir +
+                ", instrumentedClassesDir=" + instrumentedClassesDir +
+                '}'
     }
 }

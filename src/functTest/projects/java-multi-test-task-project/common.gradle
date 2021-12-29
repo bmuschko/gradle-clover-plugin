@@ -25,8 +25,10 @@ sourceSets {
     }
 }
 
+import org.gradle.util.GradleVersion
+
 task customTest(type: Test) {
-    if (gradle.gradleVersion.split('\\.')[0].toInteger() < 4)
+    if (GradleVersion.version('4.0') >= GradleVersion.current())
         testClassesDir = sourceSets.customTest.output.classesDir
     else
         testClassesDirs = sourceSets.customTest.output.classesDirs

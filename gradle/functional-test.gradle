@@ -20,8 +20,8 @@ task functionalTest(type: Test) {
     systemProperty 'gradleTestingVersions', gradleTestingVersions
     
     reports {
-        html.destination = project.file("$html.destination/functional")
-        junitXml.destination = project.file("$junitXml.destination/functional")
+        html.outputLocation = project.file("$buildDir/reports/tests/functionalTest")
+        junitXml.outputLocation = project.file("$buildDir/reports/tests/functionalTestXml")
     }
 }
 
@@ -38,12 +38,12 @@ idea.module {
         testSourceDirs += it
     }
 
-    scopes.TEST.plus += [configurations.functionalTestRuntime]
+    scopes.TEST.plus += [configurations.functionalTestRuntimeClasspath]
 }
 
 eclipse {
     classpath {
-        plusConfigurations += [ configurations.functionalTestRuntime ]
+        plusConfigurations += [ configurations.functionalTestRuntimeClasspath ]
         
         //customizing the classes output directory:
         defaultOutputDir = file('build-eclipse')

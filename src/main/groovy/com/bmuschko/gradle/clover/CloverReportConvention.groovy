@@ -15,7 +15,10 @@
  */
 package com.bmuschko.gradle.clover
 
-import org.gradle.util.ConfigureUtil
+import org.gradle.api.Action
+import org.gradle.api.model.ObjectFactory
+
+import javax.inject.Inject
 
 /**
  * Defines Clover report convention.
@@ -35,15 +38,20 @@ class CloverReportConvention {
     Integer numThreads = 2
     String timeout = ''
 
-    CloverReportHistoricalConvention historical = new CloverReportHistoricalConvention()
+    final CloverReportHistoricalConvention historical
+    final CloverReportColumnsConvention columns
 
-    def historical(Closure closure) {
-        ConfigureUtil.configure(closure, historical)
+    @Inject
+    CloverReportConvention(ObjectFactory objectFactory) {
+        historical = objectFactory.newInstance(CloverReportHistoricalConvention)
+        columns = new CloverReportColumnsConvention()
     }
-    
-    CloverReportColumnsConvention columns = new CloverReportColumnsConvention()
-    
-    def columns(Closure closure) {
-        ConfigureUtil.configure(closure, columns)
+
+    def historical(Action<? extends CloverReportHistoricalConvention> action) {
+        action.execute(historical)
+    }
+
+    def columns(Action<? extends CloverReportColumnsConvention> action) {
+        action.execute(columns)
     }
 }

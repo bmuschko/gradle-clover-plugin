@@ -20,17 +20,15 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import org.gradle.api.InvalidUserDataException;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import groovy.lang.GroovyObjectSupport;
+import org.gradle.api.InvalidUserDataException;
 
 public class CloverReportColumnsConvention extends GroovyObjectSupport {
     private final Collection<CloverReportColumn> columns;
 
     public CloverReportColumnsConvention() {
-        columns = new ArrayList<CloverReportColumn>();
+        columns = new ArrayList<>();
     }
 
     public Collection<CloverReportColumn> getColumns() {
@@ -38,7 +36,7 @@ public class CloverReportColumnsConvention extends GroovyObjectSupport {
     }
 
     public Collection<String> getJsonColumns() throws JsonProcessingException {
-        Collection<String> jsonColumns = new ArrayList<String>();
+        Collection<String> jsonColumns = new ArrayList<>();
         for (CloverReportColumn column : columns) {
             jsonColumns.add(column.toJson());
         }

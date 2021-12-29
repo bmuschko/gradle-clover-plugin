@@ -16,13 +16,29 @@
 package com.bmuschko.gradle.clover
 
 import org.gradle.api.InvalidUserDataException
-
+import org.gradle.api.Project
+import org.gradle.testfixtures.ProjectBuilder
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
 
 class CloverPluginConventionSpec extends Specification {
+
+    @Rule
+    TemporaryFolder tempDir = new TemporaryFolder()
+
+    Project project
+
+    def setup() {
+        project = ProjectBuilder.builder()
+                .withName('test-me')
+                .withProjectDir(tempDir.newFolder())
+                .build()
+    }
+
     def "FlushPolicy assignment conversion works"() {
         given: "A new CloverPluginConvention instance"
-        def convention = new CloverPluginConvention()
+        def convention = project.objects.newInstance(CloverPluginConvention)
 
         when: "and configuration closure with a valid flushpolicy and flushinterval"
         convention.clover {
@@ -37,7 +53,7 @@ class CloverPluginConventionSpec extends Specification {
 
     def "Invalid FlushPolicy assignment fails as expected"() {
         given: "A new CloverPluginConvention instance"
-        def convention = new CloverPluginConvention()
+        def convention = project.objects.newInstance(CloverPluginConvention)
 
         when: "and configuration closure with a bad flushpolicy"
         convention.clover {
@@ -51,7 +67,7 @@ class CloverPluginConventionSpec extends Specification {
 
     def "Historical report convention can be configured"() {
         given: "A new CloverPluginConvention instance"
-        def convention = new CloverPluginConvention()
+        def convention = project.objects.newInstance(CloverPluginConvention)
 
         when: "configuration closure with historical report enabled"
         convention.clover {
@@ -99,7 +115,7 @@ class CloverPluginConventionSpec extends Specification {
     
     def "Additional columns for clover report can be specified"() {
         given: "A new CloverPluginConvention instance"
-        def convention = new CloverPluginConvention()
+        def convention = project.objects.newInstance(CloverPluginConvention)
 
         when: "configuration closure with report columns is added"
         convention.clover {
@@ -137,7 +153,7 @@ class CloverPluginConventionSpec extends Specification {
     
     def "Invalid columns added to report are rejected with useful message"() {
         given: "A new CloverPluginConvention instance"
-        def convention = new CloverPluginConvention()
+        def convention = project.objects.newInstance(CloverPluginConvention)
 
         when: "configuration closure with report columns is added"
         convention.clover {

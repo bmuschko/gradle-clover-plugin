@@ -9,7 +9,9 @@ repositories {
     mavenCentral()
 }
 
-boolean isGradle6OrLess = gradle.gradleVersion.split('\\.')[0].toInteger() < 7
+import org.gradle.util.GradleVersion
+
+boolean isGradle6OrLess = GradleVersion.version('7.0') > GradleVersion.current()
 def spockVersion = isGradle6OrLess ? '1.0-groovy-2.4' : '2.0-groovy-3.0'
 
 test {

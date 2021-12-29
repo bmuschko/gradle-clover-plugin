@@ -1,3 +1,7 @@
+### Version 3.0.3
+
+* Enhanced compatibility with Gradle 8.x
+
 ### Version 3.0.2 (October 5, 2021)
 
 * Compatibility with Gradle 7.2

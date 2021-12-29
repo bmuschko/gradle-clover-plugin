@@ -18,10 +18,14 @@ package com.bmuschko.gradle.clover;
 import java.io.IOException;
 import java.io.Serializable;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 public class HistoricalAdded implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -49,11 +53,33 @@ public class HistoricalAdded implements Serializable {
 
     public String toJson() throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(HistoricalAdded.class, new Serializer());
+        mapper.registerModule(module);
         return mapper.writeValueAsString(this);
     }
 
     public static HistoricalAdded fromJson(String jsonString) throws JsonParseException, JsonMappingException, IOException {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(jsonString, HistoricalAdded.class);
+    }
+
+    private static class Serializer extends StdSerializer<HistoricalAdded> {
+
+        protected Serializer() {
+            this(null);
+        }
+
+        protected Serializer(Class<HistoricalAdded> t) {
+            super(t);
+        }
+
+        @Override
+        public void serialize(HistoricalAdded value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeStartObject();
+            gen.writeNumberField("range", value.getRange());
+            gen.writeStringField("interval", value.getInterval());
+            gen.writeEndObject();
+        }
     }
 }

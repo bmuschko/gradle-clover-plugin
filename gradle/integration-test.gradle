@@ -16,8 +16,8 @@ task integrationTest(type: Test) {
     check.dependsOn it
 
     reports {
-        html.destination = project.file("$html.destination/integration")
-        junitXml.destination = project.file("$junitXml.destination/integration")
+        html.outputLocation = project.file("$buildDir/reports/tests/integrationTest")
+        junitXml.outputLocation = project.file("$buildDir/reports/tests/integrationTestXml")
     }
 }
 
@@ -26,5 +26,5 @@ idea.module {
         testSourceDirs += it
     }
 
-    scopes.TEST.plus += [configurations.integrationTestRuntime]
+    scopes.TEST.plus += [configurations.integrationTestRuntimeClasspath]
 }

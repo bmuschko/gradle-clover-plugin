@@ -27,10 +27,12 @@ processIntegTestResources {
     duplicatesStrategy = 'exclude'
 }
 
+import org.gradle.util.GradleVersion
+
 task integrationTest(type: Test, dependsOn: test) {
     description = 'Runs the integration tests.'
     group = 'verification'
-    if (gradle.gradleVersion.split('\\.')[0].toInteger() < 4)
+    if (GradleVersion.version('4.0') >= GradleVersion.current())
         testClassesDir = sourceSets.integTest.output.classesDir
     else
         testClassesDirs = sourceSets.integTest.output.classesDirs
@@ -51,16 +53,18 @@ tasks.withType(GroovyCompile) {
 sourceCompatibility = '1.8'
 
 // Need to wire the instrumentation task to the compile task when
-// using the aditional tests facility because we loose visibility
+// using the additional tests facility because we loose visibility
 // into the task dependencies of the source sets injected
-tasks.matching { it.name == 'cloverInstrumentCodeForTest' }.configureEach {
-    dependsOn 'compileIntegTestJava'
+afterEvaluate {
+    cloverInstrumentCodeForTest {
+        dependsOn 'compileIntegTestJava'
+    }
 }
 
 clover {
     additionalTestSourceSet {
         srcDirs = sourceSets.integTest.java.srcDirs
-        if (gradle.gradleVersion.split('\\.')[0].toInteger() < 4)
+        if (GradleVersion.version('4.0') >= GradleVersion.current())
             classesDir = sourceSets.integTest.output.classesDir
         else
             classesDir = sourceSets.integTest.java.outputDir

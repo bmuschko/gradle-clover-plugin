@@ -28,17 +28,19 @@ Built for OpenJDK JDK8
 Tested with OpenJDK JDK8
 
 | Gradle Version | Works |
-| :------------: | :---: |
-| 4.10.2         | yes   |
-| 5.6.4          | yes   |
-| 6.9.1          | yes   |
-| 7.2            | yes   |
+|:--------------:| :---: |
+|      4.8       | yes   |
+|     5.6.4      | yes   |
+|     6.9.2      | yes   |
+|     7.3.3      | yes   |
 
-# Gradle version 4.6 and older
+# Gradle version 4.7 and older
 
-For all versions of Gradle older than 4.7 use the 2.2.5 version of this plugin. Version 3.0.0 and newer only support Gradle 4.7 or later.
+For all versions of Gradle older than 4.8 use the 2.2.5 version of this plugin.
+Version 3.0.0 and newer only support Gradle 4.8 or later.
 
-We are switching the build to run on JDK 11 which means we cannot test with Gradle 4.7 anymore so I cannot guarantee that the 4.7 compatibilty will be available after 3.0.2 release.
+We are switching the build to run on JDK 11 which means we cannot test with Gradle 4.8
+anymore, so I cannot guarantee that the 4.8 compatibility will be available after 3.0.2 release.
 
 ## Usage
 
@@ -57,7 +59,7 @@ example on how to retrieve it from Gradle Plugins Portal:
         }
 
         dependencies {
-            classpath 'com.bmuschko:gradle-clover-plugin:3.0.2'
+            classpath 'com.bmuschko:gradle-clover-plugin:3.0.3'
         }
     }
 
@@ -70,6 +72,11 @@ with a multi-module project make sure you apply the plugin and declare the `clov
 
 With the introduction of the OpenClover support the `licenseLocation` clover convention is
 now unused. For compatibility with existing clover Gradle configurations the plugin will accept a value set but will do nothing with it.
+
+
+## GroovyDoc for API
+
+The GroovyDoc for the plugin API can be found here: [GroovyDoc](https://bmuschko.github.io/gradle-clover-plugin/docs/groovydoc/index.html?overview-summary.html)
 
 ## Tasks
 

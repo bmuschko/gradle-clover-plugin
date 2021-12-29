@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.gradle.util.ConfigureUtil;
+import javax.inject.Inject;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
-import groovy.lang.Closure;
+import org.gradle.api.Action;
+import org.gradle.api.model.ObjectFactory;
 
 /**
  * Defines the Clover Historical convention properties
@@ -31,14 +31,21 @@ import groovy.lang.Closure;
  * @author Alex Volanis
  */
 public class CloverReportHistoricalConvention {
-    boolean enabled = false;
-    String historyIncludes = "clover-*.xml.gz";
-    String packageFilter = null;
-    String from = null;
-    String to = null;
+    private boolean enabled = false;
+    private String historyIncludes = "clover-*.xml.gz";
+    private String packageFilter = null;
+    private String from = null;
+    private String to = null;
 
-    HistoricalAdded added = null;
-    List<HistoricalMover> movers = new ArrayList<HistoricalMover>();
+    private HistoricalAdded added = null;
+    private final List<HistoricalMover> movers = new ArrayList<>();
+
+    private final ObjectFactory objectFactory;
+
+    @Inject
+    public CloverReportHistoricalConvention(ObjectFactory objectFactory) {
+        this.objectFactory = objectFactory;
+    }
 
     public String getJsonAdded() throws JsonProcessingException {
         if (added == null) {
@@ -48,23 +55,69 @@ public class CloverReportHistoricalConvention {
     }
 
     public Collection<String> getJsonMovers() throws JsonProcessingException {
-        Collection<String> jsonMovers = new ArrayList<String>();
+        Collection<String> jsonMovers = new ArrayList<>();
         for (HistoricalMover mover : movers) {
             jsonMovers.add(mover.toJson());
         }
         return jsonMovers;
     }
 
-    public void added(Closure<?> closure) {
-        added = new HistoricalAdded();
-        ConfigureUtil.configure(closure, added);
+    public void added(Action<HistoricalAdded> action) {
+        added = objectFactory.newInstance(HistoricalAdded.class);
+        action.execute(added);
     }
 
-    public void mover(Closure<?> closure) {
-        closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-        HistoricalMover mover = new HistoricalMover();
-        closure.setDelegate(mover);
-        closure.call();
+    public void mover(Action<HistoricalMover> action) {
+        HistoricalMover mover = objectFactory.newInstance(HistoricalMover.class);
+        action.execute(mover);
         movers.add(mover);
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public String getHistoryIncludes() {
+        return historyIncludes;
+    }
+
+    public void setHistoryIncludes(String historyIncludes) {
+        this.historyIncludes = historyIncludes;
+    }
+
+    public String getPackageFilter() {
+        return packageFilter;
+    }
+
+    public void setPackageFilter(String packageFilter) {
+        this.packageFilter = packageFilter;
+    }
+
+    public String getFrom() {
+        return from;
+    }
+
+    public void setFrom(String from) {
+        this.from = from;
+    }
+
+    public String getTo() {
+        return to;
+    }
+
+    public void setTo(String to) {
+        this.to = to;
+    }
+
+    public HistoricalAdded getAdded() {
+        return added;
+    }
+
+    public List<HistoricalMover> getMovers() {
+        return movers;
     }
 }
