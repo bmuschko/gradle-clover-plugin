@@ -21,9 +21,12 @@ gradlePlugin {
             id = 'com.bmuschko.clover'
             implementationClass = 'com.bmuschko.gradle.clover.CloverPlugin'
             displayName = 'Gradle Clover Plugin'
+            description = 'Gradle Clover Plugin'
+            tags.set(['gradle', 'clover', 'code_coverage'])
         }
     }
 }
+
 
 defaultTasks 'clean', 'build'
 
