@@ -16,7 +16,11 @@ develocity {
         termsOfUseAgree = "yes"
         def ci = System.getenv("CI")
         if (ci != null && ci.trim() != '') {
-            publishAlways()
+            publishing {
+              onlyIf {
+                true
+              }
+            }
             tag("CI")
         }
     }
