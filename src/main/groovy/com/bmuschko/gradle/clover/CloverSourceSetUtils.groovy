@@ -28,7 +28,7 @@ final class CloverSourceSetUtils {
     private CloverSourceSetUtils() {}
 
     static List<File> getValidSourceDirs(Collection<CloverSourceSet> sourceSets) {
-        def List<File> srcDirs = []
+        List<File> srcDirs = []
 
         sourceSets.each { sourceSet ->
             srcDirs.addAll(getValidSourceDirs(sourceSet))
