@@ -1,3 +1,7 @@
+### Version 3.0.4
+
+* Enhanced compatibility with Gradle 8.x
+
 ### Version 3.0.3
 
 * Enhanced compatibility with Gradle 8.x
