@@ -1,7 +1,1 @@
-
-reckon {
-  scopeFromProp()
-  stageFromProp('milestone', 'rc', 'final')
-}
-
 reckonTagCreate.dependsOn check
