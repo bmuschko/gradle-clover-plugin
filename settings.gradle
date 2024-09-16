@@ -8,6 +8,7 @@ pluginManagement {
 
 plugins {
     id "com.gradle.develocity" version "3.18"
+    id('org.ajoberstar.reckon.settings') version '0.18.3'
 }
 
 develocity {
@@ -26,5 +27,11 @@ develocity {
     }
 }
 
+reckon {
+  defaultInferredScope = 'patch'
+  stages 'rc', 'final'
+  scopeCalc = calcScopeFromProp().or(calcScopeFromCommitMessages())
+  stageCalc = calcStageFromProp()
+}
 
 rootProject.name = 'gradle-clover-plugin'
