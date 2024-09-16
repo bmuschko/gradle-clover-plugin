@@ -331,12 +331,12 @@ class CloverPlugin implements Plugin<Project> {
 
         @CompileDynamic
         private boolean isJavaSourceSetOf(SourceSet sourceSet, Test testTask) {
-            return testTask.ext.originalClasspath.contains(sourceSet.java.outputDir) && !testTask.originalTestClassesDir.contains(sourceSet.java.outputDir)
+            return testTask.ext.originalClasspath.contains(sourceSet.java.classesDirectory.get().asFile) && !testTask.originalTestClassesDir.contains(sourceSet.java.classesDirectory.get().asFile)
         }
 
         @CompileDynamic
         private boolean isGroovySourceSetOf(SourceSet sourceSet, Test testTask) {
-            return testTask.ext.originalClasspath.contains(sourceSet.groovy.outputDir) && !testTask.originalTestClassesDir.contains(sourceSet.groovy.outputDir)
+            return testTask.ext.originalClasspath.contains(sourceSet.groovy.classesDirectory.get().asFile) && !testTask.originalTestClassesDir.contains(sourceSet.groovy.classesDirectory.get().asFile)
         }
 
         Map<String, List<CloverSourceSet>> sourceSets = [:]
@@ -362,7 +362,7 @@ class CloverPlugin implements Plugin<Project> {
                         groovy = false
                         name = 'java'
                         srcDirs.addAll(sourceSet.java.srcDirs)
-                        classesDir = sourceSet.java.outputDir
+                        classesDir = sourceSet.java.classesDirectory.get().asFile
                         instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${name}").get().asFile
                         classpathProvider = classpathCallable
                     }
@@ -375,7 +375,7 @@ class CloverPlugin implements Plugin<Project> {
                         groovy = true
                         name = 'groovy'
                         srcDirs.addAll(sourceSet.groovy.srcDirs)
-                        classesDir = sourceSet.groovy.outputDir
+                        classesDir = sourceSet.groovy.classesDirectory.get().asFile
                         instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${name}").get().asFile
                         classpathProvider = classpathCallable
                     }
@@ -400,12 +400,12 @@ class CloverPlugin implements Plugin<Project> {
 
         @CompileDynamic
         private boolean isJavaTestSourceSetOf(SourceSet sourceSet, Test testTask) {
-            return testTask.originalTestClassesDir.contains(sourceSet.java.outputDir)
+            return testTask.originalTestClassesDir.contains(sourceSet.java.classesDirectory.get().asFile)
         }
 
         @CompileDynamic
         private boolean isGroovyTestSourceSetOf(SourceSet sourceSet, Test testTask) {
-            return testTask.originalTestClassesDir.contains(sourceSet.groovy.outputDir)
+            return testTask.originalTestClassesDir.contains(sourceSet.groovy.classesDirectory.get().asFile)
         }
 
         Map<String, List<CloverSourceSet>> testSourceSets = [:]
@@ -431,7 +431,7 @@ class CloverPlugin implements Plugin<Project> {
                         groovy = false
                         name = 'java'
                         srcDirs.addAll(sourceSet.java.srcDirs)
-                        classesDir = sourceSet.java.outputDir
+                        classesDir = sourceSet.java.classesDirectory.get().asFile
                         instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${name}").get().asFile
                         classpathProvider = classpathCallable
                     }
@@ -444,7 +444,7 @@ class CloverPlugin implements Plugin<Project> {
                         groovy = true
                         name = 'groovy'
                         srcDirs.addAll(sourceSet.groovy.srcDirs)
-                        classesDir = sourceSet.groovy.outputDir
+                        classesDir = sourceSet.groovy.classesDirectory.get().asFile
                         instrumentedClassesDir = project.layout.buildDirectory.dir("${instrumentedDirPath}/${name}").get().asFile
                         classpathProvider = classpathCallable
                     }
