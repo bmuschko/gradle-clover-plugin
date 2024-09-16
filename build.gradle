@@ -21,9 +21,9 @@ gradlePlugin {
             implementationClass = 'com.bmuschko.gradle.clover.CloverPlugin'
             displayName = 'Gradle Clover Plugin'
             description = 'Gradle Clover Plugin'
-            tags.set(['gradle', 'clover', 'code_coverage'])
+            tags.set(['clover', 'code_coverage'])
         }
-    }
+    0
 }
 
 
