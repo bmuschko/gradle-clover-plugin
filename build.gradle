@@ -23,7 +23,7 @@ gradlePlugin {
             description = 'Gradle Clover Plugin'
             tags.set(['clover', 'code_coverage'])
         }
-    0
+    }
 }
 
 
