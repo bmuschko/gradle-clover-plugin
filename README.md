@@ -29,10 +29,14 @@ Tested with OpenJDK JDK8
 
 | Gradle Version | Works |
 |:--------------:| :---: |
-|      4.8       | yes   |
-|     5.6.4      | yes   |
-|     6.9.2      | yes   |
-|     7.3.3      | yes   |
+|     6.1        | yes   |
+|     6.9.4      | yes   |
+|     7.6.4      | yes   |
+|     8.10.1     | yes   |
+
+# Gradle version 6.0.1 and older
+
+Compatibility with Gradle 8.x required changes that make the plugin versions greater than 3.0.3 incompatible with Gradle 6.0.1 and older. Use 3.0.3 version or upgrade to a supported version of Gradle.
 
 # Gradle version 4.7 and older
 
@@ -59,7 +63,7 @@ example on how to retrieve it from Gradle Plugins Portal:
         }
 
         dependencies {
-            classpath 'com.bmuschko:gradle-clover-plugin:3.0.3'
+            classpath 'com.bmuschko:gradle-clover-plugin:3.0.7'
         }
     }
 
