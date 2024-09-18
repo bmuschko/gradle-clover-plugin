@@ -15,7 +15,7 @@ jobs:
       - name: Compilation
         uses: gradle/gradle-build-action@v2
         env:
-          GRADLE_OPTS: -Dfile.encoding=windows-1252
+          GRADLE_OPTS: -Dfile.encoding=windows-1252 -Ddevelocity.deprecation.captureOrigin=true
         with:
           arguments: classes
       - name: Validate plugin
