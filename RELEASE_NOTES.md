@@ -1,3 +1,7 @@
+### Version 3.0.7
+
+No changes, created to fix issues with Github pages
+
 ### Version 3.0.4
 
 * Enhanced compatibility with Gradle 8.x
