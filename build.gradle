@@ -36,19 +36,16 @@ apply from: "gradle/additional-artifacts.gradle"
 apply from: "gradle/publishing.gradle"
 apply from: "gradle/documentation.gradle"
 
-tasks.withType(JavaCompile) {
+tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-tasks.withType(GroovyCompile) {
+tasks.withType(GroovyCompile).configureEach {
     groovyOptions.encoding = 'UTF-8'
     options.encoding = 'UTF-8'
 }
 
-tasks.withType(Test) {
-    if (project.hasProperty('rerun')) {
-        outputs.upToDateWhen { false }
-    }
+tasks.withType(Test).configureEach {
     testLogging {
         events 'started', 'passed', 'failed', 'skipped'
     }
@@ -78,8 +75,10 @@ dependencies {
 }
 
 ext.compatibilityVersion = '1.8'
-sourceCompatibility = compatibilityVersion
-targetCompatibility = compatibilityVersion
+java {
+    sourceCompatibility = compatibilityVersion
+    targetCompatibility = compatibilityVersion
+}
 
 // Only add changing data to the manifest when publishing
 gradle.taskGraph.whenReady { graph ->
